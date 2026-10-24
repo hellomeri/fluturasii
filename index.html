@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2B2238">
+<meta name="description" content="Portalul grupei mici B, Grădinița 246: evenimente, necesar, cine se ocupă de ce și banii grupei.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-26 -23 52 44'%3E%3Cellipse cx='-11' cy='-8' rx='12' ry='9' transform='rotate(-25 -11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='11' cy='-8' rx='12' ry='9' transform='rotate(25 11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='-9' cy='8' rx='8' ry='6.5' transform='rotate(30 -9 8)' fill='%23A88BEF'/%3E%3Cellipse cx='9' cy='8' rx='8' ry='6.5' transform='rotate(-30 9 8)' fill='%23A88BEF'/%3E%3Crect x='-2' y='-12' width='4' height='26' rx='2' fill='%232B2238'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<title>Fluturașii · Grupa mică B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap">
+<style>
+/* Layout: bandă de antet (prună închis, fluture) + taburi; pe telefon, navigare fixă jos; itemii sunt carduri în grilă 1 → 2 coloane */
+:root{
+  color-scheme:light;
+  --bg:#F5F6F0; --surface:#FFFFFF; --surface-2:#EDF0E6; --ink:#2B2238; --muted:#6A6475; --line:#DFE2D6;
+  --wing:#E99A1C; --wing-ink:#8A5300; --wing-soft:#FCEFD2;
+  --meadow:#2E7A55; --meadow-soft:#DCEEE3;
+  --lilac:#7457C4; --lilac-soft:#ECE6FA;
+  --berry:#BE3F37; --berry-soft:#F8E0DC;
+  --head:#2B2238; --head-ink:#FFF6E4; --head-muted:#CFC4DE;
+  --shadow:0 1px 0 rgba(43,34,56,.04),0 10px 24px -18px rgba(43,34,56,.35);
+  --f-display:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;
+  --f-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#16121D; --surface:#211B2A; --surface-2:#2A2335; --ink:#F1ECF7; --muted:#A9A1B6; --line:#372F44;
+  --wing:#F2B240; --wing-ink:#F7C873; --wing-soft:#3A2D18;
+  --meadow:#62BE90; --meadow-soft:#1D3328;
+  --lilac:#A78DF2; --lilac-soft:#2D2544;
+  --berry:#F08077; --berry-soft:#3C2125;
+  --head:#0F0C14; --head-ink:#FFF1D6; --head-muted:#B4A9C4;
+  --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#16121D; --surface:#211B2A; --surface-2:#2A2335; --ink:#F1ECF7; --muted:#A9A1B6; --line:#372F44;
+  --wing:#F2B240; --wing-ink:#F7C873; --wing-soft:#3A2D18;
+  --meadow:#62BE90; --meadow-soft:#1D3328;
+  --lilac:#A78DF2; --lilac-soft:#2D2544;
+  --berry:#F08077; --berry-soft:#3C2125;
+  --head:#0F0C14; --head-ink:#FFF1D6; --head-muted:#B4A9C4;
+  --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+html{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--head)}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--wing);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}
+
+/* Antet */
+.top{background:var(--head);color:var(--head-ink)}
+.top .wrap{display:flex;align-items:center;gap:14px;padding-block:18px 14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 240px}
+.brand svg{flex:none;width:52px;height:44px}
+.brand h1{font-size:30px;font-weight:800;letter-spacing:.2px}
+.brand p{margin:0;color:var(--head-muted);font-size:13px;font-weight:600;letter-spacing:.3px}
+.me{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,246,228,.25);background:rgba(255,246,228,.08);color:var(--head-ink);padding:7px 12px 7px 7px;border-radius:999px;font-weight:700;font-size:14px;max-width:100%}
+.me:hover{background:rgba(255,246,228,.16)}
+.me .av{width:28px;height:28px;font-size:12px}
+.me span.lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs{display:flex;gap:4px;padding-block:0 0}
+.tab{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--head-muted);padding:10px 14px 12px;font-weight:800;font-size:15px;border-radius:12px 12px 0 0;position:relative}
+.tab svg{width:18px;height:18px}
+.tab[aria-current="page"]{background:var(--bg);color:var(--ink)}
+.tab:not([aria-current="page"]):hover{color:var(--head-ink)}
+
+/* Navigare telefon */
+.bottom-nav{display:none}
+@media (max-width:720px){
+  .tabs{display:none}
+  .top .wrap{padding-block:14px 14px}
+  .brand h1{font-size:26px}
+  .bottom-nav{display:grid;grid-template-columns:repeat(var(--n,4),1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+  .bottom-nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 8px;font-size:11.5px;font-weight:800;color:var(--muted)}
+  .bottom-nav button svg{width:22px;height:22px}
+  .bottom-nav button[aria-current="page"]{color:var(--ink)}
+  .bottom-nav button[aria-current="page"] svg{color:var(--wing)}
+  main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+}
+main{padding-block:22px 48px}
+.view{display:grid;gap:28px}
+
+/* Secțiuni */
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-head h2{font-size:24px;font-weight:800}
+.sec-head .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:800;white-space:nowrap}
+.chip.wing{background:var(--wing-soft);color:var(--wing-ink)}
+.chip.meadow{background:var(--meadow-soft);color:var(--meadow)}
+.chip.lilac{background:var(--lilac-soft);color:var(--lilac)}
+.chip.berry{background:var(--berry-soft);color:var(--berry)}
+.chip.plain{background:var(--surface-2);color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:12px;font-weight:800;font-size:14px;min-height:38px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{opacity:.9}
+.btn.wingb{background:var(--wing);border-color:var(--wing);color:#2B1A00}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.btn.small{min-height:32px;padding:5px 10px;font-size:13px;border-radius:10px}
+.btn.danger{color:var(--berry)}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn svg{width:16px;height:16px}
+
+/* Anunț */
+.notice{display:flex;gap:14px;align-items:flex-start;background:var(--wing-soft);border-radius:var(--r);padding:16px 18px}
+.notice svg{flex:none;width:26px;height:26px;color:var(--wing-ink)}
+.notice p{margin:0;font-weight:700;white-space:pre-line}
+.notice .who{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--wing-ink);margin-bottom:2px}
+
+/* Evenimente următoare */
+.timeline{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.ev{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;text-align:left;box-shadow:var(--shadow);width:100%}
+.ev:hover{border-color:var(--ink)}
+.cal{width:58px;border-radius:12px;overflow:hidden;text-align:center;background:var(--surface-2);flex:none}
+.cal .m{background:var(--wing);color:#2B1A00;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 0}
+.cal .d{font-family:var(--f-display);font-size:26px;font-weight:800;line-height:1.25;padding:2px 0 0}
+.cal .w{font-size:11px;font-weight:700;color:var(--muted);padding-bottom:5px}
+.ev h3{font-size:19px;font-weight:800}
+.ev .when{color:var(--muted);font-size:13.5px;font-weight:600;margin:2px 0 10px}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--meadow);border-radius:99px}
+.bar.wing i{background:var(--wing)}
+.ev .prog{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:6px}
+.ev .first{grid-column:1/-1}
+
+/* Liste rapide */
+.quick{display:grid;gap:8px}
+.qrow{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px 10px 14px;text-align:left;width:100%}
+.qrow:hover{border-color:var(--ink)}
+.qrow .t{flex:1;min-width:0}
+.qrow .t b{display:block;font-weight:800;font-size:15px}
+.qrow .t small{color:var(--muted);font-size:13px;font-weight:600}
+.qrow .dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--wing)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+.empty{color:var(--muted);background:var(--surface-2);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600}
+
+/* Carduri item */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 12px;display:grid;gap:12px;box-shadow:var(--shadow);min-width:0;scroll-margin-top:90px}
+.item.flash{animation:flash 1.6s ease}
+@keyframes flash{0%,40%{box-shadow:0 0 0 4px var(--wing)}100%{box-shadow:var(--shadow)}}
+@media (prefers-reduced-motion:reduce){.item.flash{animation:none;outline:3px solid var(--wing)}}
+.item-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.item-head h4{font-size:18px;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.item.is-done h4{color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.det{margin:0;color:var(--ink);font-size:14.5px;white-space:pre-line;overflow-wrap:anywhere}
+.status{appearance:none;-webkit-appearance:none;border:0;border-radius:999px;padding:5px 26px 5px 11px;font-size:12.5px;font-weight:800;flex:none;background-repeat:no-repeat;background-position:right 9px center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E")}
+.status.todo{background-color:var(--wing-soft);color:var(--wing-ink)}
+.status.progress{background-color:var(--lilac-soft);color:var(--lilac)}
+.status.done{background-color:var(--meadow-soft);color:var(--meadow)}
+.status:disabled{cursor:default;padding-right:11px;background-image:none;opacity:1}
+.field{display:grid;gap:5px}
+.field > span{font-size:12px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+.sel,.inp,.ta{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 12px;min-height:40px;font-size:15px}
+.sel{appearance:none;-webkit-appearance:none;padding-right:34px;background-repeat:no-repeat;background-position:right 12px center;background-size:11px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E")}
+.sel.set{border-color:var(--meadow);background-color:var(--meadow-soft);font-weight:700}
+.ta{min-height:76px;resize:vertical;line-height:1.45}
+.sel:focus,.inp:focus,.ta:focus{outline:none;border-color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row .inp{flex:1 1 180px;min-width:0}
+
+.people{display:grid;gap:6px}
+.person{display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:12px;padding:6px 8px 6px 6px;min-width:0}
+.person .t{flex:1;min-width:0;font-size:14px}
+.person .t b{font-weight:800}
+.person .t span{color:var(--muted)}
+.x{border:0;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none}
+.x:hover{background:var(--surface);color:var(--berry)}
+.x svg{width:14px;height:14px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none;color:#2B2238}
+
+.mine{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tick{display:inline-flex;align-items:center;gap:8px;border:2px dashed var(--line);background:transparent;border-radius:12px;padding:8px 14px;font-weight:800;font-size:14px}
+.tick:hover{border-color:var(--meadow)}
+.tick.on{border-style:solid;border-color:var(--meadow);background:var(--meadow-soft);color:var(--meadow)}
+.tick svg{width:18px;height:18px}
+.count{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.count b{color:var(--ink);font-size:15px}
+details.all > summary{cursor:pointer;font-size:13.5px;font-weight:800;color:var(--muted);list-style:none;display:inline-flex;align-items:center;gap:6px;padding:4px 0}
+details.all > summary::-webkit-details-marker{display:none}
+details.all > summary::before{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s}
+details.all[open] > summary::before{transform:rotate(45deg)}
+.kids{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px 10px;margin-top:8px}
+.kid{display:flex;align-items:center;gap:7px;font-size:13.5px;border:0;background:transparent;padding:3px 2px;text-align:left;border-radius:8px;min-width:0}
+.kid span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kid i{width:18px;height:18px;border-radius:6px;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.kid.on i{background:var(--meadow);border-color:var(--meadow)}
+.kid.on i::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+.kid.off{color:var(--muted)}
+button.kid:hover{background:var(--surface-2)}
+
+.months{display:grid;gap:6px}
+.month{display:flex;align-items:center;gap:10px;padding:6px 6px 6px 12px;border-radius:12px;background:var(--surface-2);min-width:0}
+.month.now{box-shadow:inset 0 0 0 2px var(--wing)}
+.month .mn{width:92px;flex:none;font-weight:800;font-size:13.5px}
+.month .who{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.month .who.free{color:var(--muted);font-style:italic}
+
+.foot{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding-top:10px;flex-wrap:wrap}
+.cbtn{border:0;background:transparent;display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13.5px;color:var(--muted);padding:4px 6px;border-radius:8px}
+.cbtn:hover{color:var(--ink);background:var(--surface-2)}
+.cbtn svg{width:17px;height:17px}
+.cbtn .n{background:var(--lilac-soft);color:var(--lilac);border-radius:99px;padding:0 7px;font-size:12px}
+.comments{display:grid;gap:10px}
+.cm{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start}
+.cm .body{min-width:0;background:var(--surface-2);border-radius:4px 14px 14px 14px;padding:8px 12px}
+.cm .body b{font-size:13px;font-weight:800}
+.cm .body time{font-size:12px;color:var(--muted);margin-left:6px}
+.cm .body p{margin:2px 0 0;font-size:14.5px;white-space:pre-line;overflow-wrap:anywhere}
+.cform{display:grid;gap:8px}
+.cform .row{justify-content:flex-end}
+
+.done-group > summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--muted);font-size:14px;padding:6px 0;margin-top:4px}
+.done-group > summary::-webkit-details-marker{display:none}
+.done-group > summary::before{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s}
+.done-group[open] > summary::before{transform:rotate(45deg)}
+.done-group .grid{margin-top:10px}
+
+.secblock{display:grid;gap:0}
+.secblock + .secblock{border-top:1px dashed var(--line);padding-top:26px}
+.sec-title{display:flex;gap:12px;align-items:center;min-width:0}
+.sec-title .cal{width:52px}
+.sec-title .cal .d{font-size:22px}
+
+/* Bani */
+.money{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:14px}
+@media (max-width:720px){.money{grid-template-columns:1fr 1fr}.money .big{grid-column:1/-1}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
+.tile .lab{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.tile .val{font-family:var(--f-display);font-size:28px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tile.big{background:var(--head);color:var(--head-ink);border-color:var(--head)}
+.tile.big .lab{color:var(--head-muted)}
+.tile.big .val{font-size:40px}
+.tile .in{color:var(--meadow)}
+.tile .out{color:var(--berry)}
+.ledger{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.lrow{display:grid;grid-template-columns:88px 1fr auto auto;gap:12px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}
+.lrow .d{font-size:13px;color:var(--muted);font-weight:700}
+.lrow .desc{min-width:0}
+.lrow .desc b{font-weight:700;overflow-wrap:anywhere}
+.lrow .desc small{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.lrow .amt{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.amt.in{color:var(--meadow)}
+.amt.out{color:var(--berry)}
+@media (max-width:560px){.lrow{grid-template-columns:1fr auto;gap:2px 10px}.lrow .d{grid-column:1/-1}.lrow .desc{grid-column:1}.lrow .amt{grid-column:2;grid-row:2}.lrow .x{grid-column:2;grid-row:1;justify-self:end}}
+.coll{display:grid;gap:12px}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.ccard h4{font-size:17px;font-weight:700}
+.ccard .count{margin:8px 0 6px}
+
+/* Modal */
+.scrim{position:fixed;inset:0;background:rgba(20,14,28,.45);z-index:50;display:grid;place-items:end center;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
+@media (min-width:721px){.scrim{place-items:center}}
+.modal{background:var(--surface);color:var(--ink);border-radius:20px;width:min(560px,100%);max-height:min(86vh,760px);overflow:auto;padding:20px;display:grid;gap:14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.4)}
+.modal h3{font-size:22px;font-weight:800}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;position:sticky;bottom:-20px;background:var(--surface);padding:10px 0 4px;margin-bottom:-4px}
+.modal .acts .left{margin-right:auto}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.pick button{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:7px 10px;text-align:left;font-weight:700;font-size:14px;min-width:0}
+.pick button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick button:hover,.pick button.on{border-color:var(--ink)}
+.pick button.on{background:var(--wing-soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.grid2{grid-template-columns:1fr}}
+.hint{font-size:13px;color:var(--muted);margin:0}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:800;font-size:14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);max-width:calc(100% - 32px)}
+@media (max-width:720px){.toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+.toast.err{background:var(--berry);color:#fff}
+
+.state{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:28px 22px;text-align:center;color:var(--muted);font-weight:600}
+.state h3{color:var(--ink);font-size:20px;margin-bottom:6px}
+.adminbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--lilac-soft);color:var(--lilac);border-radius:14px;padding:10px 14px;font-weight:800;font-size:14px}
+.adminbar .row{gap:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.foot-note{color:var(--muted);font-size:12.5px;text-align:center;padding-block:10px 0;line-height:1.8}
+.linkbtn{border:0;background:none;padding:0;color:var(--muted);font-weight:800;text-decoration:underline;text-underline-offset:3px;font-size:12.5px}
+.linkbtn:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 52 44" aria-hidden="true">
+        <g transform="translate(26 23)">
+          <ellipse cx="-11" cy="-8" rx="12" ry="9" transform="rotate(-25 -11 -8)" fill="#F0A92B"/>
+          <ellipse cx="11" cy="-8" rx="12" ry="9" transform="rotate(25 11 -8)" fill="#F0A92B"/>
+          <ellipse cx="-9" cy="8" rx="8" ry="6.5" transform="rotate(30 -9 8)" fill="#A88BEF"/>
+          <ellipse cx="9" cy="8" rx="8" ry="6.5" transform="rotate(-30 9 8)" fill="#A88BEF"/>
+          <circle cx="-12" cy="-9" r="3" fill="#FFF6E4" opacity=".85"/>
+          <circle cx="12" cy="-9" r="3" fill="#FFF6E4" opacity=".85"/>
+          <rect x="-2" y="-12" width="4" height="26" rx="2" fill="#FFF6E4"/>
+          <path d="M-1 -12 Q-5 -20 -9 -21 M1 -12 Q5 -20 9 -21" stroke="#FFF6E4" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <div>
+        <h1>Fluturașii</h1>
+        <p>Grădinița 246 · Grupa mică B</p>
+      </div>
+    </div>
+    <button class="me" id="meBtn" type="button" data-a="pick"></button>
+  </div>
+  <div class="wrap"><nav class="tabs" id="tabs" aria-label="Secțiuni"></nav></div>
+</header>
+
+<main class="wrap"><div class="view" id="view"></div></main>
+<nav class="bottom-nav" id="bnav" aria-label="Secțiuni"></nav>
+<div id="modalRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- utilitare ---------- */
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LS = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { v==null ? localStorage.removeItem(k) : localStorage.setItem(k,v); } catch(e){} }
+};
+const LUNI = ["ianuarie","februarie","martie","aprilie","mai","iunie","iulie","august","septembrie","octombrie","noiembrie","decembrie"];
+const LUNI_S = ["ian","feb","mar","apr","mai","iun","iul","aug","sep","oct","noi","dec"];
+const ZILE = ["duminică","luni","marți","miercuri","joi","vineri","sâmbătă"];
+const ZILE_S = ["dum","lun","mar","mie","joi","vin","sâm"];
+const pad = n => String(n).padStart(2,"0");
+const todayStr = () => { const d = new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); };
+const parseD = s => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s||""); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; };
+const daysUntil = s => { const d = parseD(s); if(!d) return null; const t = parseD(todayStr()); return Math.round((d - t)/86400000); };
+const countdown = n => n==null ? "" : n===0 ? "Azi" : n===1 ? "Mâine" : n>1 ? "Peste "+n+" zile" : n===-1 ? "Ieri" : "Acum "+(-n)+" zile";
+const fmtLong = s => { const d = parseD(s); return d ? ZILE[d.getDay()]+", "+d.getDate()+" "+LUNI[d.getMonth()] : ""; };
+const fmtShort = s => { const d = parseD(s); return d ? d.getDate()+" "+LUNI_S[d.getMonth()]+"." : ""; };
+const lei = n => (Math.round((+n||0)*100)/100).toLocaleString("ro-RO",{maximumFractionDigits:2}) + " lei";
+const ago = iso => {
+  const d = new Date(iso); if (isNaN(d)) return "";
+  const s = (Date.now()-d)/1000;
+  if (s < 60) return "acum";
+  if (s < 3600) return "acum "+Math.floor(s/60)+" min";
+  if (s < 86400) return "acum "+Math.floor(s/3600)+" h";
+  if (s < 172800) return "ieri";
+  return d.getDate()+" "+LUNI_S[d.getMonth()]+".";
+};
+const AV_COLORS = ["#F6C866","#B9A5F2","#9ED6B5","#F4A99F","#9CCAF0","#F3B98A","#D7C2A2","#C3E08F"];
+const avColor = id => { let h=0; for (const c of String(id)) h = (h*31 + c.charCodeAt(0))>>>0; return AV_COLORS[h % AV_COLORS.length]; };
+const initials = name => String(name||"?").split(/[\s-]+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const firstName = name => { const p = String(name||"").split(" "); return p.length>1 ? p.slice(1).join(" ") : name; };
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+
+const ICON = {
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+  list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  wallet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1z"/><path d="M4 7l11-3v3"/><circle cx="16" cy="13.5" r="1.3" fill="currentColor"/></svg>',
+  chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="9" r="4"/><path d="M4 21c1.5-4 5-5 8-5s6.5 1 8 5"/></svg>'
+};
+
+const STATUS = { todo:"De făcut", progress:"În lucru", done:"Rezolvat" };
+const TIP = { single:"Un responsabil", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar" };
+
+/* ---------- stare ---------- */
+const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], financiar:[], setari:{} };
+const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","financiar","setari"];
+const ui = {
+  tab: ["acasa","necesar","evenimente","bani"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
+  me: LS.get("fl_me") || "",
+  device: LS.get("fl_dev") || (()=>{ const d = uid(); LS.set("fl_dev", d); return d; })(),
+  openC: new Set(), drafts: {}, notes: {}, confirm: null,
+  loaded: new Set(), mode: "loading", authorHash: "", adminEmail: ""
+};
+const cap = { db:null, admin:false, canWrite:true };
+
+const kid = id => D.copii.find(c => c.id === id);
+const kidName = id => (kid(id)||{}).nume || "Copil";
+const sortedKids = () => D.copii.slice().sort((a,b)=>(a.ordine||0)-(b.ordine||0) || String(a.nume).localeCompare(b.nume,"ro"));
+const sec = id => D.sectiuni.find(s => s.id === id);
+const itemFull = it => Object.assign({ status:"todo", responsabil:"" }, it, D.stari[it.id] || {});
+const itemsOf = sid => D.itemi.filter(i => i.sectiune === sid).map(itemFull).sort((a,b)=>(a.ordine||0)-(b.ordine||0) || String(a.creat||"").localeCompare(String(b.creat||"")));
+const signups = iid => D.inscrieri.filter(s => s.itemId === iid).sort((a,b)=>String(a.creat).localeCompare(String(b.creat)));
+const commentsOf = iid => D.comentarii.filter(c => c.itemId === iid).sort((a,b)=>String(a.creat).localeCompare(String(b.creat)));
+const isMine = row => cap.admin || (!!row.autor && row.autor === ui.authorHash);
+const authorId = () => ui.authorHash || "";
+const kidsTotal = () => D.copii.length || 0;
+
+function schoolMonths(){
+  const now = new Date(); let y = now.getFullYear(), m = now.getMonth();
+  const endY = m <= 5 ? y : y+1; const out = [];
+  while (y < endY || (y === endY && m <= 5)) { out.push({ key: y+"-"+pad(m+1), label: LUNI[m][0].toUpperCase()+LUNI[m].slice(1), y }); m++; if (m>11){m=0;y++;} }
+  return out;
+}
+function progressOf(it){
+  if (it.status === "done") return 1;
+  if (it.tip === "fiecare") { const t = kidsTotal(); return t ? signups(it.id).length / t : 0; }
+  return 0;
+}
+
+/* ---------- date: platformă ---------- */
+/* ---------- date: Supabase ---------- */
+const SUPABASE_URL = "__SUPABASE_URL__";
+const SUPABASE_KEY = "__SUPABASE_KEY__";
+const UUID_TABLES = new Set(["inscrieri","comentarii","financiar"]);
+const mapKey = { itemId:"item_id", copilId:"copil_id" }, unmapKey = { item_id:"itemId", copil_id:"copilId" };
+const toDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[mapKey[k]||k] = v; return r; };
+const fromDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[unmapKey[k]||k] = v == null ? "" : v; return r; };
+const newUuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
+async function sha256(s){ try { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join(""); } catch(e){ return ""; } }
+let sb = null;
+function chk(res){ if (res.error) { const e = new Error(res.error.message); e.code = res.error.code; throw e; } return res.data; }
+async function refetch(t){
+  if (!sb) return;
+  const res = await sb.from(t).select("*");
+  if (res.error) return;
+  const rows = res.data.map(fromDb);
+  if (t === "stari") { const m = {}; rows.forEach(r => m[r.id] = r); D.stari = m; }
+  else if (t === "setari") D.setari = rows.find(r => r.id === "general") || {};
+  else D[t] = rows;
+  ui.loaded.add(t); schedule();
+}
+const db = {
+  doc(path){
+    const [t, id] = path.split("/");
+    return {
+      async set(data){ const row = toDb(Object.assign({}, data, { id })); if ("item_id" in row && t === "financiar" && !row.item_id) row.item_id = null; chk(await sb.from(t).upsert(row)); await refetch(t); },
+      async delete(){
+        if (!cap.admin && (t === "inscrieri" || t === "comentarii")) {
+          const ok = chk(await sb.rpc("sterge_propriu", { p_tabel:t, p_id:id, p_token:ui.device }));
+          if (!ok) { const e = new Error("not owner"); e.code = "not_owner"; throw e; }
+        } else chk(await sb.from(t).delete().eq("id", id));
+        await refetch(t);
+      }
+    };
+  },
+  collection(t){ return { doc: id => db.doc(t + "/" + (id || (UUID_TABLES.has(t) ? newUuid() : uid()))) }; }
+};
+async function checkAdmin(){
+  const s = await sb.auth.getSession();
+  const session = s && s.data && s.data.session;
+  ui.adminEmail = session ? session.user.email : "";
+  if (!session) { cap.admin = false; return; }
+  const r = await sb.rpc("is_admin");
+  cap.admin = !!r.data;
+}
+async function boot(){
+  render();
+  if (!window.supabase || SUPABASE_URL.indexOf("__") === 0) { ui.mode = "nodb"; render(); return; }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  cap.db = db;
+  ui.authorHash = await sha256(ui.device);
+  try { await checkAdmin(); } catch(e){}
+  sb.auth.onAuthStateChange(() => setTimeout(() => checkAdmin().then(render).catch(()=>{}), 0));
+  ui.mode = "live";
+  await Promise.all(COLS.map(refetch));
+  if (!ui.loaded.has("itemi")) { ui.mode = "nodb"; render(); return; }
+  const timers = {};
+  sb.channel("fluturasi").on("postgres_changes", { event:"*", schema:"public" }, p => { const t = p.table; if (!COLS.includes(t)) return; clearTimeout(timers[t]); timers[t] = setTimeout(() => refetch(t), 250); }).subscribe();
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") COLS.forEach(refetch); });
+}
+
+let pending = false, raf = 0;
+function schedule(){
+  const a = document.activeElement;
+  if (a && a.closest && a.closest("#view") && /^(INPUT|TEXTAREA)$/.test(a.tagName)) { pending = true; return; }
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(render);
+}
+document.addEventListener("focusout", () => { if (pending) setTimeout(() => { const a = document.activeElement; if (!(a && a.closest && a.closest("#view") && /^(INPUT|TEXTAREA)$/.test(a.tagName))) { pending = false; render(); } }, 0); });
+
+async function write(fn, okMsg){
+  if (!sb) { toast("Portalul nu e conectat la baza de date.", true); return false; }
+  try { await fn(db); if (okMsg) toast(okMsg); return true; }
+  catch(e){
+    const code = e && e.code;
+    if (code === "23505") toast("Cineva tocmai a luat locul ăsta. Lista s-a actualizat.", true);
+    else if (code === "not_owner") toast("Poți retrage doar ce ai adăugat de pe acest telefon sau calculator. Pentru altceva, scrie-i administratoarei.", true);
+    else if (code === "42501" || /row-level security/i.test(e.message||"")) toast("Doar administratoarea poate face această modificare.", true);
+    else toast("Nu s-a salvat. Verifică internetul și încearcă din nou.", true);
+    COLS.forEach(refetch);
+    return false;
+  }
+}
+const setStare = (iid, patch) => write(db => { const cur = Object.assign({ status:"todo", responsabil:"" }, D.stari[iid] || {}); delete cur.id; return db.doc("stari/"+iid).set(Object.assign(cur, patch, { modificat: new Date().toISOString() })); });
+
+/* ---------- toast ---------- */
+let tt = 0;
+function toast(msg, err){
+  const r = $("#toastRoot"); r.innerHTML = '<div class="toast'+(err?' err':'')+'" role="status">'+esc(msg)+'</div>';
+  clearTimeout(tt); tt = setTimeout(() => r.innerHTML = "", err ? 4200 : 1800);
+}
+
+/* ---------- randare ---------- */
+const TABS = [["acasa","Acasă","home"],["necesar","Necesar","list"],["evenimente","Evenimente","cal"],["bani","Bani","wallet"]];
+function render(){
+  pending = false;
+  const me = kid(ui.me);
+  $("#meBtn").innerHTML = me
+    ? '<span class="av" style="background:'+avColor(me.id)+'">'+esc(initials(me.nume))+'</span><span class="lbl">'+esc(me.nume)+'</span>'
+    : '<span class="av" style="background:var(--wing)">'+ICON.user.replace('<svg','<svg width="16" height="16"')+'</span><span class="lbl">Alege copilul tău</span>';
+  const tabsHtml = TABS.map(([k,l,i]) => '<button type="button" class="tab" data-a="tab" data-k="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+ICON[i]+l+'</button>').join("");
+  $("#tabs").innerHTML = tabsHtml;
+  $("#bnav").innerHTML = TABS.map(([k,l,i]) => '<button type="button" data-a="tab" data-k="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+ICON[i]+'<span>'+l+'</span></button>').join("");
+  const v = $("#view");
+  if (ui.mode === "loading" || (ui.mode === "live" && !["copii","sectiuni","itemi"].every(n => ui.loaded.has(n)))) {
+    v.innerHTML = '<div class="state"><h3>Se încarcă lista grupei…</h3>Evenimentele, necesarul și banii apar în câteva secunde.</div>'; return;
+  }
+  if (ui.mode === "nodb") {
+    v.innerHTML = '<div class="state"><h3>Nu am putut încărca lista grupei</h3>Verifică internetul și reîncarcă pagina. Dacă problema rămâne, anunț-o pe administratoare.</div>'; return;
+  }
+  if (!D.sectiuni.length && !D.itemi.length) {
+    v.innerHTML = '<div class="state"><h3>Încă nu e nimic pe listă</h3>'+(cap.admin ? 'Adaugă prima secțiune, apoi itemii ei.<div style="margin-top:14px"><button class="btn primary" data-a="secEdit">'+ICON.plus+'Secțiune nouă</button></div>' : 'Administratoarea grupei adaugă aici necesarul și evenimentele.')+'</div>'; return;
+  }
+  const html = { acasa: viewHome, necesar: viewNecesar, evenimente: viewEvents, bani: viewMoney }[ui.tab]();
+  v.innerHTML = (cap.admin ? adminBar() : "") + html + '<p class="foot-note">Bifele și comentariile se salvează automat și le văd toți părinții.<br>'+(cap.admin ? 'Ești logată ca administratoare ('+esc(ui.adminEmail)+'). <button class="linkbtn" data-a="logout">Ieși</button>' : '<button class="linkbtn" data-a="login">Administrare</button>')+'</p>';
+}
+
+function adminBar(){
+  return '<div class="adminbar"><span>Mod administrator · doar tu poți adăuga și edita</span><div class="row">'
+    + '<button class="btn small" data-a="secEdit">'+ICON.plus+'Secțiune</button>'
+    + '<button class="btn small" data-a="itemEdit">'+ICON.plus+'Item</button>'
+    + '<button class="btn small" data-a="settings">Anunț și copii</button></div></div>';
+}
+
+function calTile(s){
+  const d = parseD(s.data); if (!d) return "";
+  return '<div class="cal"><div class="m">'+LUNI_S[d.getMonth()]+'</div><div class="d num">'+d.getDate()+'</div><div class="w">'+ZILE_S[d.getDay()]+'</div></div>';
+}
+function whenLine(s){
+  const n = daysUntil(s.data);
+  return esc(fmtLong(s.data)) + (s.ora ? ", ora "+esc(s.ora) : ", ora se anunță") + ' · <b>'+countdown(n)+'</b>';
+}
+
+/* Acasă */
+function viewHome(){
+  let h = "";
+  if (D.setari.anunt) h += '<div class="notice">'+ICON.bell+'<div><div class="who">Anunț</div><p>'+esc(D.setari.anunt)+'</p></div></div>';
+  const t = todayStr();
+  const up = D.sectiuni.filter(s => s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data));
+  h += '<section><div class="sec-head"><div><h2>Evenimente următoare</h2><div class="sub">Ce urmează la grupă și cât e gata din pregătiri.</div></div></div>';
+  if (!up.length) h += '<div class="empty">Nu e niciun eveniment programat.</div>';
+  else h += '<div class="timeline">' + up.map(s => {
+    const its = itemsOf(s.id); const tot = its.length; const done = its.filter(i=>i.status==="done").length;
+    const pct = tot ? Math.round(its.reduce((a,i)=>a+progressOf(i),0)/tot*100) : 0;
+    return '<button class="ev" data-a="goSec" data-id="'+esc(s.id)+'">'+calTile(s)+'<div style="min-width:0"><h3>'+esc(s.titlu)+'</h3><div class="when">'+whenLine(s)+'</div>'
+      + (tot ? '<div class="bar wing"><i style="width:'+pct+'%"></i></div><div class="prog num"><span>'+done+' din '+tot+' rezolvate</span><span>'+pct+'%</span></div>' : '<div class="prog"><span>Lista se completează</span></div>')
+      + '</div></button>';
+  }).join("") + '</div>';
+  h += '</section>';
+
+  const mineH = myTodo(); const help = needsHelp();
+  h += '<div class="two">';
+  h += '<section><div class="sec-head"><div><h2>'+(kid(ui.me) ? 'Ce ai tu de făcut' : 'Ce ai de făcut')+'</h2><div class="sub">'+(kid(ui.me) ? 'Pentru '+esc(kidName(ui.me)) : 'Alege-ți copilul ca să vezi lista ta.')+'</div></div></div>';
+  if (!kid(ui.me)) h += '<button class="btn wingb" data-a="pick">'+ICON.user+'Alege copilul tău</button>';
+  else h += mineH.length ? '<div class="quick">'+mineH.join("")+'</div>' : '<div class="empty">Nimic deschis pentru voi acum. Mulțumim!</div>';
+  h += '</section>';
+  h += '<section><div class="sec-head"><div><h2>Unde e nevoie de ajutor</h2><div class="sub">Lucruri care nu au încă pe cineva.</div></div></div>';
+  h += help.length ? '<div class="quick">'+help.join("")+'</div>' : '<div class="empty">Totul are pe cineva care se ocupă.</div>';
+  h += '</section></div>';
+  return h;
+}
+function qrow(it, sub, color){
+  const s = sec(it.sectiune);
+  return '<button class="qrow" data-a="goItem" data-id="'+esc(it.id)+'"><span class="dot" style="background:var(--'+(color||"wing")+')"></span><span class="t"><b>'+esc(it.titlu)+'</b><small>'+esc(sub || (s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : ""))+'</small></span></button>';
+}
+function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a.sectiune)||{}, sb = sec(b.sectiune)||{}; return String(sa.data||"9999").localeCompare(String(sb.data||"9999")) || (a.ordine||0)-(b.ordine||0); }); }
+function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
+function myTodo(){
+  const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
+  for (const it of allItems()) {
+    if (it.status === "done" || !sectionUpcoming(it)) continue;
+    const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
+    if (it.tip === "single" && it.responsabil === me) out.push(qrow(it, "Te ocupi tu · "+where, "lilac"));
+    else if (it.tip === "multi") { const mine = signups(it.id).filter(x=>x.copilId===me); if (mine.length) out.push(qrow(it, (mine.map(x=>x.nota).filter(Boolean).join(", ") || "Te-ai înscris") + " · " + where, "lilac")); }
+    else if (it.tip === "fiecare" && !signups(it.id).some(x=>x.copilId===me)) out.push(qrow(it, "Nebifat încă · "+where, "wing"));
+    else if (it.tip === "rotatie") { const slot = signups(it.id).find(x => x.copilId===me && mk.has(x.cheie)); if (slot) { const [y,m] = slot.cheie.split("-"); out.push(qrow(it, "Luna ta: "+LUNI[+m-1]+" "+y, "lilac")); } }
+  }
+  return out;
+}
+function needsHelp(){
+  const out = [], first = schoolMonths()[0];
+  for (const it of allItems()) {
+    if (it.status === "done" || !sectionUpcoming(it)) continue;
+    if (it.tip === "single" && !it.responsabil) out.push(qrow(it));
+    else if (it.tip === "multi" && !signups(it.id).length) out.push(qrow(it, "Nu s-a înscris nimeni încă"));
+    else if (it.tip === "rotatie" && first && !signups(it.id).some(x=>x.cheie===first.key)) out.push(qrow(it, "Nimeni pentru "+first.label.toLowerCase()));
+  }
+  return out.slice(0, 8);
+}
+
+/* Necesar / Evenimente */
+function viewNecesar(){
+  const secs = D.sectiuni.filter(s => !s.data).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
+  if (!secs.length) return '<div class="empty">Nu e nimic pe lista de necesar.</div>';
+  return secs.map(secBlock).join("");
+}
+function viewEvents(){
+  const t = todayStr();
+  const up = D.sectiuni.filter(s => s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data));
+  const past = D.sectiuni.filter(s => s.data && s.data < t).sort((a,b)=>b.data.localeCompare(a.data));
+  let h = up.length ? up.map(secBlock).join("") : '<div class="empty">Nu e niciun eveniment programat.</div>';
+  if (past.length) h += '<details class="done-group"><summary>Evenimente trecute ('+past.length+')</summary><div class="view" style="margin-top:14px">'+past.map(secBlock).join("")+'</div></details>';
+  return h;
+}
+function secBlock(s){
+  const its = itemsOf(s.id); const open = its.filter(i=>i.status!=="done"); const done = its.filter(i=>i.status==="done");
+  let h = '<section class="secblock" id="sec-'+esc(s.id)+'"><div class="sec-head"><div class="sec-title">'+calTile(s)+'<div style="min-width:0"><h2>'+esc(s.titlu)+'</h2>'
+    + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? esc(s.descriere) : '')+'</div></div></div>'
+    + (cap.admin ? '<div class="row"><button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button></div>' : '')
+    + '</div>';
+  if (!its.length) h += '<div class="empty">Nu sunt itemi aici încă.</div>';
+  if (open.length) h += '<div class="grid">'+open.map(itemCard).join("")+'</div>';
+  if (done.length) h += '<details class="done-group"'+(open.length?'':' open')+'><summary>Rezolvate ('+done.length+')</summary><div class="grid">'+done.map(itemCard).join("")+'</div></details>';
+  return h + '</section>';
+}
+
+function kidOptions(sel, emptyLabel){
+  return '<option value="">'+esc(emptyLabel)+'</option>' + sortedKids().map(c => '<option value="'+esc(c.id)+'"'+(c.id===sel?' selected':'')+'>'+esc(c.nume)+'</option>').join("");
+}
+function itemCard(it){
+  const w = cap.canWrite;
+  let meta = '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
+  if (it.cantitate) meta += '<span class="chip lilac">'+esc(it.cantitate)+'</span>';
+  if (it.cost) meta += '<span class="chip wing">'+esc(it.cost)+'</span>';
+  if (+it.colecta > 0) meta += '<span class="chip meadow">Colectă '+lei(it.colecta)+' / copil</span>';
+  const statusSel = '<label class="sr" for="st-'+esc(it.id)+'">Status</label><select id="st-'+esc(it.id)+'" class="status '+esc(it.status)+'" data-a="status" data-id="'+esc(it.id)+'"'+(w?'':' disabled')+'>'
+    + Object.entries(STATUS).map(([k,l]) => '<option value="'+k+'"'+(k===it.status?' selected':'')+'>'+l+'</option>').join("") + '</select>';
+  let body = "";
+  const tip = it.tip || "single";
+  if (tip === "single") {
+    body = '<label class="field" for="rs-'+esc(it.id)+'"><span>Se ocupă</span><select id="rs-'+esc(it.id)+'" class="sel'+(it.responsabil?' set':'')+'" data-a="resp" data-id="'+esc(it.id)+'"'+(w?'':' disabled')+'>'+kidOptions(it.responsabil, "Nimeni încă, alege copilul")+'</select></label>';
+    if (!it.responsabil && kid(ui.me) && w && it.status !== "done") body += '<div><button class="btn small wingb" data-a="takeIt" data-id="'+esc(it.id)+'">Mă ocup eu</button></div>';
+  } else if (tip === "multi") {
+    const su = signups(it.id);
+    body = su.length ? '<div class="people">'+su.map(s => '<div class="person"><span class="av" style="background:'+avColor(s.copilId)+'">'+esc(initials(kidName(s.copilId)))+'</span><span class="t"><b>'+esc(kidName(s.copilId))+'</b>'+(s.nota?' <span>· '+esc(s.nota)+'</span>':'')+'</span>'+(isMine(s)&&w?'<button class="x" title="Retrage" aria-label="Retrage înscrierea" data-a="unsign" data-id="'+esc(s.id)+'">'+ICON.x+'</button>':'')+'</div>').join("")+'</div>' : '<div class="hint">Nu s-a înscris nimeni încă.</div>';
+    if (w && it.status !== "done") body += kid(ui.me)
+      ? '<form class="row" data-a="sign" data-id="'+esc(it.id)+'"><label class="sr" for="nt-'+esc(it.id)+'">Ce aduci</label><input class="inp" id="nt-'+esc(it.id)+'" name="nota" maxlength="140" placeholder="Ce aduci sau ce faci? (opțional)" value="'+esc(ui.notes[it.id]||"")+'"><button class="btn wingb small" type="submit">Mă înscriu</button></form>'
+      : '<div><button class="btn small" data-a="pick">Alege copilul ca să te înscrii</button></div>';
+  } else if (tip === "fiecare") {
+    const su = signups(it.id); const doneIds = new Set(su.map(s=>s.copilId)); const tot = kidsTotal(); const n = su.filter(s=>kid(s.copilId)).length;
+    body = '<div><div class="count num"><span>Gata pentru <b>'+n+'</b> din '+tot+' copii</span><span>'+(tot?Math.round(n/tot*100):0)+'%</span></div><div class="bar"><i style="width:'+(tot?n/tot*100:0)+'%"></i></div></div>';
+    if (kid(ui.me) && w) { const on = doneIds.has(ui.me); body += '<div class="mine"><button class="tick'+(on?' on':'')+'" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(ui.me)+'" aria-pressed="'+on+'">'+ICON.check+(on ? esc(firstName(kidName(ui.me)))+': gata' : 'Bifează pentru '+esc(firstName(kidName(ui.me))))+'</button></div>'; }
+    body += '<details class="all"><summary>Vezi toți copiii</summary><div class="kids">'+sortedKids().map(c => { const on = doneIds.has(c.id); const can = w && (cap.admin || c.id === ui.me); return '<'+(can?'button type="button" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(c.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(c.nume)+'</span></'+(can?'button':'div')+'>'; }).join("")+'</div></details>';
+  } else if (tip === "rotatie") {
+    const su = signups(it.id); const months = schoolMonths(); const cur = months[0] && months[0].key;
+    body = '<div class="months">'+months.map(m => { const s = su.find(x=>x.cheie===m.key); const lbl = m.label + (m.y !== new Date().getFullYear() ? " "+m.y : "");
+      return '<div class="month'+(m.key===cur?' now':'')+'"><span class="mn">'+esc(lbl)+'</span>'
+        + (s ? '<span class="who">'+esc(kidName(s.copilId))+'</span>'+(isMine(s)&&w?'<button class="x" aria-label="Eliberează luna" title="Eliberează luna" data-a="unsign" data-id="'+esc(s.id)+'">'+ICON.x+'</button>':'')
+             : '<span class="who free">liber</span>'+(w && kid(ui.me) ? '<button class="btn small" data-a="slot" data-id="'+esc(it.id)+'" data-key="'+m.key+'">Iau eu</button>' : ''))
+        + '</div>'; }).join("")+'</div>';
+    if (w && !kid(ui.me)) body += '<div><button class="btn small" data-a="pick">Alege copilul ca să iei o lună</button></div>';
+  }
+  const cms = commentsOf(it.id); const open = ui.openC.has(it.id);
+  let foot = '<div class="foot"><button class="cbtn" data-a="toggleC" data-id="'+esc(it.id)+'" aria-expanded="'+open+'">'+ICON.chat+(cms.length ? 'Comentarii <span class="n num">'+cms.length+'</span>' : 'Comentează')+'</button>'
+    + (cap.admin ? '<button class="btn small ghost" data-a="itemEdit" data-id="'+esc(it.id)+'">'+ICON.pen+'Editează</button>' : '') + '</div>';
+  if (open) {
+    foot += '<div class="comments">' + cms.map(c => '<div class="cm"><span class="av" style="background:'+avColor(c.copilId)+'">'+esc(initials(kidName(c.copilId)))+'</span><div class="body"><b>'+esc(c.copilId ? kidName(c.copilId) : "Administrator")+'</b><time datetime="'+esc(c.creat)+'">'+esc(ago(c.creat))+'</time><p>'+esc(c.text)+'</p></div>'+(isMine(c)&&w?'<button class="x" aria-label="Șterge comentariul" title="Șterge" data-a="delC" data-id="'+esc(c.id)+'">'+ICON.x+'</button>':'<span></span>')+'</div>').join("");
+    if (w) foot += kid(ui.me) || cap.admin
+      ? '<form class="cform" data-a="comment" data-id="'+esc(it.id)+'"><label class="sr" for="cm-'+esc(it.id)+'">Comentariu</label><textarea class="ta" id="cm-'+esc(it.id)+'" name="text" maxlength="1000" placeholder="Scrie detalii, un link, o întrebare…">'+esc(ui.drafts[it.id]||"")+'</textarea><div class="row"><button class="btn primary small" type="submit">Trimite</button></div></form>'
+      : '<div><button class="btn small" data-a="pick">Alege copilul ca să comentezi</button></div>';
+    foot += '</div>';
+  }
+  return '<article class="item'+(it.status==="done"?' is-done':'')+'" id="item-'+esc(it.id)+'"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+statusSel+'</div><div class="meta">'+meta+'</div>'
+    + (it.detalii ? '<p class="det">'+esc(it.detalii)+'</p>' : '') + body + foot + '</article>';
+}
+
+/* Bani */
+function viewMoney(){
+  const rows = D.financiar.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)) || String(b.creat).localeCompare(String(a.creat)));
+  const inn = rows.filter(r=>r.tip==="in").reduce((a,r)=>a+(+r.suma||0),0);
+  const out = rows.filter(r=>r.tip==="out").reduce((a,r)=>a+(+r.suma||0),0);
+  let h = '<section><div class="sec-head"><div><h2>Banii grupei</h2><div class="sub">Tot ce s-a strâns și s-a cheltuit, la vedere pentru toți părinții.</div></div>'
+    + (cap.admin ? '<div class="row"><button class="btn small primary" data-a="finEdit" data-tip="in">'+ICON.plus+'Încasare</button><button class="btn small" data-a="finEdit" data-tip="out">'+ICON.plus+'Cheltuială</button></div>' : '') + '</div>';
+  h += '<div class="money"><div class="tile big"><div class="lab">Sold curent</div><div class="val">'+lei(inn-out)+'</div></div><div class="tile"><div class="lab">Strânși</div><div class="val in">'+lei(inn)+'</div></div><div class="tile"><div class="lab">Cheltuiți</div><div class="val out">'+lei(out)+'</div></div></div></section>';
+
+  const colls = D.itemi.map(itemFull).filter(i => +i.colecta > 0);
+  if (colls.length) {
+    h += '<section><div class="sec-head"><div><h2>Colecte în curs</h2><div class="sub">Cine a contribuit la fiecare strângere de bani.</div></div></div><div class="coll">';
+    h += colls.map(it => {
+      const paid = rows.filter(r => r.tip==="in" && r.itemId===it.id && r.copilId);
+      const ids = new Set(paid.map(r=>r.copilId)); const tot = kidsTotal(); const target = (+it.colecta)*tot; const got = rows.filter(r=>r.tip==="in"&&r.itemId===it.id).reduce((a,r)=>a+(+r.suma||0),0);
+      return '<div class="ccard"><div class="row" style="justify-content:space-between"><h4>'+esc(it.titlu)+'</h4><span class="chip meadow">'+lei(it.colecta)+' / copil</span></div>'
+        + '<div class="count num"><span><b>'+lei(got)+'</b> din '+lei(target)+'</span><span>'+ids.size+' din '+tot+' copii</span></div><div class="bar"><i style="width:'+(target?Math.min(100,got/target*100):0)+'%"></i></div>'
+        + '<details class="all" style="margin-top:8px"><summary>Cine a contribuit</summary><div class="kids">'+sortedKids().map(c => { const on = ids.has(c.id); return '<'+(cap.admin?'button type="button" data-a="paid" data-id="'+esc(it.id)+'" data-kid="'+esc(c.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(c.nume)+'</span></'+(cap.admin?'button':'div')+'>'; }).join("")+'</div>'+(cap.admin?'<p class="hint" style="margin-top:8px">Bifează un copil ca să înregistrezi contribuția lui ca încasare.</p>':'')+'</details></div>';
+    }).join("");
+    h += '</div></section>';
+  }
+
+  h += '<section><div class="sec-head"><div><h2>Mișcări</h2><div class="sub">Cea mai recentă sus.</div></div></div>';
+  if (!rows.length) h += '<div class="empty">'+(cap.admin ? 'Nu ai notat încă nicio sumă. Începe cu o încasare.' : 'Nu s-a notat încă nicio sumă.')+'</div>';
+  else h += '<div class="ledger">' + rows.map(r => {
+    const it = r.itemId ? D.itemi.find(i=>i.id===r.itemId) : null;
+    const sub = [it ? it.titlu : "", r.copilId ? kidName(r.copilId) : ""].filter(Boolean).join(" · ");
+    return '<div class="lrow"><span class="d num">'+esc(fmtShort(r.data))+'</span><span class="desc"><b>'+esc(r.descriere || (r.tip==="in"?"Încasare":"Cheltuială"))+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><span class="amt '+(r.tip==="in"?"in":"out")+'">'+(r.tip==="in"?"+":"−")+lei(r.suma)+'</span>'
+      + (cap.admin ? '<button class="x" aria-label="Editează" title="Editează" data-a="finEdit" data-id="'+esc(r.id)+'">'+ICON.pen+'</button>' : '<span></span>') + '</div>';
+  }).join("") + '</div>';
+  return h + '</section>';
+}
+
+/* ---------- modale ---------- */
+function modal(html){ $("#modalRoot").innerHTML = '<div class="scrim" data-a="closeScrim"><div class="modal" role="dialog" aria-modal="true">'+html+'</div></div>'; const f = $("#modalRoot [autofocus]"); if (f) f.focus(); }
+function closeModal(){ $("#modalRoot").innerHTML = ""; ui.confirm = null; }
+let afterPick = null;
+function openPicker(then){
+  afterPick = then || null;
+  const ks = sortedKids();
+  modal('<h3>Al cui părinte ești?</h3><p class="hint">Alegerea rămâne pe acest telefon sau calculator. O poți schimba oricând din colțul de sus.</p>'
+    + '<label class="sr" for="pickQ">Caută</label><input class="inp" id="pickQ" placeholder="Caută după nume" autocomplete="off">'
+    + '<div class="pick" id="pickList">'+ks.map(c => '<button type="button" data-a="pickKid" data-id="'+esc(c.id)+'" class="'+(c.id===ui.me?'on':'')+'" data-n="'+esc(c.nume.toLowerCase())+'"><span class="av" style="background:'+avColor(c.id)+'">'+esc(initials(c.nume))+'</span><span>'+esc(c.nume)+'</span></button>').join("")+'</div>'
+    + '<div class="acts">'+(ui.me?'<button class="btn ghost left" data-a="pickKid" data-id="">Doar mă uit</button>':'')+'<button class="btn" data-a="close">Închide</button></div>');
+}
+
+function itemForm(id, secId){
+  const it = id ? D.itemi.find(i=>i.id===id) : null; const st = it ? itemFull(it) : { status:"todo" };
+  const v = it || { sectiune: secId || (D.sectiuni[0]||{}).id, tip:"single" };
+  const secs = D.sectiuni.slice().sort((a,b)=>String(a.data||"0").localeCompare(String(b.data||"0")) || (a.ordine||0)-(b.ordine||0));
+  modal('<h3>'+(it?'Editează itemul':'Item nou')+'</h3><form id="fItem" class="view" style="gap:12px">'
+    + '<label class="field" for="fi-t"><span>Titlu</span><input class="inp" id="fi-t" name="titlu" required maxlength="120" value="'+esc(v.titlu||"")+'" autofocus></label>'
+    + '<div class="grid2"><label class="field" for="fi-s"><span>Secțiune</span><select class="sel" id="fi-s" name="sectiune">'+secs.map(s=>'<option value="'+esc(s.id)+'"'+(s.id===v.sectiune?' selected':'')+'>'+esc(s.titlu)+'</option>').join("")+'</select></label>'
+    + '<label class="field" for="fi-tip"><span>Cum se organizează</span><select class="sel" id="fi-tip" name="tip">'+Object.entries(TIP).map(([k,l])=>'<option value="'+k+'"'+(k===v.tip?' selected':'')+'>'+l+'</option>').join("")+'</select></label></div>'
+    + '<label class="field" for="fi-d"><span>Detalii</span><textarea class="ta" id="fi-d" name="detalii" maxlength="2000">'+esc(v.detalii||"")+'</textarea></label>'
+    + '<div class="grid2"><label class="field" for="fi-c"><span>Cantitate</span><input class="inp" id="fi-c" name="cantitate" maxlength="60" placeholder="ex. 4 bucăți" value="'+esc(v.cantitate||"")+'"></label>'
+    + '<label class="field" for="fi-cost"><span>Cost estimat</span><input class="inp" id="fi-cost" name="cost" maxlength="60" placeholder="ex. ~300 lei / an" value="'+esc(v.cost||"")+'"></label></div>'
+    + '<div class="grid2"><label class="field" for="fi-col"><span>Colectă per copil (lei)</span><input class="inp num" id="fi-col" name="colecta" type="number" min="0" step="1" inputmode="numeric" placeholder="0 = fără colectă" value="'+esc(v.colecta||"")+'"></label>'
+    + '<label class="field" for="fi-st"><span>Status</span><select class="sel" id="fi-st" name="status">'+Object.entries(STATUS).map(([k,l])=>'<option value="'+k+'"'+(k===st.status?' selected':'')+'>'+l+'</option>').join("")+'</select></label></div>'
+    + '<p class="hint">„Un responsabil”: un singur părinte preia. „Se înscrie oricine”: fiecare scrie ce aduce. „Fiecare copil”: toți bifează. „Pe rând, lunar”: câte un copil pe lună.</p>'
+    + '<div class="acts">'+(it?'<button type="button" class="btn danger left" data-a="delItem" data-id="'+esc(it.id)+'">'+(ui.confirm==="item"+it.id?'Sigur? Apasă iar':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
+    + '<input type="hidden" name="id" value="'+esc(it?it.id:"")+'"></form>');
+}
+function secForm(id){
+  const s = id ? sec(id) : null; const v = s || {};
+  modal('<h3>'+(s?'Editează secțiunea':'Secțiune nouă')+'</h3><form id="fSec" class="view" style="gap:12px">'
+    + '<label class="field" for="fs-t"><span>Titlu</span><input class="inp" id="fs-t" name="titlu" required maxlength="80" value="'+esc(v.titlu||"")+'" autofocus placeholder="ex. Ziua copilului"></label>'
+    + '<div class="grid2"><label class="field" for="fs-d"><span>Data (gol = necesar continuu)</span><input class="inp" id="fs-d" name="data" type="date" value="'+esc(v.data||"")+'"></label>'
+    + '<label class="field" for="fs-o"><span>Ora</span><input class="inp" id="fs-o" name="ora" type="time" value="'+esc(v.ora||"")+'"></label></div>'
+    + '<label class="field" for="fs-ds"><span>Descriere</span><textarea class="ta" id="fs-ds" name="descriere" maxlength="600">'+esc(v.descriere||"")+'</textarea></label>'
+    + '<p class="hint">Secțiunile cu dată apar la Evenimente, cele fără dată la Necesar.</p>'
+    + '<div class="acts">'+(s?'<button type="button" class="btn danger left" data-a="delSec" data-id="'+esc(s.id)+'">'+(ui.confirm==="sec"+s.id?'Șterge și itemii ei?':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
+    + '<input type="hidden" name="id" value="'+esc(s?s.id:"")+'"></form>');
+}
+function finForm(id, tip){
+  const r = id ? D.financiar.find(x=>x.id===id) : null; const v = r || { tip: tip||"in", data: todayStr() };
+  const its = D.itemi.slice().sort((a,b)=>String(a.titlu).localeCompare(b.titlu,"ro"));
+  modal('<h3>'+(r?'Editează mișcarea':(v.tip==="in"?'Încasare nouă':'Cheltuială nouă'))+'</h3><form id="fFin" class="view" style="gap:12px">'
+    + '<div class="grid2"><label class="field" for="ff-tip"><span>Tip</span><select class="sel" id="ff-tip" name="tip"><option value="in"'+(v.tip==="in"?' selected':'')+'>Încasare (+)</option><option value="out"'+(v.tip==="out"?' selected':'')+'>Cheltuială (−)</option></select></label>'
+    + '<label class="field" for="ff-s"><span>Sumă (lei)</span><input class="inp num" id="ff-s" name="suma" type="number" min="0" step="0.01" inputmode="decimal" required value="'+esc(v.suma||"")+'" autofocus></label></div>'
+    + '<label class="field" for="ff-d"><span>Descriere</span><input class="inp" id="ff-d" name="descriere" maxlength="140" placeholder="ex. Baloți de paie, 4 buc." value="'+esc(v.descriere||"")+'"></label>'
+    + '<div class="grid2"><label class="field" for="ff-dt"><span>Data</span><input class="inp" id="ff-dt" name="data" type="date" required value="'+esc(v.data||"")+'"></label>'
+    + '<label class="field" for="ff-i"><span>Legat de item</span><select class="sel" id="ff-i" name="itemId"><option value="">Niciunul</option>'+its.map(i=>'<option value="'+esc(i.id)+'"'+(i.id===v.itemId?' selected':'')+'>'+esc(i.titlu)+'</option>').join("")+'</select></label></div>'
+    + '<label class="field" for="ff-k"><span>De la copilul (opțional)</span><select class="sel" id="ff-k" name="copilId">'+kidOptions(v.copilId, "Nimeni anume")+'</select></label>'
+    + '<div class="acts">'+(r?'<button type="button" class="btn danger left" data-a="delFin" data-id="'+esc(r.id)+'">'+(ui.confirm==="fin"+r.id?'Sigur? Apasă iar':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
+    + '<input type="hidden" name="id" value="'+esc(r?r.id:"")+'"></form>');
+}
+function loginForm(){
+  modal('<h3>Administrare</h3><p class="hint">Doar administratoarea grupei are cont. Părinții nu au nevoie să se logheze.</p><form id="fLogin" class="view" style="gap:12px">'
+    + '<label class="field" for="fl-e"><span>Email</span><input class="inp" id="fl-e" name="email" type="email" autocomplete="username" required autofocus></label>'
+    + '<label class="field" for="fl-p"><span>Parolă</span><input class="inp" id="fl-p" name="parola" type="password" autocomplete="current-password" required></label>'
+    + '<div class="acts"><button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Intră</button></div></form>');
+}
+function settingsForm(){
+  modal('<h3>Anunț și copii</h3><form id="fSet" class="view" style="gap:12px">'
+    + '<label class="field" for="fx-a"><span>Anunț afișat sus pe Acasă</span><textarea class="ta" id="fx-a" name="anunt" maxlength="600" placeholder="ex. Joi aducem baloții până la 8:30. Gol = fără anunț.">'+esc(D.setari.anunt||"")+'</textarea></label>'
+    + '<label class="field" for="fx-k"><span>Copiii grupei (câte unul pe rând)</span><textarea class="ta" id="fx-k" name="copii" style="min-height:220px">'+esc(sortedKids().map(c=>c.nume).join("\n"))+'</textarea></label>'
+    + '<p class="hint">Dacă scoți un nume, dispare din liste; bifele vechi ale copilului rămân salvate.</p>'
+    + '<div class="acts"><button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div></form>');
+}
+
+/* ---------- evenimente ---------- */
+function setTab(k){ ui.tab = k; LS.set("fl_tab", k); render(); window.scrollTo({ top:0 }); }
+function goTo(elId){
+  setTimeout(() => { const el = document.getElementById(elId); if (!el) return; const det = el.closest("details"); if (det) det.open = true; el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }, 30);
+}
+function tabOfSec(s){ return s && s.data ? "evenimente" : "necesar"; }
+function needMe(then){ if (kid(ui.me)) return true; openPicker(then); return false; }
+
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-a]"); if (!t) return;
+  const a = t.dataset.a, id = t.dataset.id;
+  if (a === "closeScrim") { if (e.target === t) closeModal(); return; }
+  if (t.tagName === "SELECT" || t.tagName === "FORM") return;
+  switch (a) {
+    case "tab": setTab(t.dataset.k); break;
+    case "pick": openPicker(); break;
+    case "close": closeModal(); break;
+    case "pickKid": ui.me = id; LS.set("fl_me", id || null); closeModal(); render(); if (afterPick) { const f = afterPick; afterPick = null; f(); } break;
+    case "goSec": { const s = sec(id); setTab(tabOfSec(s)); goTo("sec-"+id); break; }
+    case "goItem": { const it = D.itemi.find(i=>i.id===id); if (!it) break; setTab(tabOfSec(sec(it.sectiune))); goTo("item-"+id); break; }
+    case "toggleC": ui.openC.has(id) ? ui.openC.delete(id) : ui.openC.add(id); render(); if (ui.openC.has(id)) { const ta = document.getElementById("cm-"+id); if (ta && matchMedia("(min-width:721px)").matches) ta.focus(); } break;
+    case "takeIt": t.disabled = true; await setStare(id, { responsabil: ui.me, status: (D.stari[id]||{}).status === "done" ? "done" : "progress" }) && toast("Mulțumim! Te ocupi tu."); break;
+    case "tick": {
+      const k = t.dataset.kid; const ex = D.inscrieri.find(s => s.itemId===id && s.copilId===k);
+      t.disabled = true;
+      if (ex) await write(db => db.doc("inscrieri/"+ex.id).delete(), "Debifat");
+      else await write(db => db.collection("inscrieri").doc().set({ itemId:id, copilId:k, nota:"", cheie:"", autor:authorId(), creat:new Date().toISOString() }), "Bifat ✓");
+      break;
+    }
+    case "slot": {
+      if (!needMe()) break; const key = t.dataset.key;
+      if (D.inscrieri.some(s=>s.itemId===id && s.cheie===key)) { toast("Luna asta a fost deja luată.", true); break; }
+      t.disabled = true;
+      await write(db => db.collection("inscrieri").doc().set({ itemId:id, copilId:ui.me, nota:"", cheie:key, autor:authorId(), creat:new Date().toISOString() }), "Luna e a ta. Mulțumim!");
+      break;
+    }
+    case "unsign": t.disabled = true; await write(db => db.doc("inscrieri/"+id).delete(), "Retras"); break;
+    case "delC": {
+      if (ui.confirm !== "c"+id) { ui.confirm = "c"+id; t.innerHTML = '<span style="font-size:11px;font-weight:800;color:var(--berry)">Sigur?</span>'; t.style.width = "auto"; setTimeout(()=>{ if (ui.confirm==="c"+id) { ui.confirm=null; render(); } }, 3500); break; }
+      ui.confirm = null; await write(db => db.doc("comentarii/"+id).delete(), "Comentariu șters"); break;
+    }
+    case "settings": settingsForm(); break;
+    case "login": loginForm(); break;
+    case "logout": await sb.auth.signOut(); cap.admin = false; ui.adminEmail = ""; render(); toast("Ai ieșit din administrare"); break;
+    case "secEdit": secForm(id); break;
+    case "itemEdit": itemForm(id, t.dataset.sec); break;
+    case "finEdit": finForm(id, t.dataset.tip); break;
+    case "delItem":
+      if (ui.confirm !== "item"+id) { ui.confirm = "item"+id; t.textContent = "Sigur? Apasă iar"; break; }
+      await write(async db => { for (const s of D.inscrieri.filter(x=>x.itemId===id)) await db.doc("inscrieri/"+s.id).delete(); for (const c of D.comentarii.filter(x=>x.itemId===id)) await db.doc("comentarii/"+c.id).delete(); await db.doc("stari/"+id).delete(); await db.doc("itemi/"+id).delete(); }, "Item șters"); closeModal(); break;
+    case "delSec":
+      if (ui.confirm !== "sec"+id) { ui.confirm = "sec"+id; t.textContent = "Șterge și itemii ei?"; break; }
+      await write(async db => { for (const it of D.itemi.filter(x=>x.sectiune===id)) { await db.doc("stari/"+it.id).delete(); await db.doc("itemi/"+it.id).delete(); } await db.doc("sectiuni/"+id).delete(); }, "Secțiune ștearsă"); closeModal(); break;
+    case "delFin":
+      if (ui.confirm !== "fin"+id) { ui.confirm = "fin"+id; t.textContent = "Sigur? Apasă iar"; break; }
+      await write(db => db.doc("financiar/"+id).delete(), "Șters"); closeModal(); break;
+    case "paid": {
+      const k = t.dataset.kid; const it = D.itemi.find(i=>i.id===id); const ex = D.financiar.find(r => r.tip==="in" && r.itemId===id && r.copilId===k);
+      t.disabled = true;
+      if (ex) await write(db => db.doc("financiar/"+ex.id).delete(), "Contribuție scoasă");
+      else await write(db => db.collection("financiar").doc().set({ tip:"in", suma:+it.colecta||0, descriere:"Contribuție "+it.titlu, data:todayStr(), itemId:id, copilId:k, creat:new Date().toISOString() }), "Contribuție notată ✓");
+      break;
+    }
+  }
+});
+
+document.addEventListener("change", async e => {
+  const t = e.target.closest("select[data-a]"); if (!t) return;
+  const id = t.dataset.id;
+  if (t.dataset.a === "status") await setStare(id, { status: t.value }) && toast("Status: "+STATUS[t.value]);
+  if (t.dataset.a === "resp") await setStare(id, Object.assign({ responsabil: t.value }, t.value && (D.stari[id]||{}).status !== "done" ? { status:"progress" } : {})) && toast(t.value ? "Se ocupă "+kidName(t.value) : "Nimeni nu se mai ocupă");
+});
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.id === "pickQ") { const q = t.value.trim().toLowerCase(); document.querySelectorAll("#pickList button").forEach(b => b.hidden = q && !b.dataset.n.includes(q)); return; }
+  const f = t.closest("form[data-a]"); if (!f) return;
+  if (f.dataset.a === "comment") ui.drafts[f.dataset.id] = t.value;
+  if (f.dataset.a === "sign") ui.notes[f.dataset.id] = t.value;
+});
+
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#modalRoot").innerHTML) closeModal(); });
+
+document.addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target; const fid = f.getAttribute("id"); const fd = Object.fromEntries(new FormData(f).entries());
+  const btn = f.querySelector('[type="submit"]'); if (btn) btn.disabled = true;
+  const now = new Date().toISOString();
+  try {
+    if (f.dataset.a === "comment") {
+      const text = (fd.text||"").trim(); if (!text) return;
+      const id = f.dataset.id; const kidId = kid(ui.me) ? ui.me : "";
+      if (await write(db => db.collection("comentarii").doc().set({ itemId:id, copilId:kidId, text, autor:authorId(), creat:now }), "Comentariu trimis")) { ui.drafts[id] = ""; document.activeElement && document.activeElement.blur(); render(); }
+    } else if (f.dataset.a === "sign") {
+      if (!needMe()) return; const id = f.dataset.id;
+      if (await write(db => db.collection("inscrieri").doc().set({ itemId:id, copilId:ui.me, nota:(fd.nota||"").trim(), cheie:"", autor:authorId(), creat:now }), "Te-ai înscris. Mulțumim!")) { ui.notes[id] = ""; document.activeElement && document.activeElement.blur(); render(); }
+    } else if (fid === "fItem") {
+      const id = fd.id || ("i"+uid());
+      const prev = D.itemi.find(i=>i.id===id) || {};
+      const maxO = Math.max(0, ...D.itemi.filter(i=>i.sectiune===fd.sectiune).map(i=>+i.ordine||0));
+      const body = { sectiune:fd.sectiune, titlu:fd.titlu.trim(), detalii:fd.detalii.trim(), tip:fd.tip, cantitate:fd.cantitate.trim(), cost:fd.cost.trim(), colecta: fd.colecta ? +fd.colecta : 0, ordine: prev.sectiune===fd.sectiune ? (prev.ordine||maxO+1) : maxO+1, creat: prev.creat || now };
+      const ok = await write(async db => { await db.doc("itemi/"+id).set(body); if (((D.stari[id]||{}).status||"todo") !== fd.status) { const cur = Object.assign({ status:"todo", responsabil:"" }, D.stari[id]||{}); delete cur.id; await db.doc("stari/"+id).set(Object.assign(cur, { status:fd.status, modificat:now })); } }, "Item salvat");
+      if (ok) closeModal();
+    } else if (fid === "fSec") {
+      const id = fd.id || ("s"+uid()); const prev = sec(id) || {};
+      const body = { titlu:fd.titlu.trim(), data:fd.data||"", ora:fd.ora||"", descriere:fd.descriere.trim(), ordine: prev.ordine || (Math.max(0, ...D.sectiuni.map(s=>+s.ordine||0))+1) };
+      if (await write(db => db.doc("sectiuni/"+id).set(body), "Secțiune salvată")) closeModal();
+    } else if (fid === "fFin") {
+      const id = fd.id || ("f"+uid()); const prev = D.financiar.find(r=>r.id===id) || {};
+      const body = { tip:fd.tip, suma:+fd.suma||0, descriere:fd.descriere.trim(), data:fd.data, itemId:fd.itemId||"", copilId:fd.copilId||"", creat: prev.creat || now };
+      if (await write(db => db.doc("financiar/"+id).set(body), "Salvat")) closeModal();
+    } else if (fid === "fLogin") {
+      const r = await sb.auth.signInWithPassword({ email: fd.email.trim(), password: fd.parola });
+      if (r.error) { toast("Email sau parolă greșită.", true); return; }
+      await checkAdmin();
+      if (!cap.admin) { toast("Contul acesta nu are drept de administrare.", true); await sb.auth.signOut(); return; }
+      closeModal(); render(); toast("Bun venit! Poți adăuga și edita.");
+    } else if (fid === "fSet") {
+      const names = fd.copii.split("\n").map(s=>s.trim()).filter(Boolean);
+      const ok = await write(async db => {
+        if ((D.setari.anunt||"") !== fd.anunt.trim()) await db.doc("setari/general").set({ anunt: fd.anunt.trim() });
+        const byName = new Map(D.copii.map(c => [c.nume, c]));
+        const keep = new Set();
+        for (let i=0;i<names.length;i++) { const ex = byName.get(names[i]); if (ex) { keep.add(ex.id); if (+ex.ordine !== i+1) await db.doc("copii/"+ex.id).set({ nume:ex.nume, ordine:i+1 }); } else { await db.doc("copii/k"+uid()).set({ nume:names[i], ordine:i+1 }); } }
+        for (const c of D.copii) if (!keep.has(c.id)) await db.doc("copii/"+c.id).delete();
+      }, "Salvat");
+      if (ok) closeModal();
+    }
+  } finally { if (btn && document.body.contains(btn)) btn.disabled = false; }
+});
+
+window.addEventListener("hashchange", () => { const k = location.hash.slice(1); if (TABS.some(t=>t[0]===k)) setTab(k); });
+
+boot();
+})();
+</script>
+</body>
+</html>
