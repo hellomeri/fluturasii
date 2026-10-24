@@ -158,6 +158,8 @@ main{padding-block:22px 48px}
 .item-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
 .item-head h4{font-size:18px;font-weight:700;min-width:0;overflow-wrap:anywhere}
 .item.is-done h4{color:var(--muted)}
+.item.info{background:var(--wing-soft);border-color:transparent;box-shadow:none}
+.item.info .foot{border-top-color:rgba(0,0,0,.08)}
 .meta{display:flex;flex-wrap:wrap;gap:6px}
 .det{margin:0;color:var(--ink);font-size:14.5px;white-space:pre-line;overflow-wrap:anywhere}
 .status{appearance:none;-webkit-appearance:none;border:0;border-radius:999px;padding:5px 26px 5px 11px;font-size:12.5px;font-weight:800;flex:none;background-repeat:no-repeat;background-position:right 9px center;background-size:9px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E")}
@@ -380,7 +382,7 @@ const ICON = {
 };
 
 const STATUS = { todo:"De făcut", progress:"În lucru", done:"Rezolvat" };
-const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar" };
+const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar", info:"Doar de știut" };
 
 /* ---------- stare ---------- */
 const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], financiar:[], setari:{} };
@@ -552,7 +554,7 @@ function calTile(s){
 }
 function whenLine(s){
   const n = daysUntil(s.data);
-  return esc(fmtLong(s.data)) + (s.ora ? ", ora "+esc(s.ora) : ", ora se anunță") + ' · <b>'+countdown(n)+'</b>';
+  return esc(fmtLong(s.data)) + (s.ora === "tbd" ? ", ora se anunță" : s.ora ? ", ora "+esc(s.ora) : "") + ' · <b>'+countdown(n)+'</b>';
 }
 
 /* Acasă */
@@ -564,10 +566,10 @@ function viewHome(){
   h += '<section><div class="sec-head"><div><h2>Evenimente următoare</h2><div class="sub">Ce urmează la grupă și cât e gata din pregătiri.</div></div></div>';
   if (!up.length) h += '<div class="empty">Nu e niciun eveniment programat.</div>';
   else h += '<div class="timeline">' + up.map(s => {
-    const its = itemsOf(s.id); const tot = its.length; const done = its.filter(i=>i.status==="done").length;
+    const its = itemsOf(s.id).filter(i=>i.tip!=="info"); const tot = its.length; const done = its.filter(i=>i.status==="done").length;
     const pct = tot ? Math.round(its.reduce((a,i)=>a+progressOf(i),0)/tot*100) : 0;
     return '<button class="ev" data-a="goSec" data-id="'+esc(s.id)+'">'+calTile(s)+'<div style="min-width:0"><h3>'+esc(s.titlu)+'</h3><div class="when">'+whenLine(s)+'</div>'
-      + (tot ? '<div class="bar wing"><i style="width:'+pct+'%"></i></div><div class="prog num"><span>'+done+' din '+tot+' rezolvate</span><span>'+pct+'%</span></div>' : '<div class="prog"><span>Lista se completează</span></div>')
+      + (tot ? '<div class="bar wing"><i style="width:'+pct+'%"></i></div><div class="prog num"><span>'+done+' din '+tot+' rezolvate</span><span>'+pct+'%</span></div>' : (itemsOf(s.id).length ? '<div class="prog"><span>Doar informativ, nu e nimic de preluat</span></div>' : '<div class="prog"><span>Lista se completează</span></div>'))
       + '</div></button>';
   }).join("") + '</div>';
   h += '</section>';
@@ -592,7 +594,7 @@ function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data |
 function myTodo(){
   const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
   for (const it of allItems()) {
-    if (it.status === "done" || !sectionUpcoming(it)) continue;
+    if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
     const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
     if (it.tip === "single" || it.tip === "multi") {
       const mine = signups(it.id).filter(x=>x.copilId===me);
@@ -607,7 +609,7 @@ function myTodo(){
 function needsHelp(){
   const out = [], first = schoolMonths()[0];
   for (const it of allItems()) {
-    if (it.status === "done" || !sectionUpcoming(it)) continue;
+    if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
     if (it.tip === "single" || it.tip === "multi") {
       const tgt = targetOf(it), taken = takenOf(it), any = signups(it.id).length || (it.responsabil && kid(it.responsabil));
       if (tgt && taken < tgt) out.push(qrow(it, "Mai trebuie "+(tgt-taken)+" din "+tgt));
@@ -633,7 +635,7 @@ function viewEvents(){
   return h;
 }
 function secBlock(s){
-  const its = itemsOf(s.id); const open = its.filter(i=>i.status!=="done"); const done = its.filter(i=>i.status==="done");
+  const its = itemsOf(s.id); const open = its.filter(i=>i.tip==="info" || i.status!=="done"); const done = its.filter(i=>i.tip!=="info" && i.status==="done");
   let h = '<section class="secblock" id="sec-'+esc(s.id)+'"><div class="sec-head"><div class="sec-title">'+calTile(s)+'<div style="min-width:0"><h2>'+esc(s.titlu)+'</h2>'
     + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? esc(s.descriere) : '')+'</div></div></div>'
     + (cap.admin ? '<div class="row"><button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button></div>' : '')
@@ -649,7 +651,8 @@ function kidOptions(sel, emptyLabel){
 }
 function itemCard(it){
   const w = cap.canWrite;
-  let meta = '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
+  const isInfo = it.tip === "info";
+  let meta = isInfo ? '<span class="chip wing">De știut</span>' : '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
   if (it.cantitate) meta += '<span class="chip lilac">'+esc(it.cantitate)+'</span>';
   if (it.cost) meta += '<span class="chip wing">'+esc(it.cost)+'</span>';
   if (+it.colecta > 0) meta += '<span class="chip meadow">Colectă '+lei(it.colecta)+' / copil</span>';
@@ -697,7 +700,7 @@ function itemCard(it){
       : '<div><button class="btn small" data-a="pick">Alege copilul ca să comentezi</button></div>';
     foot += '</div>';
   }
-  return '<article class="item'+(it.status==="done"?' is-done':'')+'" id="item-'+esc(it.id)+'"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+statusSel+'</div><div class="meta">'+meta+'</div>'
+  return '<article class="item'+(it.status==="done"&&!isInfo?' is-done':'')+(isInfo?' info':'')+'" id="item-'+esc(it.id)+'"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+(isInfo ? '' : statusSel)+'</div><div class="meta">'+meta+'</div>'
     + (it.detalii ? '<p class="det">'+esc(it.detalii)+'</p>' : '') + body + foot + '</article>';
 }
 
@@ -760,7 +763,7 @@ function itemForm(id, secId){
     + '<label class="field" for="fi-cost"><span>Cost estimat</span><input class="inp" id="fi-cost" name="cost" maxlength="60" placeholder="ex. ~300 lei / an" value="'+esc(v.cost||"")+'"></label></div>'
     + '<div class="grid2"><label class="field" for="fi-col"><span>Colectă per copil (lei)</span><input class="inp num" id="fi-col" name="colecta" type="number" min="0" step="1" inputmode="numeric" placeholder="0 = fără colectă" value="'+esc(v.colecta||"")+'"></label>'
     + '<label class="field" for="fi-st"><span>Status</span><select class="sel" id="fi-st" name="status">'+Object.entries(STATUS).map(([k,l])=>'<option value="'+k+'"'+(k===st.status?' selected':'')+'>'+l+'</option>').join("")+'</select></label></div>'
-    + '<p class="hint">„Cine se ocupă”: unul sau mai mulți părinți preiau, fiecare spune câte bucăți. „Se înscrie oricine”: fiecare scrie ce aduce. „Fiecare copil”: toți bifează. „Pe rând, lunar”: câte un copil pe lună.</p>'
+    + '<p class="hint">„Cine se ocupă”: unul sau mai mulți părinți preiau, fiecare spune câte bucăți. „Se înscrie oricine”: fiecare scrie ce aduce. „Fiecare copil”: toți bifează. „Pe rând, lunar”: câte un copil pe lună. „Doar de știut”: informație pentru părinți, fără bife.</p>'
     + '<div class="acts">'+(it?'<button type="button" class="btn danger left" data-a="delItem" data-id="'+esc(it.id)+'">'+(ui.confirm==="item"+it.id?'Sigur? Apasă iar':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
     + '<input type="hidden" name="id" value="'+esc(it?it.id:"")+'"></form>');
 }
@@ -769,7 +772,8 @@ function secForm(id){
   modal('<h3>'+(s?'Editează secțiunea':'Secțiune nouă')+'</h3><form id="fSec" class="view" style="gap:12px">'
     + '<label class="field" for="fs-t"><span>Titlu</span><input class="inp" id="fs-t" name="titlu" required maxlength="80" value="'+esc(v.titlu||"")+'" autofocus placeholder="ex. Ziua copilului"></label>'
     + '<div class="grid2"><label class="field" for="fs-d"><span>Data (gol = necesar continuu)</span><input class="inp" id="fs-d" name="data" type="date" value="'+esc(v.data||"")+'"></label>'
-    + '<label class="field" for="fs-o"><span>Ora</span><input class="inp" id="fs-o" name="ora" type="time" value="'+esc(v.ora||"")+'"></label></div>'
+    + '<label class="field" for="fs-o"><span>Ora (gol = fără oră)</span><input class="inp" id="fs-o" name="ora" type="time" value="'+esc(v.ora && v.ora !== "tbd" ? v.ora : "")+'"></label></div>'
+    + '<label class="row" for="fs-tbd" style="gap:8px;font-weight:700;font-size:14px"><input type="checkbox" id="fs-tbd" name="oraTbd"'+(v.ora==="tbd"?' checked':'')+'> Ora se anunță mai târziu</label>'
     + '<label class="field" for="fs-ds"><span>Descriere</span><textarea class="ta" id="fs-ds" name="descriere" maxlength="600">'+esc(v.descriere||"")+'</textarea></label>'
     + '<p class="hint">Secțiunile cu dată apar la Evenimente, cele fără dată la Necesar.</p>'
     + '<div class="acts">'+(s?'<button type="button" class="btn danger left" data-a="delSec" data-id="'+esc(s.id)+'">'+(ui.confirm==="sec"+s.id?'Șterge și itemii ei?':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
@@ -913,7 +917,7 @@ document.addEventListener("submit", async e => {
       if (ok) closeModal();
     } else if (fid === "fSec") {
       const id = fd.id || ("s"+uid()); const prev = sec(id) || {};
-      const body = { titlu:fd.titlu.trim(), data:fd.data||"", ora:fd.ora||"", descriere:fd.descriere.trim(), ordine: prev.ordine || (Math.max(0, ...D.sectiuni.map(s=>+s.ordine||0))+1) };
+      const body = { titlu:fd.titlu.trim(), data:fd.data||"", ora: fd.oraTbd ? "tbd" : (fd.ora||""), descriere:fd.descriere.trim(), ordine: prev.ordine || (Math.max(0, ...D.sectiuni.map(s=>+s.ordine||0))+1) };
       if (await write(db => db.doc("sectiuni/"+id).set(body), "Secțiune salvată")) closeModal();
     } else if (fid === "fFin") {
       const id = fd.id || newUuid(); const prev = D.financiar.find(r=>r.id===id) || {};
