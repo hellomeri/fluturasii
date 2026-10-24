@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#2B2238">
 <meta name="description" content="Portalul grupei mici B, Grădinița 246: evenimente, necesar, cine se ocupă de ce și banii grupei.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-26 -23 52 44'%3E%3Cellipse cx='-11' cy='-8' rx='12' ry='9' transform='rotate(-25 -11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='11' cy='-8' rx='12' ry='9' transform='rotate(25 11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='-9' cy='8' rx='8' ry='6.5' transform='rotate(30 -9 8)' fill='%23A88BEF'/%3E%3Cellipse cx='9' cy='8' rx='8' ry='6.5' transform='rotate(-30 9 8)' fill='%23A88BEF'/%3E%3Crect x='-2' y='-12' width='4' height='26' rx='2' fill='%232B2238'/%3E%3C/svg%3E">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <title>Fluturașii · Grupa mică B</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -419,8 +419,8 @@ function progressOf(it){
 
 /* ---------- date: platformă ---------- */
 /* ---------- date: Supabase ---------- */
-const SUPABASE_URL = "__SUPABASE_URL__";
-const SUPABASE_KEY = "__SUPABASE_KEY__";
+const SUPABASE_URL = "https://huzurhvdpypruvuaidwp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_JRjoraFkCA5nNPO_X7rvog_rg8A451E";
 const UUID_TABLES = new Set(["inscrieri","comentarii","financiar"]);
 const mapKey = { itemId:"item_id", copilId:"copil_id" }, unmapKey = { item_id:"itemId", copil_id:"copilId" };
 const toDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[mapKey[k]||k] = v; return r; };

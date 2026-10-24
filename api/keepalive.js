@@ -1,6 +1,6 @@
 // Rulează zilnic (vezi vercel.json) ca proiectul Supabase gratuit să nu intre în pauză.
-const SUPABASE_URL = "__SUPABASE_URL__";
-const SUPABASE_KEY = "__SUPABASE_KEY__";
+const SUPABASE_URL = "https://huzurhvdpypruvuaidwp.supabase.co";
+const SUPABASE_KEY = "sb_publishable_JRjoraFkCA5nNPO_X7rvog_rg8A451E";
 
 module.exports = async (req, res) => {
   try {
