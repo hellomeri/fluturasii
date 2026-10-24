@@ -135,6 +135,7 @@ main{padding-block:22px 48px}
 .bar.wing i{background:var(--wing)}
 .ev .prog{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:6px}
 .ev .first{grid-column:1/-1}
+.ev .prog.info-line{color:var(--ink);font-size:14px;font-weight:700;margin-top:0}
 
 /* Liste rapide */
 .quick{display:grid;gap:8px}
@@ -569,7 +570,7 @@ function viewHome(){
     const its = itemsOf(s.id).filter(i=>i.tip!=="info"); const tot = its.length; const done = its.filter(i=>i.status==="done").length;
     const pct = tot ? Math.round(its.reduce((a,i)=>a+progressOf(i),0)/tot*100) : 0;
     return '<button class="ev" data-a="goSec" data-id="'+esc(s.id)+'">'+calTile(s)+'<div style="min-width:0"><h3>'+esc(s.titlu)+'</h3><div class="when">'+whenLine(s)+'</div>'
-      + (tot ? '<div class="bar wing"><i style="width:'+pct+'%"></i></div><div class="prog num"><span>'+done+' din '+tot+' rezolvate</span><span>'+pct+'%</span></div>' : (itemsOf(s.id).length ? '<div class="prog"><span>Doar informativ, nu e nimic de preluat</span></div>' : '<div class="prog"><span>Lista se completează</span></div>'))
+      + (tot ? '<div class="bar wing"><i style="width:'+pct+'%"></i></div><div class="prog num"><span>'+done+' din '+tot+' rezolvate</span><span>'+pct+'%</span></div>' : (itemsOf(s.id).length ? '<div class="prog info-line"><span>'+esc(s.descriere || itemsOf(s.id).filter(i=>i.tip==="info").map(i=>i.titlu).join(" · "))+'</span></div>' : '<div class="prog"><span>Lista se completează</span></div>'))
       + '</div></button>';
   }).join("") + '</div>';
   h += '</section>';
@@ -652,7 +653,7 @@ function kidOptions(sel, emptyLabel){
 function itemCard(it){
   const w = cap.canWrite;
   const isInfo = it.tip === "info";
-  let meta = isInfo ? '<span class="chip wing">De știut</span>' : '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
+  let meta = isInfo ? '' : '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
   if (it.cantitate) meta += '<span class="chip lilac">'+esc(it.cantitate)+'</span>';
   if (it.cost) meta += '<span class="chip wing">'+esc(it.cost)+'</span>';
   if (+it.colecta > 0) meta += '<span class="chip meadow">Colectă '+lei(it.colecta)+' / copil</span>';
@@ -700,7 +701,7 @@ function itemCard(it){
       : '<div><button class="btn small" data-a="pick">Alege copilul ca să comentezi</button></div>';
     foot += '</div>';
   }
-  return '<article class="item'+(it.status==="done"&&!isInfo?' is-done':'')+(isInfo?' info':'')+'" id="item-'+esc(it.id)+'"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+(isInfo ? '' : statusSel)+'</div><div class="meta">'+meta+'</div>'
+  return '<article class="item'+(it.status==="done"&&!isInfo?' is-done':'')+(isInfo?' info':'')+'" id="item-'+esc(it.id)+'"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+(isInfo ? '' : statusSel)+'</div>'+(meta ? '<div class="meta">'+meta+'</div>' : '')
     + (it.detalii ? '<p class="det">'+esc(it.detalii)+'</p>' : '') + body + foot + '</article>';
 }
 
