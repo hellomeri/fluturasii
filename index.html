@@ -892,7 +892,7 @@ document.addEventListener("submit", async e => {
       const body = { titlu:fd.titlu.trim(), data:fd.data||"", ora:fd.ora||"", descriere:fd.descriere.trim(), ordine: prev.ordine || (Math.max(0, ...D.sectiuni.map(s=>+s.ordine||0))+1) };
       if (await write(db => db.doc("sectiuni/"+id).set(body), "Secțiune salvată")) closeModal();
     } else if (fid === "fFin") {
-      const id = fd.id || ("f"+uid()); const prev = D.financiar.find(r=>r.id===id) || {};
+      const id = fd.id || newUuid(); const prev = D.financiar.find(r=>r.id===id) || {};
       const body = { tip:fd.tip, suma:+fd.suma||0, descriere:fd.descriere.trim(), data:fd.data, itemId:fd.itemId||"", copilId:fd.copilId||"", creat: prev.creat || now };
       if (await write(db => db.doc("financiar/"+id).set(body), "Salvat")) closeModal();
     } else if (fid === "fLogin") {
