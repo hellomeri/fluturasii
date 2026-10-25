@@ -158,6 +158,18 @@ main{padding-block:22px 48px}
 .qrow .dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--wing)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 @media (max-width:860px){.two{grid-template-columns:1fr}}
+.calnow{background:var(--wing-soft);color:var(--wing-ink);border-radius:14px;padding:12px 16px;font-size:15px;font-weight:600}
+.calnow.vac{background:var(--meadow-soft);color:var(--meadow)}
+.calall{margin-top:8px}
+.cal-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px;max-width:640px}
+.calrow{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;padding:7px 12px;border-radius:10px;font-size:14px}
+.calrow .cdot{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.calrow.vac .cdot{background:var(--meadow)}
+.calrow.free .cdot{background:var(--wing)}
+.calrow.vac .cn{font-weight:800}
+.calrow .cd{color:var(--muted);font-weight:700;white-space:nowrap}
+.calrow.now{background:var(--surface);box-shadow:inset 0 0 0 2px var(--wing)}
+.calrow.past{opacity:.5}
 .empty{color:var(--muted);background:var(--surface-2);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600}
 
 /* Carduri item */
@@ -490,11 +502,50 @@ const isMine = row => cap.admin || (!!row.autor && row.autor === ui.authorHash);
 const authorId = () => ui.authorHash || "";
 const kidsTotal = () => D.copii.filter(c => c.rol !== "educatoare").length;
 
+/* Structura anului școlar 2026–2027 (Ordinul 3.194/2026; vacanța mobilă pentru București stabilită de ISMB) */
+const AN_SCOLAR = {
+  titlu: "2026–2027",
+  perioade: [
+    { tip:"curs", n:"Cursuri", s:"2026-09-07", e:"2026-10-23" },
+    { tip:"vac", n:"Vacanța de toamnă", s:"2026-10-24", e:"2026-11-01" },
+    { tip:"curs", n:"Cursuri", s:"2026-11-02", e:"2026-12-22" },
+    { tip:"vac", n:"Vacanța de iarnă", s:"2026-12-23", e:"2027-01-10" },
+    { tip:"curs", n:"Cursuri", s:"2027-01-11", e:"2027-02-19" },
+    { tip:"vac", n:"Vacanța de schi (București)", s:"2027-02-20", e:"2027-02-28" },
+    { tip:"curs", n:"Cursuri", s:"2027-03-01", e:"2027-04-23" },
+    { tip:"vac", n:"Vacanța de primăvară", s:"2027-04-24", e:"2027-05-04" },
+    { tip:"curs", n:"Cursuri", s:"2027-05-05", e:"2027-06-18" },
+    { tip:"vac", n:"Vacanța de vară", s:"2027-06-19", e:"2027-09-05" }
+  ],
+  libere: [
+    { d:"2026-11-30", n:"Sfântul Andrei" },
+    { d:"2026-12-01", n:"Ziua Națională" },
+    { d:"2027-06-01", n:"Ziua Copilului" }
+  ]
+};
+const isoOf = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const isSchoolDay = iso => { const d = parseD(iso), wd = d.getDay(); if (wd === 0 || wd === 6) return false; if (AN_SCOLAR.libere.some(l => l.d === iso)) return false; return AN_SCOLAR.perioade.some(p => p.tip === "curs" && iso >= p.s && iso <= p.e); };
+function hasSchoolDaysLeft(y, m){ const d = new Date(Math.max(new Date(y, m, 1), parseD(todayStr()))); while (d.getMonth() === m) { if (isSchoolDay(isoOf(d))) return true; d.setDate(d.getDate()+1); } return false; }
 function schoolMonths(){
   const now = new Date(); let y = now.getFullYear(), m = now.getMonth();
   const endY = m <= 5 ? y : y+1; const out = [];
-  while (y < endY || (y === endY && m <= 5)) { out.push({ key: y+"-"+pad(m+1), label: LUNI[m][0].toUpperCase()+LUNI[m].slice(1), y }); m++; if (m>11){m=0;y++;} }
+  while (y < endY || (y === endY && m <= 5)) { if (hasSchoolDaysLeft(y, m)) out.push({ key: y+"-"+pad(m+1), label: LUNI[m][0].toUpperCase()+LUNI[m].slice(1), y }); m++; if (m>11){m=0;y++;} }
   return out;
+}
+const fmtRange = (a, b) => { const x = parseD(a), y = parseD(b); return x.getDate()+" "+LUNI_S[x.getMonth()]+". – "+y.getDate()+" "+LUNI_S[y.getMonth()]+". "+(x.getFullYear() !== y.getFullYear() || y.getFullYear() !== new Date().getFullYear() ? y.getFullYear() : ""); };
+function calendarCard(){
+  const t = todayStr(); const P = AN_SCOLAR.perioade;
+  const cur = P.find(p => t >= p.s && t <= p.e); const nextVac = P.find(p => p.tip === "vac" && p.s > t);
+  let status = "";
+  if (cur && cur.tip === "vac") { const back = P.find(p => p.tip === "curs" && p.s > t); status = '<div class="calnow vac"><b>Acum e '+esc(cur.n.toLowerCase())+'.</b> '+(back ? 'Copiii revin la grădiniță '+esc(fmtLong(back.s))+', '+countdown(daysUntil(back.s)).toLowerCase()+'.' : '')+'</div>'; }
+  else if (nextVac) status = '<div class="calnow"><b>Următoarea vacanță:</b> '+esc(nextVac.n.toLowerCase())+', '+esc(fmtRange(nextVac.s, nextVac.e))+' · '+countdown(daysUntil(nextVac.s)).toLowerCase()+'.</div>';
+  const nextFree = AN_SCOLAR.libere.find(l => l.d >= t);
+  const rows = P.map(p => { const st = p.e < t ? "past" : (t >= p.s ? "now" : ""); return '<li class="calrow '+p.tip+' '+st+'"><span class="cdot"></span><span class="cn">'+esc(p.n)+'</span><span class="cd num">'+esc(fmtRange(p.s, p.e))+'</span></li>'; }).join("");
+  const free = AN_SCOLAR.libere.map(l => '<li class="calrow free'+(l.d < t ? ' past' : '')+'"><span class="cdot"></span><span class="cn">'+esc(l.n)+' (liber)</span><span class="cd num">'+esc(fmtLong(l.d))+'</span></li>').join("");
+  return '<section><div class="sec-head"><div><h2>Anul școlar '+AN_SCOLAR.titlu+'</h2><div class="sub">Vacanțele și zilele libere ale grădiniței.</div></div></div>'
+    + status + '<details class="all calall"><summary>Tot calendarul</summary><ul class="cal-list">'+rows+'</ul><div class="eyebrow" style="margin:14px 0 6px">Zile libere în timpul cursurilor</div><ul class="cal-list">'+free+'</ul></details>'
+    + (nextFree && !(cur && cur.tip === "vac") && daysUntil(nextFree.d) <= 14 ? '<div class="hint" style="margin-top:8px">Atenție: '+esc(fmtLong(nextFree.d))+' e liber ('+esc(nextFree.n)+').</div>' : '')
+    + '</section>';
 }
 const targetOf = it => { const m = /^\s*(\d+)/.exec(String(it.cantitate||"")); return m ? +m[1] : 0; };
 const takenOf = it => signups(it.id).reduce((a,x)=>a+(+x.bucati||0),0);
@@ -669,6 +720,7 @@ function viewHome(){
   }).join("") + '</div>';
   h += '</section>';
 
+  h += calendarCard();
   const mineH = myTodo(); const help = needsHelp();
   h += '<div class="two">';
   h += '<section><div class="sec-head"><div><h2>'+(kid(ui.me) ? 'Ce ai tu de făcut' : 'Ce ai de făcut')+'</h2><div class="sub">'+(kid(ui.me) ? 'Pentru '+esc(kidName(ui.me)) : 'Alege-ți copilul ca să vezi lista ta.')+'</div></div></div>';
