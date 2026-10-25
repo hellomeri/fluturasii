@@ -164,6 +164,24 @@ main{padding-block:22px 48px}
   .item.info .i-act{border-left-color:rgba(0,0,0,.08)}
 }
 .evnav{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 10px;margin:-8px 0 0;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);scrollbar-width:thin}
+.evnav.wrap{flex-wrap:wrap;overflow:visible;position:static}
+.evbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0 10px;margin-top:-8px}
+.evsel{display:block}
+.evsel .sel{font-weight:800;background-color:var(--surface)}
+.evlayout{display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
+.evside{display:none}
+.evmain{min-width:0}
+@media (min-width:1000px){
+  .evlayout{grid-template-columns:230px minmax(0,1fr)}
+  .evside{display:flex;flex-direction:column;gap:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start}
+  .evside .eyebrow{padding:0 10px 6px}
+  .evrow{display:grid;grid-template-columns:24px 1fr;column-gap:8px;align-items:center;text-align:left;border:0;background:transparent;border-radius:12px;padding:8px 10px;font-weight:800;font-size:14.5px}
+  .evrow .ico{grid-row:1/3;font-size:18px}
+  .evrow .dt{grid-column:2;color:var(--muted);font-size:12.5px;font-weight:700}
+  .evrow:hover{background:var(--surface)}
+  .evrow.past{opacity:.6}
+  .evbar-m{display:none}
+}
 .evchip{display:inline-flex;align-items:center;gap:7px;flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px 7px 10px;font-weight:800;font-size:14px;white-space:nowrap}
 .evchip:hover{border-color:var(--wing)}
 .evchip .ico{font-size:17px;line-height:1}
@@ -210,6 +228,8 @@ main{padding-block:22px 48px}
 .x svg{width:14px;height:14px}
 .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none;color:#14213D}
 .av[style*="--me"]{color:#fff}
+.av.edu{background:var(--lilac-soft);font-size:16px}
+.row .sel.who{flex:0 0 auto;width:auto;max-width:200px;min-height:32px;padding-top:5px;padding-bottom:5px;font-size:14px}
 
 .mine{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .tick{display:inline-flex;align-items:center;gap:8px;border:2px dashed var(--line);background:transparent;border-radius:12px;padding:8px 14px;font-weight:800;font-size:14px}
@@ -449,7 +469,10 @@ const kid = id => D.copii.find(c => c.id === id);
 const isEvent = s => !!s && (s.categorie === "eveniment" || (s.categorie !== "necesar" && !!s.data));
 const secTag = s => s ? '<span class="tag">'+(s.icon ? '<span aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+(s.data ? ' · '+esc(fmtShort(s.data)) : '')+'</span>' : '';
 const kidName = id => (kid(id)||{}).nume || "Copil";
-const sortedKids = () => D.copii.slice().sort((a,b)=>(a.ordine||0)-(b.ordine||0) || String(a.nume).localeCompare(b.nume,"ro"));
+const isEdu = id => { const c = typeof id === "string" ? kid(id) : id; return !!c && c.rol === "educatoare"; };
+const isChild = id => !!kid(id) && !isEdu(id);
+const sortedEdus = () => D.copii.filter(c => c.rol === "educatoare").sort((a,b)=>(a.ordine||0)-(b.ordine||0));
+const sortedKids = () => D.copii.filter(c => c.rol !== "educatoare").sort((a,b)=>(a.ordine||0)-(b.ordine||0) || String(a.nume).localeCompare(b.nume,"ro"));
 const sec = id => D.sectiuni.find(s => s.id === id);
 const itemFull = it => Object.assign({ status:"todo", responsabil:"" }, it, D.stari[it.id] || {});
 const itemsOf = sid => D.itemi.filter(i => i.sectiune === sid).map(itemFull).sort((a,b)=>(a.ordine||0)-(b.ordine||0) || String(a.creat||"").localeCompare(String(b.creat||"")));
@@ -457,7 +480,7 @@ const signups = iid => D.inscrieri.filter(s => s.itemId === iid).sort((a,b)=>Str
 const commentsOf = iid => D.comentarii.filter(c => c.itemId === iid).sort((a,b)=>String(a.creat).localeCompare(String(b.creat)));
 const isMine = row => cap.admin || (!!row.autor && row.autor === ui.authorHash);
 const authorId = () => ui.authorHash || "";
-const kidsTotal = () => D.copii.length || 0;
+const kidsTotal = () => D.copii.filter(c => c.rol !== "educatoare").length;
 
 function schoolMonths(){
   const now = new Date(); let y = now.getFullYear(), m = now.getMonth();
@@ -467,7 +490,8 @@ function schoolMonths(){
 }
 const targetOf = it => { const m = /^\s*(\d+)/.exec(String(it.cantitate||"")); return m ? +m[1] : 0; };
 const takenOf = it => signups(it.id).reduce((a,x)=>a+(+x.bucati||0),0);
-function personRow(kidId, sub, action){ return '<div class="person"><span class="av" style="background:'+avColor(kidId)+'">'+esc(initials(kidName(kidId)))+'</span><span class="t"><b>'+esc(kidName(kidId))+'</b>'+(sub?' <span>· '+esc(sub)+'</span>':'')+'</span>'+action+'</div>'; }
+function avHtml(id, label){ return isEdu(id) ? '<span class="av edu" title="Educatoare" aria-label="Educatoare">👩‍🏫</span>' : '<span class="av" style="background:'+avColor(id)+'">'+esc(initials(label || kidName(id)))+'</span>'; }
+function personRow(kidId, sub, action){ return '<div class="person">'+avHtml(kidId)+'<span class="t"><b>'+esc(kidName(kidId))+'</b>'+(sub?' <span>· '+esc(sub)+'</span>':'')+'</span>'+action+'</div>'; }
 function progressOf(it){
   if (it.status === "done") return 1;
   if (it.tip === "fiecare") { const t = kidsTotal(); return t ? signups(it.id).length / t : 0; }
@@ -573,7 +597,7 @@ function render(){
   pending = false;
   const me = kid(ui.me);
   $("#meBtn").innerHTML = me
-    ? '<span class="av" style="background:var(--me)">'+esc(initials(me.nume))+'</span><span class="lbl">'+esc(me.nume)+'</span>'
+    ? (isEdu(me) ? avHtml(me.id) : '<span class="av" style="background:var(--me)">'+esc(initials(me.nume))+'</span>')+'<span class="lbl">'+esc(me.nume)+'</span>'
     : '<span class="av" style="background:var(--wing)">'+ICON.user.replace('<svg','<svg width="16" height="16"')+'</span><span class="lbl">Alege copilul tău</span>';
   const tabsHtml = TABS.map(([k,l,i]) => '<button type="button" class="tab" data-a="tab" data-k="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+ICON[i]+l+'</button>').join("");
   $("#tabs").innerHTML = tabsHtml;
@@ -644,7 +668,7 @@ function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
 function myTodo(){
   const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
-  for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) out.push('<button class="qrow" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--meadow)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>De trimis '+esc(lei(c.suma))+'</small></span></span></button>');
+  if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) out.push('<button class="qrow" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--meadow)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>De trimis '+esc(lei(c.suma))+'</small></span></span></button>');
   for (const it of allItems()) {
     if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
     const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
@@ -653,7 +677,7 @@ function myTodo(){
       if (mine.length) { const q = mine.reduce((a,x)=>a+(+x.bucati||0),0); const notes = mine.map(x=>x.nota).filter(Boolean).join(", "); out.push(qrow(it, [q ? "Preiei "+q+" buc." : (it.tip==="single" ? "Te ocupi tu" : "Te-ai înscris"), notes].filter(Boolean).join(" · "), "lilac")); }
       else if (it.responsabil === me) out.push(qrow(it, "Te ocupi tu", "lilac"));
     }
-    else if (it.tip === "fiecare" && !signups(it.id).some(x=>x.copilId===me)) out.push(qrow(it, "Nebifat încă", "wing"));
+    else if (it.tip === "fiecare" && isChild(me) && !signups(it.id).some(x=>x.copilId===me)) out.push(qrow(it, "Nebifat încă", "wing"));
     else if (it.tip === "rotatie") { const slot = signups(it.id).find(x => x.copilId===me && mk.has(x.cheie)); if (slot) { const [y,m] = slot.cheie.split("-"); out.push(qrow(it, "Luna ta: "+LUNI[+m-1]+" "+y, "lilac")); } }
   }
   return out;
@@ -687,13 +711,25 @@ function eventLists(){
     past: evs.filter(s => s.data && s.data < t).sort((a,b)=>b.data.localeCompare(a.data))
   };
 }
+const EVNAV = (window.__EVNAV || "side");
+function evLabel(s){ return (s.icon ? '<span class="ico" aria-hidden="true">'+esc(s.icon)+'</span>' : '')+'<span class="nm">'+esc(s.titlu)+'</span><span class="dt">'+(s.data ? esc(fmtShort(s.data)) : 'tot anul')+'</span>'; }
+function evSelect(all){
+  return '<label class="evsel" for="evsel"><span class="sr">Sari la eveniment</span><select class="sel" id="evsel" data-a="jumpSec"><option value="">Sari la eveniment…</option>'
+    + all.map(s => '<option value="'+esc(s.id)+'">'+esc((s.icon ? s.icon+'  ' : '')+s.titlu+' · '+(s.data ? fmtShort(s.data) : 'tot anul'))+'</option>').join("")+'</select></label>';
+}
 function viewEvents(){
   const { up, nodate, past } = eventLists();
   const all = up.concat(nodate, past);
-  let h = all.length ? '<nav class="evnav" aria-label="Alege evenimentul">'+all.map(s => '<button type="button" class="evchip'+(s.data && s.data < todayStr() ? ' past' : '')+'" data-a="goSec" data-id="'+esc(s.id)+'">'+(s.icon ? '<span class="ico" aria-hidden="true">'+esc(s.icon)+'</span>' : '')+'<span class="nm">'+esc(s.titlu)+'</span><span class="dt">'+(s.data ? esc(fmtShort(s.data)) : 'tot anul')+'</span></button>').join("")+'</nav>' : '';
-  h += up.length || nodate.length ? up.concat(nodate).map(secBlock).join("") : '<div class="empty">Nu e niciun eveniment programat.</div>';
-  if (past.length) h += '<details class="done-group"><summary>Evenimente trecute ('+past.length+')</summary><div class="view" style="margin-top:14px">'+past.map(secBlock).join("")+'</div></details>';
-  return h;
+  const isPast = s => s.data && s.data < todayStr();
+  let body = up.length || nodate.length ? up.concat(nodate).map(secBlock).join("") : '<div class="empty">Nu e niciun eveniment programat.</div>';
+  if (past.length) body += '<details class="done-group"><summary>Evenimente trecute ('+past.length+')</summary><div class="view" style="margin-top:14px">'+past.map(secBlock).join("")+'</div></details>';
+  if (!all.length) return body;
+  if (EVNAV === "wrap") return '<nav class="evnav wrap" aria-label="Alege evenimentul">'+all.map(s => '<button type="button" class="evchip'+(isPast(s)?' past':'')+'" data-a="goSec" data-id="'+esc(s.id)+'">'+evLabel(s)+'</button>').join("")+'</nav>' + body;
+  if (EVNAV === "select") return '<div class="evbar">'+evSelect(all)+'</div>' + body;
+  // side: listă verticală fixă pe desktop, meniu derulant pe telefon
+  return '<div class="evlayout"><aside class="evside" aria-label="Evenimente"><div class="eyebrow">Evenimente</div>'
+    + all.map(s => '<button type="button" class="evrow'+(isPast(s)?' past':'')+'" data-a="goSec" data-id="'+esc(s.id)+'">'+evLabel(s)+'</button>').join("")
+    + '</aside><div class="evmain"><div class="evbar evbar-m">'+evSelect(all)+'</div><div class="view">'+body+'</div></div></div>';
 }
 function secBlock(s){
   const its = itemsOf(s.id); const open = its.filter(i=>i.tip==="info" || i.status!=="done"); const done = its.filter(i=>i.tip!=="info" && i.status==="done");
@@ -713,7 +749,7 @@ function kidOptions(sel, emptyLabel){
 function votesOf(cid){ const v = D.voturi.filter(x => x.comentariuId === cid); return { up: v.filter(x=>+x.valoare===1).length, down: v.filter(x=>+x.valoare===-1).length, mine: (v.find(x => x.autor && x.autor === ui.authorHash) || {}).valoare || 0 }; }
 function cmHtml(c, it, w, isReply){
   const v = votesOf(c.id);
-  return '<div class="cm'+(isReply?' reply':'')+'"><span class="av" style="background:'+avColor(c.copilId)+'">'+esc(initials(c.copilId ? kidName(c.copilId) : "Admin"))+'</span><div class="cbody"><div class="body"><b>'+esc(c.copilId ? kidName(c.copilId) : "Administrator")+'</b><time datetime="'+esc(c.creat)+'">'+esc(ago(c.creat))+'</time><p>'+esc(c.text)+'</p></div>'
+  return '<div class="cm'+(isReply?' reply':'')+'">'+(c.copilId ? avHtml(c.copilId) : '<span class="av" style="background:var(--surface-2)">A</span>')+'<div class="cbody"><div class="body"><b>'+esc(c.copilId ? kidName(c.copilId) : "Administrator")+'</b><time datetime="'+esc(c.creat)+'">'+esc(ago(c.creat))+'</time><p>'+esc(c.text)+'</p></div>'
     + '<div class="cacts">'
     + '<button type="button" class="vote'+(+v.mine===1?' on up':'')+'" data-a="vote" data-id="'+esc(c.id)+'" data-v="1" aria-pressed="'+(+v.mine===1)+'" aria-label="Îmi place"'+(w?'':' disabled')+'>'+ICON.up+(v.up?'<span class="num">'+v.up+'</span>':'')+'</button>'
     + '<button type="button" class="vote'+(+v.mine===-1?' on down':'')+'" data-a="vote" data-id="'+esc(c.id)+'" data-v="-1" aria-pressed="'+(+v.mine===-1)+'" aria-label="Nu-mi place"'+(w?'':' disabled')+'>'+ICON.down+(v.down?'<span class="num">'+v.down+'</span>':'')+'</button>'
@@ -745,7 +781,9 @@ function itemCard(it){
       if (kid(ui.me)) {
         const showQty = tgt > 0 || tip === "single";
         const qv = ui.qty[it.id] != null ? ui.qty[it.id] : (tgt ? Math.max(1, tgt-taken) : "");
+        const eds = sortedEdus();
         body += '<form class="row" data-a="sign" data-id="'+esc(it.id)+'">'
+          + (eds.length ? '<label class="sr" for="pf-'+esc(it.id)+'">Cine preia</label><select class="sel who" id="pf-'+esc(it.id)+'" name="pentru"><option value="'+esc(ui.me)+'">'+esc(isEdu(ui.me) ? kidName(ui.me) : firstName(kidName(ui.me)))+'</option>'+eds.filter(e=>e.id!==ui.me).map(e=>'<option value="'+esc(e.id)+'">👩‍🏫 '+esc(e.nume)+'</option>').join("")+'</select>' : '')
           + (showQty ? '<label class="sr" for="qt-'+esc(it.id)+'">Câte preiei</label><input class="inp num qty" id="qt-'+esc(it.id)+'" name="bucati" type="number" min="1" max="999" inputmode="numeric" placeholder="Câte?" value="'+esc(qv)+'">' : '')
           + '<label class="sr" for="nt-'+esc(it.id)+'">Detalii</label><input class="inp" id="nt-'+esc(it.id)+'" name="nota" maxlength="140" placeholder="'+(tip==="single" ? 'Detalii (opțional)' : 'Ce aduci sau ce faci? (opțional)')+'" value="'+esc(ui.notes[it.id]||"")+'">'
           + '<button class="btn wingb small" type="submit">'+(tip==="single" ? 'Preiau' : 'Mă înscriu')+'</button></form>';
@@ -754,7 +792,7 @@ function itemCard(it){
   } else if (tip === "fiecare") {
     const su = signups(it.id); const doneIds = new Set(su.map(s=>s.copilId)); const tot = kidsTotal(); const n = su.filter(s=>kid(s.copilId)).length;
     body = '<div><div class="count num"><span>Gata pentru <b>'+n+'</b> din '+tot+' copii</span><span>'+(tot?Math.round(n/tot*100):0)+'%</span></div><div class="bar"><i style="width:'+(tot?n/tot*100:0)+'%"></i></div></div>';
-    if (kid(ui.me) && w) { const on = doneIds.has(ui.me); body += '<div class="mine"><button class="tick'+(on?' on':'')+'" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(ui.me)+'" aria-pressed="'+on+'">'+ICON.check+(on ? esc(firstName(kidName(ui.me)))+': gata' : 'Bifează pentru '+esc(firstName(kidName(ui.me))))+'</button></div>'; }
+    if (isChild(ui.me) && w) { const on = doneIds.has(ui.me); body += '<div class="mine"><button class="tick'+(on?' on':'')+'" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(ui.me)+'" aria-pressed="'+on+'">'+ICON.check+(on ? esc(firstName(kidName(ui.me)))+': gata' : 'Bifează pentru '+esc(firstName(kidName(ui.me))))+'</button></div>'; }
     body += '<details class="all"><summary>Vezi toți copiii</summary><div class="kids">'+sortedKids().map(c => { const on = doneIds.has(c.id); const can = w && (cap.admin || c.id === ui.me); return '<'+(can?'button type="button" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(c.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(c.nume)+'</span></'+(can?'button':'div')+'>'; }).join("")+'</div></details>';
   } else if (tip === "rotatie") {
     const su = signups(it.id); const months = schoolMonths(); const cur = months[0] && months[0].key;
@@ -806,7 +844,7 @@ function collCard(c){
   return '<div class="ccard'+(c.inchisa?' closed':'')+'" id="coll-'+esc(c.id)+'"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><h4>'+esc(c.titlu)+'</h4>'
     + '<div class="hint">'+esc(fmtShort(c.data))+' · intră în '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+(c.descriere ? ' · '+esc(c.descriere) : '')+'</div></div><span class="chip meadow">'+lei(c.suma)+' / copil</span></div>'
     + '<div class="count num" style="margin-top:10px"><span><b>'+st.ids.size+'</b> din '+st.tot+' copii au trimis</span><span>'+lei(r2g(st.got))+' din '+lei(r2g(st.target))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'
-    + (kid(ui.me) && !c.inchisa ? '<div class="mestat '+(meOk?'ok':'')+'">'+(meOk ? 'Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!' : 'Încă n-a ajuns contribuția pentru '+esc(firstName(kidName(ui.me)))+': '+lei(c.suma)+'.')+'</div>' : '')
+    + (isChild(ui.me) && !c.inchisa ? '<div class="mestat '+(meOk?'ok':'')+'">'+(meOk ? 'Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!' : 'Încă n-a ajuns contribuția pentru '+esc(firstName(kidName(ui.me)))+': '+lei(c.suma)+'.')+'</div>' : '')
     + '<details class="all" style="margin-top:8px"'+(cap.admin && !c.inchisa ? ' open' : '')+'><summary>'+(missing.length ? 'Lipsesc '+missing.length+' copii · vezi lista' : 'Au trimis toți copiii')+'</summary><div class="kids">'
     + sortedKids().map(k => { const on = st.ids.has(k.id); const can = cap.admin; return '<'+(can?'button type="button" data-a="paid" data-id="'+esc(c.id)+'" data-kid="'+esc(k.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(k.nume)+'</span></'+(can?'button':'div')+'>'; }).join("")
     + '</div>'+(cap.admin ? '<p class="hint" style="margin-top:8px">Bifează un copil când îi ajung banii. Contribuția apare automat la soldul din '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+'.</p>' : '')+'</details>'
@@ -871,9 +909,9 @@ let afterPick = null;
 function openPicker(then){
   afterPick = then || null;
   const ks = sortedKids();
-  modal('<h3>Al cui părinte ești?</h3><p class="hint">Alegerea rămâne pe acest telefon sau calculator. O poți schimba oricând din colțul de sus.</p>'
+  modal('<h3>Cine ești?</h3><p class="hint">Alege copilul tău (sau numele tău, dacă ești educatoare). Alegerea rămâne pe acest telefon sau calculator. O poți schimba oricând din colțul de sus.</p>'
     + '<label class="sr" for="pickQ">Caută</label><input class="inp" id="pickQ" placeholder="Caută după nume" autocomplete="off">'
-    + '<div class="pick" id="pickList">'+ks.map(c => '<button type="button" data-a="pickKid" data-id="'+esc(c.id)+'" class="'+(c.id===ui.me?'on':'')+'" data-n="'+esc(c.nume.toLowerCase())+'"><span class="av" style="background:'+avColor(c.id)+'">'+esc(initials(c.nume))+'</span><span>'+esc(c.nume)+'</span></button>').join("")+'</div>'
+    + '<div class="pick" id="pickList">'+ks.concat(sortedEdus()).map(c => '<button type="button" data-a="pickKid" data-id="'+esc(c.id)+'" class="'+(c.id===ui.me?'on':'')+'" data-n="'+esc(c.nume.toLowerCase())+'">'+avHtml(c.id, c.nume)+'<span>'+esc(c.nume)+'</span></button>').join("")+'</div>'
     + '<div class="acts">'+(ui.me?'<button class="btn ghost left" data-a="pickKid" data-id="">Doar mă uit</button>':'')+'<button class="btn" data-a="close">Închide</button></div>');
 }
 
@@ -1023,6 +1061,7 @@ document.addEventListener("click", async e => {
 });
 
 document.addEventListener("change", e => { if (e.target && e.target.id === "ff-tip") { const l = document.getElementById("ff-src-l"); if (l) l.textContent = e.target.value === "transfer" ? "Banii pleacă din" : "Unde"; const w = document.getElementById("ff-dst-w"); if (w) w.hidden = e.target.value !== "transfer"; } });
+document.addEventListener("change", e => { if (e.target && e.target.id === "evsel" && e.target.value) { const id = e.target.value; e.target.value = ""; goTo("sec-"+id); } });
 document.addEventListener("change", async e => {
   const t = e.target.closest("select[data-a]"); if (!t) return;
   const id = t.dataset.id;
@@ -1053,7 +1092,8 @@ document.addEventListener("submit", async e => {
     } else if (f.dataset.a === "sign") {
       if (!needMe()) return; const id = f.dataset.id;
       const bucati = Math.max(0, Math.min(999, parseInt(fd.bucati, 10) || 0));
-      if (await write(db => db.collection("inscrieri").doc().set({ itemId:id, copilId:ui.me, nota:(fd.nota||"").trim(), bucati, cheie:"", autor:authorId(), creat:now }), bucati ? "Ai preluat "+bucati+" buc. Mulțumim!" : "Te-ai înscris. Mulțumim!")) {
+      const who = kid(fd.pentru) ? fd.pentru : ui.me;
+      if (await write(db => db.collection("inscrieri").doc().set({ itemId:id, copilId:who, nota:(fd.nota||"").trim(), bucati, cheie:"", autor:authorId(), creat:now }), bucati ? "Ai preluat "+bucati+" buc. Mulțumim!" : "Te-ai înscris. Mulțumim!")) {
         ui.notes[id] = ""; delete ui.qty[id];
         if (((D.stari[id]||{}).status||"todo") === "todo") await setStare(id, { status:"progress" });
         document.activeElement && document.activeElement.blur(); render();
@@ -1087,10 +1127,10 @@ document.addEventListener("submit", async e => {
       const names = fd.copii.split("\n").map(s=>s.trim()).filter(Boolean);
       const ok = await write(async db => {
         if ((D.setari.anunt||"") !== fd.anunt.trim()) await db.doc("setari/general").set({ anunt: fd.anunt.trim() });
-        const byName = new Map(D.copii.map(c => [c.nume, c]));
+        const byName = new Map(sortedKids().map(c => [c.nume, c]));
         const keep = new Set();
         for (let i=0;i<names.length;i++) { const ex = byName.get(names[i]); if (ex) { keep.add(ex.id); if (+ex.ordine !== i+1) await db.doc("copii/"+ex.id).set({ nume:ex.nume, ordine:i+1 }); } else { await db.doc("copii/k"+uid()).set({ nume:names[i], ordine:i+1 }); } }
-        for (const c of D.copii) if (!keep.has(c.id)) await db.doc("copii/"+c.id).delete();
+        for (const c of sortedKids()) if (!keep.has(c.id)) await db.doc("copii/"+c.id).delete();
       }, "Salvat");
       if (ok) closeModal();
     }
