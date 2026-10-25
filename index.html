@@ -534,11 +534,11 @@ async function boot(){
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") COLS.forEach(refetch); });
 }
 
-let pending = false, raf = 0;
+let pending = false, raf = 0, rto = 0;
 function schedule(){
   const a = document.activeElement;
   if (a && a.closest && a.closest("#view") && /^(INPUT|TEXTAREA)$/.test(a.tagName)) { pending = true; return; }
-  cancelAnimationFrame(raf); raf = requestAnimationFrame(render);
+  cancelAnimationFrame(raf); clearTimeout(rto); raf = requestAnimationFrame(() => { clearTimeout(rto); render(); }); rto = setTimeout(() => { cancelAnimationFrame(raf); render(); }, 250);
 }
 document.addEventListener("focusout", () => { if (pending) setTimeout(() => { const a = document.activeElement; if (!(a && a.closest && a.closest("#view") && /^(INPUT|TEXTAREA)$/.test(a.tagName))) { pending = false; render(); } }, 0); });
 
