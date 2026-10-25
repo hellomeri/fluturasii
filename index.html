@@ -1064,7 +1064,7 @@ function openPicker(then, forced){
   const ks = sortedKids();
   modal('<h3>Cine ești?</h3><p class="hint">Alege copilul tău (sau numele tău, dacă ești educatoare). Alegerea rămâne pe acest telefon sau calculator.</p>'
     + '<label class="sr" for="pickQ">Caută</label><input class="inp" id="pickQ" placeholder="Caută după nume" autocomplete="off">'
-    + '<div class="pick" id="pickList">'+ks.concat(sortedEdus()).map(c => '<button type="button" data-a="pickKid" data-id="'+esc(c.id)+'" class="'+(c.id===ui.me?'on':'')+'" data-n="'+esc(c.nume.toLowerCase())+'">'+avHtml(c.id, c.nume)+'<span>'+esc(c.nume)+'</span></button>').join("")+'</div>'
+    + '<div class="pick" id="pickList">'+sortedEdus().concat(ks).map(c => '<button type="button" data-a="pickKid" data-id="'+esc(c.id)+'" class="'+(c.id===ui.me?'on':'')+'" data-n="'+esc(c.nume.toLowerCase())+'">'+avHtml(c.id, c.nume)+'<span>'+esc(c.nume)+'</span></button>').join("")+'</div>'
     + (forced ? '<p class="hint">Alege numele ca să intri în portal. Îl poți schimba oricând din colțul de sus.</p>' : '<div class="acts"><button class="btn" data-a="close">Închide</button></div>'));
 }
 
