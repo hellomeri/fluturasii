@@ -67,6 +67,9 @@ button{cursor:pointer}
 :focus-visible{outline:3px solid var(--wing);outline-offset:2px;border-radius:8px}
 .wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .num{font-variant-numeric:tabular-nums}
+/* Safari: grilele nu au voie să se lățească după conținut */
+.view,.quick,.people,.months,.comments,.coll,.gsteps,.cal-list,.i-main,.i-act,.item,.cbody,.cfom,.modal,.secblock,.done-list,.pick{grid-template-columns:minmax(0,1fr)}
+.view>*,.quick>*,.people>*,.two>*,.grid>*,.coll>*,.money>*,.timeline>*,.item>*,section{min-width:0;max-width:100%}
 
 /* Antet */
 .top{background:var(--head);color:var(--head-ink)}
@@ -159,7 +162,7 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 
 /* Liste rapide */
 .quick{display:grid;gap:8px}
-.qrow{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px 10px 14px;text-align:left;width:100%}
+.qrow{cursor:pointer;min-width:0;max-width:100%;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px 10px 14px;text-align:left;width:100%}
 .qrow:hover{border-color:var(--ink)}
 .qrow .t{flex:1;min-width:0}
 .qrow .t b{display:block;font-weight:800;font-size:15px}
@@ -172,8 +175,8 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .qrow.ok small{color:var(--meadow)}
 .okmark{width:22px;height:22px;border-radius:50%;background:var(--meadow);color:#fff;display:grid;place-items:center;flex:none}
 .okmark svg{width:13px;height:13px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-@media (max-width:860px){.two{grid-template-columns:1fr}}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
 .calnow{background:var(--wing-soft);color:var(--wing-ink);border-radius:14px;padding:12px 16px;font-size:15px;font-weight:600}
 .calnow.vac{background:var(--meadow-soft);color:var(--meadow)}
 .calall{margin-top:8px}
@@ -360,10 +363,10 @@ button.kid:hover{background:var(--surface-2)}
 .sec-title .cal .d{font-size:22px}
 
 /* Bani */
-.money{display:grid;grid-template-columns:1.3fr repeat(var(--n,2),1fr);gap:14px}
+.money{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(var(--n,2),minmax(0,1fr));gap:14px}
 .tile .note{font-size:12.5px;font-weight:700;color:var(--berry);margin-top:2px}
 .tile .note.big-note{color:var(--head-muted)}
-@media (max-width:720px){.money{grid-template-columns:1fr 1fr}.money .big{grid-column:1/-1}}
+@media (max-width:720px){.money{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.money .big{grid-column:1/-1}}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
 .tile .lab{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
 .tile .val{font-family:var(--f-display);font-size:28px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -411,8 +414,8 @@ button.kid:hover{background:var(--surface-2)}
 .pick button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pick button:hover,.pick button.on{border-color:var(--ink)}
 .pick button.on{background:var(--wing-soft)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media (max-width:480px){.grid2{grid-template-columns:1fr}}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:480px){.grid2{grid-template-columns:minmax(0,1fr)}}
 .hint{font-size:13px;color:var(--muted);margin:0}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:800;font-size:14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);max-width:calc(100% - 32px)}
@@ -837,13 +840,13 @@ function viewHome(){
 }
 function qrow(it, sub, color){
   const s = sec(it.sectiune);
-  return '<button class="qrow" data-a="goItem" data-id="'+esc(it.id)+'"><span class="dot" style="background:var(--'+(color||"wing")+')"></span><span class="t"><b>'+esc(it.titlu)+'</b><span class="qsub">'+secTag(s)+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></button>';
+  return '<div role="button" tabindex="0" class="qrow" data-a="goItem" data-id="'+esc(it.id)+'"><span class="dot" style="background:var(--'+(color||"wing")+')"></span><span class="t"><b>'+esc(it.titlu)+'</b><span class="qsub">'+secTag(s)+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></div>';
 }
 function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a.sectiune)||{}, sb = sec(b.sectiune)||{}; return String(sa.data||"9999").localeCompare(String(sb.data||"9999")) || (a.ordine||0)-(b.ordine||0); }); }
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
 function myTodo(){
   const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
-  if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) out.push('<button class="qrow" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--meadow)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>De trimis '+esc(lei(c.suma))+'</small></span></span></button>');
+  if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) out.push('<div role="button" tabindex="0" class="qrow" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--meadow)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>De trimis '+esc(lei(c.suma))+'</small></span></span></div>');
   for (const it of allItems()) {
     if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
     const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
@@ -859,7 +862,7 @@ function myTodo(){
 }
 function myDone(){
   const me = ui.me, out = [];
-  const row = (attrs, title, tag, sub) => '<button class="qrow ok" '+attrs+'><span class="okmark" aria-hidden="true">'+ICON.check+'</span><span class="t"><b>'+esc(title)+'</b><span class="qsub">'+tag+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></button>';
+  const row = (attrs, title, tag, sub) => '<div role="button" tabindex="0" class="qrow ok" '+attrs+'><span class="okmark" aria-hidden="true">'+ICON.check+'</span><span class="t"><b>'+esc(title)+'</b><span class="qsub">'+tag+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></div>';
   for (const it of allItems()) {
     if (!sectionUpcoming(it) || it.tip === "info") continue;
     const s = sec(it.sectiune);
