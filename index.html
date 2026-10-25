@@ -12,36 +12,39 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap">
 <style>
-/* Layout: bandă de antet (prună închis, fluture) + taburi; pe telefon, navigare fixă jos; itemii sunt carduri în grilă 1 → 2 coloane */
+/* Layout: bandă de antet bleumarin cu fluture; pe telefon navigare fixă jos; câte un item pe rând (pe desktop: detalii stânga, acțiune dreapta) */
 :root{
   color-scheme:light;
-  --bg:#F5F6F0; --surface:#FFFFFF; --surface-2:#EDF0E6; --ink:#2B2238; --muted:#6A6475; --line:#DFE2D6;
-  --wing:#E99A1C; --wing-ink:#8A5300; --wing-soft:#FCEFD2;
+  --bg:#F3F6FB; --surface:#FFFFFF; --surface-2:#E9EFF8; --ink:#14213D; --muted:#5D6B85; --line:#D9E2EF;
+  --wing:#2F6FEB; --wing-ink:#1D4FB8; --wing-soft:#E3ECFD; --on-wing:#FFFFFF;
   --meadow:#2E7A55; --meadow-soft:#DCEEE3;
   --lilac:#7457C4; --lilac-soft:#ECE6FA;
   --berry:#BE3F37; --berry-soft:#F8E0DC;
-  --head:#2B2238; --head-ink:#FFF6E4; --head-muted:#CFC4DE;
-  --shadow:0 1px 0 rgba(43,34,56,.04),0 10px 24px -18px rgba(43,34,56,.35);
+  --head:#14213D; --head-ink:#F4F7FD; --head-muted:#AEBBD3;
+  --logo1:#FFC23D; --logo2:#7FB0FF; --logo3:#F4F7FD; --me:#2F6FEB;
+  --shadow:0 1px 0 rgba(20,33,61,.04),0 10px 24px -18px rgba(20,33,61,.35);
   --f-display:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;
   --f-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --r:16px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#16121D; --surface:#211B2A; --surface-2:#2A2335; --ink:#F1ECF7; --muted:#A9A1B6; --line:#372F44;
-  --wing:#F2B240; --wing-ink:#F7C873; --wing-soft:#3A2D18;
+  --bg:#0F1626; --surface:#172238; --surface-2:#1E2B45; --ink:#E8EEF9; --muted:#9AA8C2; --line:#2A3954;
+  --wing:#5B8FF5; --wing-ink:#9DBBFF; --wing-soft:#1C2D52; --on-wing:#FFFFFF;
   --meadow:#62BE90; --meadow-soft:#1D3328;
   --lilac:#A78DF2; --lilac-soft:#2D2544;
   --berry:#F08077; --berry-soft:#3C2125;
-  --head:#0F0C14; --head-ink:#FFF1D6; --head-muted:#B4A9C4;
+  --head:#0A101D; --head-ink:#EEF3FC; --head-muted:#93A2BF;
+  --logo1:#FFC23D; --logo2:#7FB0FF; --logo3:#EEF3FC; --me:#5B8FF5;
   --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#16121D; --surface:#211B2A; --surface-2:#2A2335; --ink:#F1ECF7; --muted:#A9A1B6; --line:#372F44;
-  --wing:#F2B240; --wing-ink:#F7C873; --wing-soft:#3A2D18;
+  --bg:#0F1626; --surface:#172238; --surface-2:#1E2B45; --ink:#E8EEF9; --muted:#9AA8C2; --line:#2A3954;
+  --wing:#5B8FF5; --wing-ink:#9DBBFF; --wing-soft:#1C2D52; --on-wing:#FFFFFF;
   --meadow:#62BE90; --meadow-soft:#1D3328;
   --lilac:#A78DF2; --lilac-soft:#2D2544;
   --berry:#F08077; --berry-soft:#3C2125;
-  --head:#0F0C14; --head-ink:#FFF1D6; --head-muted:#B4A9C4;
+  --head:#0A101D; --head-ink:#EEF3FC; --head-muted:#93A2BF;
+  --logo1:#FFC23D; --logo2:#7FB0FF; --logo3:#EEF3FC; --me:#5B8FF5;
   --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -64,9 +67,9 @@ button{cursor:pointer}
 .brand svg{flex:none;width:52px;height:44px}
 .brand h1{font-size:30px;font-weight:800;letter-spacing:.2px}
 .brand p{margin:0;color:var(--head-muted);font-size:13px;font-weight:600;letter-spacing:.3px}
-.me{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,246,228,.25);background:rgba(255,246,228,.08);color:var(--head-ink);padding:7px 12px 7px 7px;border-radius:999px;font-weight:700;font-size:14px;max-width:100%}
-.me:hover{background:rgba(255,246,228,.16)}
-.me .av{width:28px;height:28px;font-size:12px}
+.me{display:inline-flex;align-items:center;gap:8px;border:1px solid color-mix(in srgb,var(--head-ink) 25%,transparent);background:color-mix(in srgb,var(--head-ink) 8%,transparent);color:var(--head-ink);padding:7px 12px 7px 7px;border-radius:999px;font-weight:700;font-size:14px;max-width:100%}
+.me:hover{background:color-mix(in srgb,var(--head-ink) 16%,transparent)}
+.me .av{width:28px;height:28px;font-size:12px;color:#fff}
 .me span.lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tabs{display:flex;gap:4px;padding-block:0 0}
 .tab{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--head-muted);padding:10px 14px 12px;font-weight:800;font-size:15px;border-radius:12px 12px 0 0;position:relative}
@@ -106,7 +109,7 @@ main{padding-block:22px 48px}
 .btn:hover{border-color:var(--ink)}
 .btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn.primary:hover{opacity:.9}
-.btn.wingb{background:var(--wing);border-color:var(--wing);color:#2B1A00}
+.btn.wingb{background:var(--wing);border-color:var(--wing);color:var(--on-wing)}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
 .btn.ghost:hover{color:var(--ink);border-color:var(--line)}
 .btn.small{min-height:32px;padding:5px 10px;font-size:13px;border-radius:10px}
@@ -125,7 +128,7 @@ main{padding-block:22px 48px}
 .ev{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;text-align:left;box-shadow:var(--shadow);width:100%}
 .ev:hover{border-color:var(--ink)}
 .cal{width:58px;border-radius:12px;overflow:hidden;text-align:center;background:var(--surface-2);flex:none}
-.cal .m{background:var(--wing);color:#2B1A00;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 0}
+.cal .m{background:var(--wing);color:var(--on-wing);font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 0}
 .cal .d{font-family:var(--f-display);font-size:26px;font-weight:800;line-height:1.25;padding:2px 0 0}
 .cal .w{font-size:11px;font-weight:700;color:var(--muted);padding-bottom:5px}
 .ev h3{font-size:19px;font-weight:800}
@@ -150,8 +153,26 @@ main{padding-block:22px 48px}
 .empty{color:var(--muted);background:var(--surface-2);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600}
 
 /* Carduri item */
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
-@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.i-main,.i-act{display:grid;gap:12px;align-content:start;min-width:0}
+@media (min-width:900px){
+  .item{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:36px;padding:20px 22px 14px}
+  .item .i-main{grid-column:1;grid-row:1}
+  .item .i-act{grid-column:2;grid-row:1;border-left:1px solid var(--line);padding-left:28px}
+  .item .foot,.item .comments{grid-column:1/-1}
+  .item.noact{grid-template-columns:minmax(0,1fr)}
+  .item.info .i-act{border-left-color:rgba(0,0,0,.08)}
+}
+.evnav{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 10px;margin:-8px 0 0;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);scrollbar-width:thin}
+.evchip{display:inline-flex;align-items:center;gap:7px;flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px 7px 10px;font-weight:800;font-size:14px;white-space:nowrap}
+.evchip:hover{border-color:var(--wing)}
+.evchip .ico{font-size:17px;line-height:1}
+.evchip .dt{color:var(--muted);font-weight:700;font-size:12.5px}
+.evchip.past{opacity:.6}
+.icotile{width:52px;height:52px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;font-size:28px;flex:none}
+.h-ico{font-size:.9em}
+.tag{display:inline-flex;align-items:center;gap:3px;background:var(--wing-soft);color:var(--wing-ink);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:800;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.qsub{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:3px}
 .item{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 12px;display:grid;gap:12px;box-shadow:var(--shadow);min-width:0;scroll-margin-top:90px}
 .item.flash{animation:flash 1.6s ease}
 @keyframes flash{0%,40%{box-shadow:0 0 0 4px var(--wing)}100%{box-shadow:var(--shadow)}}
@@ -187,7 +208,8 @@ main{padding-block:22px 48px}
 .x{border:0;background:transparent;color:var(--muted);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none}
 .x:hover{background:var(--surface);color:var(--berry)}
 .x svg{width:14px;height:14px}
-.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none;color:#2B2238}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;flex:none;color:#14213D}
+.av[style*="--me"]{color:#fff}
 
 .mine{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .tick{display:inline-flex;align-items:center;gap:8px;border:2px dashed var(--line);background:transparent;border-radius:12px;padding:8px 14px;font-weight:800;font-size:14px}
@@ -305,14 +327,14 @@ button.kid:hover{background:var(--surface-2)}
     <div class="brand">
       <svg viewBox="0 0 52 44" aria-hidden="true">
         <g transform="translate(26 23)">
-          <ellipse cx="-11" cy="-8" rx="12" ry="9" transform="rotate(-25 -11 -8)" fill="#F0A92B"/>
-          <ellipse cx="11" cy="-8" rx="12" ry="9" transform="rotate(25 11 -8)" fill="#F0A92B"/>
-          <ellipse cx="-9" cy="8" rx="8" ry="6.5" transform="rotate(30 -9 8)" fill="#A88BEF"/>
-          <ellipse cx="9" cy="8" rx="8" ry="6.5" transform="rotate(-30 9 8)" fill="#A88BEF"/>
-          <circle cx="-12" cy="-9" r="3" fill="#FFF6E4" opacity=".85"/>
-          <circle cx="12" cy="-9" r="3" fill="#FFF6E4" opacity=".85"/>
-          <rect x="-2" y="-12" width="4" height="26" rx="2" fill="#FFF6E4"/>
-          <path d="M-1 -12 Q-5 -20 -9 -21 M1 -12 Q5 -20 9 -21" stroke="#FFF6E4" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <ellipse cx="-11" cy="-8" rx="12" ry="9" transform="rotate(-25 -11 -8)" style="fill:var(--logo1)"/>
+          <ellipse cx="11" cy="-8" rx="12" ry="9" transform="rotate(25 11 -8)" style="fill:var(--logo1)"/>
+          <ellipse cx="-9" cy="8" rx="8" ry="6.5" transform="rotate(30 -9 8)" style="fill:var(--logo2)"/>
+          <ellipse cx="9" cy="8" rx="8" ry="6.5" transform="rotate(-30 9 8)" style="fill:var(--logo2)"/>
+          <circle cx="-12" cy="-9" r="3" style="fill:var(--logo3)" opacity=".85"/>
+          <circle cx="12" cy="-9" r="3" style="fill:var(--logo3)" opacity=".85"/>
+          <rect x="-2" y="-12" width="4" height="26" rx="2" style="fill:var(--logo3)"/>
+          <path d="M-1 -12 Q-5 -20 -9 -21 M1 -12 Q5 -20 9 -21" style="stroke:var(--logo3)" stroke-width="1.6" fill="none" stroke-linecap="round"/>
         </g>
       </svg>
       <div>
@@ -363,7 +385,7 @@ const ago = iso => {
   return d.getDate()+" "+LUNI_S[d.getMonth()]+".";
 };
 const AV_COLORS = ["#F6C866","#B9A5F2","#9ED6B5","#F4A99F","#9CCAF0","#F3B98A","#D7C2A2","#C3E08F"];
-const avColor = id => { let h=0; for (const c of String(id)) h = (h*31 + c.charCodeAt(0))>>>0; return AV_COLORS[h % AV_COLORS.length]; };
+const avColor = id => { if (id && id === ui.me) return "var(--me)"; let h=0; for (const c of String(id)) h = (h*31 + c.charCodeAt(0))>>>0; return AV_COLORS[h % AV_COLORS.length]; };
 const initials = name => String(name||"?").split(/[\s-]+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
 const firstName = name => { const p = String(name||"").split(" "); return p.length>1 ? p.slice(1).join(" ") : name; };
 const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
@@ -398,6 +420,8 @@ const ui = {
 const cap = { db:null, admin:false, canWrite:true };
 
 const kid = id => D.copii.find(c => c.id === id);
+const isEvent = s => !!s && (s.categorie === "eveniment" || (s.categorie !== "necesar" && !!s.data));
+const secTag = s => s ? '<span class="tag">'+(s.icon ? '<span aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+(s.data ? ' · '+esc(fmtShort(s.data)) : '')+'</span>' : '';
 const kidName = id => (kid(id)||{}).nume || "Copil";
 const sortedKids = () => D.copii.slice().sort((a,b)=>(a.ordine||0)-(b.ordine||0) || String(a.nume).localeCompare(b.nume,"ro"));
 const sec = id => D.sectiuni.find(s => s.id === id);
@@ -523,7 +547,7 @@ function render(){
   pending = false;
   const me = kid(ui.me);
   $("#meBtn").innerHTML = me
-    ? '<span class="av" style="background:'+avColor(me.id)+'">'+esc(initials(me.nume))+'</span><span class="lbl">'+esc(me.nume)+'</span>'
+    ? '<span class="av" style="background:var(--me)">'+esc(initials(me.nume))+'</span><span class="lbl">'+esc(me.nume)+'</span>'
     : '<span class="av" style="background:var(--wing)">'+ICON.user.replace('<svg','<svg width="16" height="16"')+'</span><span class="lbl">Alege copilul tău</span>';
   const tabsHtml = TABS.map(([k,l,i]) => '<button type="button" class="tab" data-a="tab" data-k="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+ICON[i]+l+'</button>').join("");
   $("#tabs").innerHTML = tabsHtml;
@@ -563,13 +587,13 @@ function viewHome(){
   let h = "";
   if (D.setari.anunt) h += '<div class="notice">'+ICON.bell+'<div><div class="who">Anunț</div><p>'+esc(D.setari.anunt)+'</p></div></div>';
   const t = todayStr();
-  const up = D.sectiuni.filter(s => s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data));
+  const up = D.sectiuni.filter(s => isEvent(s) && s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data));
   h += '<section><div class="sec-head"><div><h2>Evenimente următoare</h2><div class="sub">Ce urmează la grupă și cât e gata din pregătiri.</div></div></div>';
   if (!up.length) h += '<div class="empty">Nu e niciun eveniment programat.</div>';
   else h += '<div class="timeline">' + up.map(s => {
     const its = itemsOf(s.id).filter(i=>i.tip!=="info"); const tot = its.length; const done = its.filter(i=>i.status==="done").length;
     const pct = tot ? Math.round(its.reduce((a,i)=>a+progressOf(i),0)/tot*100) : 0;
-    return '<button class="ev" data-a="goSec" data-id="'+esc(s.id)+'">'+calTile(s)+'<div style="min-width:0"><h3>'+esc(s.titlu)+'</h3><div class="when">'+whenLine(s)+'</div>'
+    return '<button class="ev" data-a="goSec" data-id="'+esc(s.id)+'">'+calTile(s)+'<div style="min-width:0"><h3>'+(s.icon ? '<span class="h-ico" aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+'</h3><div class="when">'+whenLine(s)+'</div>'
       + (tot ? '<div class="bar wing"><i style="width:'+pct+'%"></i></div><div class="prog num"><span>'+done+' din '+tot+' rezolvate</span><span>'+pct+'%</span></div>' : (itemsOf(s.id).length ? '<div class="prog info-line"><span>'+esc(s.descriere || itemsOf(s.id).filter(i=>i.tip==="info").map(i=>i.titlu).join(" · "))+'</span></div>' : '<div class="prog"><span>Lista se completează</span></div>'))
       + '</div></button>';
   }).join("") + '</div>';
@@ -588,7 +612,7 @@ function viewHome(){
 }
 function qrow(it, sub, color){
   const s = sec(it.sectiune);
-  return '<button class="qrow" data-a="goItem" data-id="'+esc(it.id)+'"><span class="dot" style="background:var(--'+(color||"wing")+')"></span><span class="t"><b>'+esc(it.titlu)+'</b><small>'+esc(sub || (s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : ""))+'</small></span></button>';
+  return '<button class="qrow" data-a="goItem" data-id="'+esc(it.id)+'"><span class="dot" style="background:var(--'+(color||"wing")+')"></span><span class="t"><b>'+esc(it.titlu)+'</b><span class="qsub">'+secTag(s)+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></button>';
 }
 function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a.sectiune)||{}, sb = sec(b.sectiune)||{}; return String(sa.data||"9999").localeCompare(String(sb.data||"9999")) || (a.ordine||0)-(b.ordine||0); }); }
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
@@ -599,10 +623,10 @@ function myTodo(){
     const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
     if (it.tip === "single" || it.tip === "multi") {
       const mine = signups(it.id).filter(x=>x.copilId===me);
-      if (mine.length) { const q = mine.reduce((a,x)=>a+(+x.bucati||0),0); const notes = mine.map(x=>x.nota).filter(Boolean).join(", "); out.push(qrow(it, [q ? "Preiei "+q+" buc." : (it.tip==="single" ? "Te ocupi tu" : "Te-ai înscris"), notes, where].filter(Boolean).join(" · "), "lilac")); }
-      else if (it.responsabil === me) out.push(qrow(it, "Te ocupi tu · "+where, "lilac"));
+      if (mine.length) { const q = mine.reduce((a,x)=>a+(+x.bucati||0),0); const notes = mine.map(x=>x.nota).filter(Boolean).join(", "); out.push(qrow(it, [q ? "Preiei "+q+" buc." : (it.tip==="single" ? "Te ocupi tu" : "Te-ai înscris"), notes].filter(Boolean).join(" · "), "lilac")); }
+      else if (it.responsabil === me) out.push(qrow(it, "Te ocupi tu", "lilac"));
     }
-    else if (it.tip === "fiecare" && !signups(it.id).some(x=>x.copilId===me)) out.push(qrow(it, "Nebifat încă · "+where, "wing"));
+    else if (it.tip === "fiecare" && !signups(it.id).some(x=>x.copilId===me)) out.push(qrow(it, "Nebifat încă", "wing"));
     else if (it.tip === "rotatie") { const slot = signups(it.id).find(x => x.copilId===me && mk.has(x.cheie)); if (slot) { const [y,m] = slot.cheie.split("-"); out.push(qrow(it, "Luna ta: "+LUNI[+m-1]+" "+y, "lilac")); } }
   }
   return out;
@@ -614,7 +638,7 @@ function needsHelp(){
     if (it.tip === "single" || it.tip === "multi") {
       const tgt = targetOf(it), taken = takenOf(it), any = signups(it.id).length || (it.responsabil && kid(it.responsabil));
       if (tgt && taken < tgt) out.push(qrow(it, "Mai trebuie "+(tgt-taken)+" din "+tgt));
-      else if (!tgt && !any) out.push(qrow(it, it.tip === "multi" ? "Nu s-a înscris nimeni încă" : ""));
+      else if (!tgt && !any) out.push(qrow(it, it.tip === "multi" ? "Nu s-a înscris nimeni încă" : "Nu se ocupă nimeni încă"));
     }
     else if (it.tip === "rotatie" && first && !signups(it.id).some(x=>x.cheie===first.key)) out.push(qrow(it, "Nimeni pentru "+first.label.toLowerCase()));
   }
@@ -623,21 +647,30 @@ function needsHelp(){
 
 /* Necesar / Evenimente */
 function viewNecesar(){
-  const secs = D.sectiuni.filter(s => !s.data).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
+  const secs = D.sectiuni.filter(s => !isEvent(s)).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
   if (!secs.length) return '<div class="empty">Nu e nimic pe lista de necesar.</div>';
   return secs.map(secBlock).join("");
 }
-function viewEvents(){
+function eventLists(){
   const t = todayStr();
-  const up = D.sectiuni.filter(s => s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data));
-  const past = D.sectiuni.filter(s => s.data && s.data < t).sort((a,b)=>b.data.localeCompare(a.data));
-  let h = up.length ? up.map(secBlock).join("") : '<div class="empty">Nu e niciun eveniment programat.</div>';
+  const evs = D.sectiuni.filter(isEvent);
+  return {
+    up: evs.filter(s => s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data)),
+    nodate: evs.filter(s => !s.data).sort((a,b)=>(a.ordine||0)-(b.ordine||0)),
+    past: evs.filter(s => s.data && s.data < t).sort((a,b)=>b.data.localeCompare(a.data))
+  };
+}
+function viewEvents(){
+  const { up, nodate, past } = eventLists();
+  const all = up.concat(nodate, past);
+  let h = all.length ? '<nav class="evnav" aria-label="Alege evenimentul">'+all.map(s => '<button type="button" class="evchip'+(s.data && s.data < todayStr() ? ' past' : '')+'" data-a="goSec" data-id="'+esc(s.id)+'">'+(s.icon ? '<span class="ico" aria-hidden="true">'+esc(s.icon)+'</span>' : '')+'<span class="nm">'+esc(s.titlu)+'</span><span class="dt">'+(s.data ? esc(fmtShort(s.data)) : 'tot anul')+'</span></button>').join("")+'</nav>' : '';
+  h += up.length || nodate.length ? up.concat(nodate).map(secBlock).join("") : '<div class="empty">Nu e niciun eveniment programat.</div>';
   if (past.length) h += '<details class="done-group"><summary>Evenimente trecute ('+past.length+')</summary><div class="view" style="margin-top:14px">'+past.map(secBlock).join("")+'</div></details>';
   return h;
 }
 function secBlock(s){
   const its = itemsOf(s.id); const open = its.filter(i=>i.tip==="info" || i.status!=="done"); const done = its.filter(i=>i.tip!=="info" && i.status==="done");
-  let h = '<section class="secblock" id="sec-'+esc(s.id)+'"><div class="sec-head"><div class="sec-title">'+calTile(s)+'<div style="min-width:0"><h2>'+esc(s.titlu)+'</h2>'
+  let h = '<section class="secblock" id="sec-'+esc(s.id)+'"><div class="sec-head"><div class="sec-title">'+(s.data ? calTile(s) : (s.icon ? '<div class="icotile" aria-hidden="true">'+esc(s.icon)+'</div>' : ''))+'<div style="min-width:0"><h2>'+(s.data && s.icon ? '<span class="h-ico" aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+'</h2>'
     + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? esc(s.descriere) : '')+'</div></div></div>'
     + (cap.admin ? '<div class="row"><button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button></div>' : '')
     + '</div>';
@@ -701,8 +734,8 @@ function itemCard(it){
       : '<div><button class="btn small" data-a="pick">Alege copilul ca să comentezi</button></div>';
     foot += '</div>';
   }
-  return '<article class="item'+(it.status==="done"&&!isInfo?' is-done':'')+(isInfo?' info':'')+'" id="item-'+esc(it.id)+'"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+(isInfo ? '' : statusSel)+'</div>'+(meta ? '<div class="meta">'+meta+'</div>' : '')
-    + (it.detalii ? '<p class="det">'+esc(it.detalii)+'</p>' : '') + body + foot + '</article>';
+  return '<article class="item'+(it.status==="done"&&!isInfo?' is-done':'')+(isInfo?' info':'')+(body?'':' noact')+'" id="item-'+esc(it.id)+'"><div class="i-main"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+(isInfo ? '' : statusSel)+'</div>'+(meta ? '<div class="meta">'+meta+'</div>' : '')
+    + (it.detalii ? '<p class="det">'+esc(it.detalii)+'</p>' : '') + '</div>' + (body ? '<div class="i-act">'+body+'</div>' : '') + foot + '</article>';
 }
 
 /* Bani */
@@ -775,8 +808,11 @@ function secForm(id){
     + '<div class="grid2"><label class="field" for="fs-d"><span>Data (gol = necesar continuu)</span><input class="inp" id="fs-d" name="data" type="date" value="'+esc(v.data||"")+'"></label>'
     + '<label class="field" for="fs-o"><span>Ora (gol = fără oră)</span><input class="inp" id="fs-o" name="ora" type="time" value="'+esc(v.ora && v.ora !== "tbd" ? v.ora : "")+'"></label></div>'
     + '<label class="row" for="fs-tbd" style="gap:8px;font-weight:700;font-size:14px"><input type="checkbox" id="fs-tbd" name="oraTbd"'+(v.ora==="tbd"?' checked':'')+'> Ora se anunță mai târziu</label>'
+    + '<div class="grid2"><label class="field" for="fs-c"><span>Apare la</span><select class="sel" id="fs-c" name="categorie"><option value="eveniment"'+(isEvent(v)||!s?' selected':'')+'>Evenimente</option><option value="necesar"'+(s&&!isEvent(v)?' selected':'')+'>Necesar</option></select></label>'
+    + '<label class="field" for="fs-i"><span>Iconiță</span><input class="inp" id="fs-i" name="icon" maxlength="8" placeholder="ex. 🍂" value="'+esc(v.icon||"")+'"></label></div>'
+    + '<div class="row" style="gap:6px">'+["🍂","🇷🇴","🎄","📖","🎃","🎨","🎭","🎵","🌸","☀️","🎂","🧺","⭐"].map(e=>'<button type="button" class="btn small" data-a="pickIcon" data-v="'+e+'" aria-label="Alege '+e+'">'+e+'</button>').join("")+'</div>'
     + '<label class="field" for="fs-ds"><span>Descriere</span><textarea class="ta" id="fs-ds" name="descriere" maxlength="600">'+esc(v.descriere||"")+'</textarea></label>'
-    + '<p class="hint">Secțiunile cu dată apar la Evenimente, cele fără dată la Necesar.</p>'
+    + ''
     + '<div class="acts">'+(s?'<button type="button" class="btn danger left" data-a="delSec" data-id="'+esc(s.id)+'">'+(ui.confirm==="sec"+s.id?'Șterge și itemii ei?':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
     + '<input type="hidden" name="id" value="'+esc(s?s.id:"")+'"></form>');
 }
@@ -812,7 +848,7 @@ function setTab(k){ ui.tab = k; LS.set("fl_tab", k); render(); window.scrollTo({
 function goTo(elId){
   setTimeout(() => { const el = document.getElementById(elId); if (!el) return; const det = el.closest("details"); if (det) det.open = true; el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }, 30);
 }
-function tabOfSec(s){ return s && s.data ? "evenimente" : "necesar"; }
+function tabOfSec(s){ return isEvent(s) ? "evenimente" : "necesar"; }
 function needMe(then){ if (kid(ui.me)) return true; openPicker(then); return false; }
 
 document.addEventListener("click", async e => {
@@ -850,6 +886,7 @@ document.addEventListener("click", async e => {
       ui.confirm = null; await write(db => db.doc("comentarii/"+id).delete(), "Comentariu șters"); break;
     }
     case "settings": settingsForm(); break;
+    case "pickIcon": { const inp = document.getElementById("fs-i"); if (inp) inp.value = t.dataset.v; break; }
     case "login": loginForm(); break;
     case "logout": await sb.auth.signOut(); cap.admin = false; ui.adminEmail = ""; render(); toast("Ai ieșit din administrare"); break;
     case "secEdit": secForm(id); break;
@@ -918,7 +955,7 @@ document.addEventListener("submit", async e => {
       if (ok) closeModal();
     } else if (fid === "fSec") {
       const id = fd.id || ("s"+uid()); const prev = sec(id) || {};
-      const body = { titlu:fd.titlu.trim(), data:fd.data||"", ora: fd.oraTbd ? "tbd" : (fd.ora||""), descriere:fd.descriere.trim(), ordine: prev.ordine || (Math.max(0, ...D.sectiuni.map(s=>+s.ordine||0))+1) };
+      const body = { titlu:fd.titlu.trim(), data:fd.data||"", ora: fd.oraTbd ? "tbd" : (fd.ora||""), descriere:fd.descriere.trim(), icon:(fd.icon||"").trim(), categorie:fd.categorie||"", ordine: prev.ordine || (Math.max(0, ...D.sectiuni.map(s=>+s.ordine||0))+1) };
       if (await write(db => db.doc("sectiuni/"+id).set(body), "Secțiune salvată")) closeModal();
     } else if (fid === "fFin") {
       const id = fd.id || newUuid(); const prev = D.financiar.find(r=>r.id===id) || {};
