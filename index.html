@@ -245,7 +245,17 @@ button.kid:hover{background:var(--surface-2)}
 .cbtn .n{background:var(--lilac-soft);color:var(--lilac);border-radius:99px;padding:0 7px;font-size:12px}
 .comments{display:grid;gap:10px}
 .cm{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start}
+.cm .cbody{min-width:0;display:grid;gap:2px}
 .cm .body{min-width:0;background:var(--surface-2);border-radius:4px 14px 14px 14px;padding:8px 12px}
+.cm.reply,.cform.reply{margin-left:40px}
+.cm.reply .av{width:24px;height:24px;font-size:10px}
+.cacts{display:flex;gap:2px;align-items:center;padding-left:4px}
+.vote{border:0;background:transparent;display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-weight:800;font-size:12.5px;padding:4px 7px;border-radius:8px;min-height:28px}
+.vote svg{width:15px;height:15px}
+.vote:hover{background:var(--surface-2);color:var(--ink)}
+.vote.on.up{color:var(--wing-ink);background:var(--wing-soft)}
+.vote.on.down{color:var(--berry);background:var(--berry-soft)}
+.vote[disabled]{cursor:default;opacity:.7}
 .cm .body b{font-size:13px;font-weight:800}
 .cm .body time{font-size:12px;color:var(--muted);margin-left:6px}
 .cm .body p{margin:2px 0 0;font-size:14.5px;white-space:pre-line;overflow-wrap:anywhere}
@@ -285,7 +295,14 @@ button.kid:hover{background:var(--surface-2)}
 .lrow .amt{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .amt.in{color:var(--meadow)}
 .amt.out{color:var(--berry)}
-@media (max-width:560px){.lrow{grid-template-columns:1fr auto;gap:2px 10px}.lrow .d{grid-column:1/-1}.lrow .desc{grid-column:1}.lrow .amt{grid-column:2;grid-row:2}.lrow .x{grid-column:2;grid-row:1;justify-self:end}}
+.amt.mv{color:var(--muted)}
+.money-sub{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:12px;color:var(--muted);font-weight:700;font-size:14px}
+.money-sub .in{color:var(--meadow)} .money-sub .out{color:var(--berry)}
+.src{display:inline-block;border-radius:6px;padding:0 6px;font-size:11.5px;font-weight:800;margin-right:4px}
+.src.cont{background:var(--wing-soft);color:var(--wing-ink)}
+.src.cash{background:var(--meadow-soft);color:var(--meadow)}
+.src.mv{background:var(--surface-2);color:var(--muted)}
+@media (max-width:560px){.lrow{grid-template-columns:minmax(0,1fr) auto;gap:2px 10px}.lrow .d{grid-column:1;grid-row:1}.lrow .x{grid-column:2;grid-row:1;justify-self:end}.lrow .desc{grid-column:1;grid-row:2}.lrow .amt{grid-column:2;grid-row:2;align-self:center}}
 .coll{display:grid;gap:12px}
 .ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
 .ccard h4{font-size:17px;font-weight:700}
@@ -400,6 +417,9 @@ const ICON = {
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11v9H4v-9z"/><path d="M7 11l4-8c1.7 0 2.5 1 2.2 2.6L12.6 9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleY(-1)"><path d="M7 11v9H4v-9z"/><path d="M7 11l4-8c1.7 0 2.5 1 2.2 2.6L12.6 9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/></svg>',
+  reply:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8L5 12l5 4"/><path d="M5 12h9a5 5 0 0 1 5 5v2"/></svg>',
   bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
   user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="9" r="4"/><path d="M4 21c1.5-4 5-5 8-5s6.5 1 8 5"/></svg>'
 };
@@ -408,14 +428,14 @@ const STATUS = { todo:"De făcut", progress:"În lucru", done:"Rezolvat" };
 const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar", info:"Doar de știut" };
 
 /* ---------- stare ---------- */
-const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], financiar:[], setari:{} };
-const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","financiar","setari"];
+const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], financiar:[], setari:{} };
+const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","financiar","setari"];
 const ui = {
   tab: ["acasa","necesar","evenimente","bani"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
   me: LS.get("fl_me") || "",
   device: LS.get("fl_dev") || (()=>{ const d = uid(); LS.set("fl_dev", d); return d; })(),
   openC: new Set(), drafts: {}, notes: {}, qty: {}, confirm: null,
-  loaded: new Set(), mode: "loading", authorHash: "", adminEmail: ""
+  loaded: new Set(), mode: "loading", replyTo: "", authorHash: "", adminEmail: ""
 };
 const cap = { db:null, admin:false, canWrite:true };
 
@@ -454,7 +474,7 @@ function progressOf(it){
 const SUPABASE_URL = "https://huzurhvdpypruvuaidwp.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JRjoraFkCA5nNPO_X7rvog_rg8A451E";
 const UUID_TABLES = new Set(["inscrieri","comentarii","financiar"]);
-const mapKey = { itemId:"item_id", copilId:"copil_id" }, unmapKey = { item_id:"itemId", copil_id:"copilId" };
+const mapKey = { itemId:"item_id", copilId:"copil_id", parentId:"parent_id" }, unmapKey = { item_id:"itemId", copil_id:"copilId", parent_id:"parentId", comentariu_id:"comentariuId" };
 const toDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[mapKey[k]||k] = v; return r; };
 const fromDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[unmapKey[k]||k] = v == null ? "" : v; return r; };
 const newUuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
@@ -475,7 +495,7 @@ const db = {
   doc(path){
     const [t, id] = path.split("/");
     return {
-      async set(data){ const row = toDb(Object.assign({}, data, { id })); if ("item_id" in row && t === "financiar" && !row.item_id) row.item_id = null; chk(await sb.from(t).upsert(row)); await refetch(t); },
+      async set(data){ const row = toDb(Object.assign({}, data, { id })); if ("item_id" in row && t === "financiar" && !row.item_id) row.item_id = null; if ("parent_id" in row && !row.parent_id) row.parent_id = null; chk(await sb.from(t).upsert(row)); await refetch(t); },
       async delete(){
         if (!cap.admin && (t === "inscrieri" || t === "comentarii")) {
           const ok = chk(await sb.rpc("sterge_propriu", { p_tabel:t, p_id:id, p_token:ui.device }));
@@ -683,6 +703,21 @@ function secBlock(s){
 function kidOptions(sel, emptyLabel){
   return '<option value="">'+esc(emptyLabel)+'</option>' + sortedKids().map(c => '<option value="'+esc(c.id)+'"'+(c.id===sel?' selected':'')+'>'+esc(c.nume)+'</option>').join("");
 }
+function votesOf(cid){ const v = D.voturi.filter(x => x.comentariuId === cid); return { up: v.filter(x=>+x.valoare===1).length, down: v.filter(x=>+x.valoare===-1).length, mine: (v.find(x => x.autor && x.autor === ui.authorHash) || {}).valoare || 0 }; }
+function cmHtml(c, it, w, isReply){
+  const v = votesOf(c.id);
+  return '<div class="cm'+(isReply?' reply':'')+'"><span class="av" style="background:'+avColor(c.copilId)+'">'+esc(initials(c.copilId ? kidName(c.copilId) : "Admin"))+'</span><div class="cbody"><div class="body"><b>'+esc(c.copilId ? kidName(c.copilId) : "Administrator")+'</b><time datetime="'+esc(c.creat)+'">'+esc(ago(c.creat))+'</time><p>'+esc(c.text)+'</p></div>'
+    + '<div class="cacts">'
+    + '<button type="button" class="vote'+(+v.mine===1?' on up':'')+'" data-a="vote" data-id="'+esc(c.id)+'" data-v="1" aria-pressed="'+(+v.mine===1)+'" aria-label="Îmi place"'+(w?'':' disabled')+'>'+ICON.up+(v.up?'<span class="num">'+v.up+'</span>':'')+'</button>'
+    + '<button type="button" class="vote'+(+v.mine===-1?' on down':'')+'" data-a="vote" data-id="'+esc(c.id)+'" data-v="-1" aria-pressed="'+(+v.mine===-1)+'" aria-label="Nu-mi place"'+(w?'':' disabled')+'>'+ICON.down+(v.down?'<span class="num">'+v.down+'</span>':'')+'</button>'
+    + (w ? '<button type="button" class="vote" data-a="reply" data-id="'+esc(isReply ? c.parentId : c.id)+'">'+ICON.reply+'Răspunde</button>' : '')
+    + '</div></div>'
+    + (isMine(c)&&w?'<button class="x" aria-label="Șterge comentariul" title="Șterge" data-a="delC" data-id="'+esc(c.id)+'">'+ICON.x+'</button>':'<span></span>')+'</div>';
+}
+function replyForm(c, it){
+  if (!(kid(ui.me) || cap.admin)) return '<div class="cm reply"><span></span><div><button class="btn small" data-a="pick">Alege copilul ca să răspunzi</button></div><span></span></div>';
+  return '<form class="cform reply" data-a="comment" data-id="'+esc(it.id)+'" data-parent="'+esc(c.id)+'"><label class="sr" for="rp-'+esc(c.id)+'">Răspuns</label><textarea class="ta" id="rp-'+esc(c.id)+'" name="text" maxlength="1000" placeholder="Răspunde-i lui '+esc(c.copilId ? firstName(kidName(c.copilId)) : "administratoarei")+'…">'+esc(ui.drafts["r:"+c.id]||"")+'</textarea><div class="row"><button type="button" class="btn small ghost" data-a="reply" data-id="">Renunță</button><button class="btn primary small" type="submit">Răspunde</button></div></form>';
+}
 function itemCard(it){
   const w = cap.canWrite;
   const isInfo = it.tip === "info";
@@ -728,7 +763,8 @@ function itemCard(it){
   let foot = '<div class="foot"><button class="cbtn" data-a="toggleC" data-id="'+esc(it.id)+'" aria-expanded="'+open+'">'+ICON.chat+(cms.length ? 'Comentarii <span class="n num">'+cms.length+'</span>' : 'Comentează')+'</button>'
     + (cap.admin ? '<button class="btn small ghost" data-a="itemEdit" data-id="'+esc(it.id)+'">'+ICON.pen+'Editează</button>' : '') + '</div>';
   if (open) {
-    foot += '<div class="comments">' + cms.map(c => '<div class="cm"><span class="av" style="background:'+avColor(c.copilId)+'">'+esc(initials(kidName(c.copilId)))+'</span><div class="body"><b>'+esc(c.copilId ? kidName(c.copilId) : "Administrator")+'</b><time datetime="'+esc(c.creat)+'">'+esc(ago(c.creat))+'</time><p>'+esc(c.text)+'</p></div>'+(isMine(c)&&w?'<button class="x" aria-label="Șterge comentariul" title="Șterge" data-a="delC" data-id="'+esc(c.id)+'">'+ICON.x+'</button>':'<span></span>')+'</div>').join("");
+    const top = cms.filter(c => !c.parentId || !cms.some(x => x.id === c.parentId));
+    foot += '<div class="comments">' + top.map(c => cmHtml(c, it, w, false) + cms.filter(r => r.parentId === c.id).map(r => cmHtml(r, it, w, true)).join("") + (ui.replyTo === c.id && w ? replyForm(c, it) : "")).join("");
     if (w) foot += kid(ui.me) || cap.admin
       ? '<form class="cform" data-a="comment" data-id="'+esc(it.id)+'"><label class="sr" for="cm-'+esc(it.id)+'">Comentariu</label><textarea class="ta" id="cm-'+esc(it.id)+'" name="text" maxlength="1000" placeholder="Scrie detalii, un link, o întrebare…">'+esc(ui.drafts[it.id]||"")+'</textarea><div class="row"><button class="btn primary small" type="submit">Trimite</button></div></form>'
       : '<div><button class="btn small" data-a="pick">Alege copilul ca să comentezi</button></div>';
@@ -743,9 +779,13 @@ function viewMoney(){
   const rows = D.financiar.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)) || String(b.creat).localeCompare(String(a.creat)));
   const inn = rows.filter(r=>r.tip==="in").reduce((a,r)=>a+(+r.suma||0),0);
   const out = rows.filter(r=>r.tip==="out").reduce((a,r)=>a+(+r.suma||0),0);
+  const bal = { cont:0, cash:0 };
+  for (const r of rows) { const src = r.sursa === "cash" ? "cash" : "cont", other = src === "cash" ? "cont" : "cash", v = +r.suma||0;
+    if (r.tip === "in") bal[src] += v; else if (r.tip === "out") bal[src] -= v; else if (r.tip === "transfer") { bal[src] -= v; bal[other] += v; } }
   let h = '<section><div class="sec-head"><div><h2>Banii grupei</h2><div class="sub">Tot ce s-a strâns și s-a cheltuit, la vedere pentru toți părinții.</div></div>'
-    + (cap.admin ? '<div class="row"><button class="btn small primary" data-a="finEdit" data-tip="in">'+ICON.plus+'Încasare</button><button class="btn small" data-a="finEdit" data-tip="out">'+ICON.plus+'Cheltuială</button></div>' : '') + '</div>';
-  h += '<div class="money"><div class="tile big"><div class="lab">Sold curent</div><div class="val">'+lei(inn-out)+'</div></div><div class="tile"><div class="lab">Strânși</div><div class="val in">'+lei(inn)+'</div></div><div class="tile"><div class="lab">Cheltuiți</div><div class="val out">'+lei(out)+'</div></div></div></section>';
+    + (cap.admin ? '<div class="row"><button class="btn small primary" data-a="finEdit" data-tip="in">'+ICON.plus+'Încasare</button><button class="btn small" data-a="finEdit" data-tip="out">'+ICON.plus+'Cheltuială</button><button class="btn small" data-a="finEdit" data-tip="transfer">'+ICON.plus+'Mutare cont ↔ cash</button></div>' : '') + '</div>';
+  h += '<div class="money"><div class="tile big"><div class="lab">Sold total</div><div class="val">'+lei(bal.cont+bal.cash)+'</div></div><div class="tile"><div class="lab">În contul clasei</div><div class="val">'+lei(bal.cont)+'</div></div><div class="tile"><div class="lab">Cash la educatoare</div><div class="val">'+lei(bal.cash)+'</div></div></div>'
+    + '<div class="money-sub num"><span>Strânși în total: <b class="in">'+lei(inn)+'</b></span><span>Cheltuiți în total: <b class="out">'+lei(out)+'</b></span></div></section>';
 
   const colls = D.itemi.map(itemFull).filter(i => +i.colecta > 0);
   if (colls.length) {
@@ -765,7 +805,9 @@ function viewMoney(){
   else h += '<div class="ledger">' + rows.map(r => {
     const it = r.itemId ? D.itemi.find(i=>i.id===r.itemId) : null;
     const sub = [it ? it.titlu : "", r.copilId ? kidName(r.copilId) : ""].filter(Boolean).join(" · ");
-    return '<div class="lrow"><span class="d num">'+esc(fmtShort(r.data))+'</span><span class="desc"><b>'+esc(r.descriere || (r.tip==="in"?"Încasare":"Cheltuială"))+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><span class="amt '+(r.tip==="in"?"in":"out")+'">'+(r.tip==="in"?"+":"−")+lei(r.suma)+'</span>'
+    const src = r.sursa === "cash" ? "cash" : "cont"; const where = r.tip === "transfer" ? (src === "cont" ? "Cont → Cash" : "Cash → Cont") : (src === "cash" ? "Cash" : "Cont");
+    const cls = r.tip === "in" ? "in" : r.tip === "out" ? "out" : "mv"; const sign = r.tip === "in" ? "+" : r.tip === "out" ? "−" : "";
+    return '<div class="lrow"><span class="d num">'+esc(fmtShort(r.data))+'</span><span class="desc"><b>'+esc(r.descriere || (r.tip==="in"?"Încasare":r.tip==="out"?"Cheltuială":"Mutare de bani"))+'</b><small><span class="src '+(r.tip==="transfer"?"mv":src)+'">'+where+'</span>'+(sub?' '+esc(sub):'')+'</small></span><span class="amt '+cls+'">'+sign+lei(r.suma)+'</span>'
       + (cap.admin ? '<button class="x" aria-label="Editează" title="Editează" data-a="finEdit" data-id="'+esc(r.id)+'">'+ICON.pen+'</button>' : '<span></span>') + '</div>';
   }).join("") + '</div>';
   return h + '</section>';
@@ -817,10 +859,12 @@ function secForm(id){
     + '<input type="hidden" name="id" value="'+esc(s?s.id:"")+'"></form>');
 }
 function finForm(id, tip){
-  const r = id ? D.financiar.find(x=>x.id===id) : null; const v = r || { tip: tip||"in", data: todayStr() };
+  const r = id ? D.financiar.find(x=>x.id===id) : null; const v = r || { tip: tip||"in", data: todayStr(), sursa: "cont" };
   const its = D.itemi.slice().sort((a,b)=>String(a.titlu).localeCompare(b.titlu,"ro"));
-  modal('<h3>'+(r?'Editează mișcarea':(v.tip==="in"?'Încasare nouă':'Cheltuială nouă'))+'</h3><form id="fFin" class="view" style="gap:12px">'
-    + '<div class="grid2"><label class="field" for="ff-tip"><span>Tip</span><select class="sel" id="ff-tip" name="tip"><option value="in"'+(v.tip==="in"?' selected':'')+'>Încasare (+)</option><option value="out"'+(v.tip==="out"?' selected':'')+'>Cheltuială (−)</option></select></label>'
+  modal('<h3>'+(r?'Editează mișcarea':(v.tip==="in"?'Încasare nouă':v.tip==="out"?'Cheltuială nouă':'Mutare între cont și cash'))+'</h3><form id="fFin" class="view" style="gap:12px">'
+    + '<div class="grid2"><label class="field" for="ff-tip"><span>Tip</span><select class="sel" id="ff-tip" name="tip"><option value="in"'+(v.tip==="in"?' selected':'')+'>Încasare (+)</option><option value="out"'+(v.tip==="out"?' selected':'')+'>Cheltuială (−)</option><option value="transfer"'+(v.tip==="transfer"?' selected':'')+'>Mutare cont ↔ cash</option></select></label>'
+    + '<label class="field" for="ff-src"><span id="ff-src-l">'+(v.tip==="transfer"?'Banii pleacă din':'Unde')+'</span><select class="sel" id="ff-src" name="sursa"><option value="cont"'+(v.sursa!=="cash"?' selected':'')+'>Contul clasei</option><option value="cash"'+(v.sursa==="cash"?' selected':'')+'>Cash la educatoare</option></select></label></div>'
+    + '<div class="grid2">'
     + '<label class="field" for="ff-s"><span>Sumă (lei)</span><input class="inp num" id="ff-s" name="suma" type="number" min="0" step="0.01" inputmode="decimal" required value="'+esc(v.suma||"")+'" autofocus></label></div>'
     + '<label class="field" for="ff-d"><span>Descriere</span><input class="inp" id="ff-d" name="descriere" maxlength="140" placeholder="ex. Baloți de paie, 4 buc." value="'+esc(v.descriere||"")+'"></label>'
     + '<div class="grid2"><label class="field" for="ff-dt"><span>Data</span><input class="inp" id="ff-dt" name="data" type="date" required value="'+esc(v.data||"")+'"></label>'
@@ -880,6 +924,13 @@ document.addEventListener("click", async e => {
       break;
     }
     case "clearResp": t.disabled = true; await setStare(id, { responsabil:"" }) && toast("Retras"); break;
+    case "vote": {
+      const v = +t.dataset.v; const cur = votesOf(id).mine; const nv = +cur === v ? 0 : v;
+      t.disabled = true;
+      await write(async () => { chk(await sb.rpc("voteaza", { p_com:id, p_token:ui.device, p_val:nv })); await refetch("voturi"); });
+      break;
+    }
+    case "reply": ui.replyTo = id || ""; render(); if (id) { const ta = document.getElementById("rp-"+id); if (ta) ta.focus(); } break;
     case "unsign": t.disabled = true; await write(db => db.doc("inscrieri/"+id).delete(), "Retras"); break;
     case "delC": {
       if (ui.confirm !== "c"+id) { ui.confirm = "c"+id; t.innerHTML = '<span style="font-size:11px;font-weight:800;color:var(--berry)">Sigur?</span>'; t.style.width = "auto"; setTimeout(()=>{ if (ui.confirm==="c"+id) { ui.confirm=null; render(); } }, 3500); break; }
@@ -905,12 +956,13 @@ document.addEventListener("click", async e => {
       const k = t.dataset.kid; const it = D.itemi.find(i=>i.id===id); const ex = D.financiar.find(r => r.tip==="in" && r.itemId===id && r.copilId===k);
       t.disabled = true;
       if (ex) await write(db => db.doc("financiar/"+ex.id).delete(), "Contribuție scoasă");
-      else await write(db => db.collection("financiar").doc().set({ tip:"in", suma:+it.colecta||0, descriere:"Contribuție "+it.titlu, data:todayStr(), itemId:id, copilId:k, creat:new Date().toISOString() }), "Contribuție notată ✓");
+      else await write(db => db.collection("financiar").doc().set({ tip:"in", sursa:"cont", suma:+it.colecta||0, descriere:"Contribuție "+it.titlu, data:todayStr(), itemId:id, copilId:k, creat:new Date().toISOString() }), "Contribuție notată ✓");
       break;
     }
   }
 });
 
+document.addEventListener("change", e => { if (e.target && e.target.id === "ff-tip") { const l = document.getElementById("ff-src-l"); if (l) l.textContent = e.target.value === "transfer" ? "Banii pleacă din" : "Unde"; } });
 document.addEventListener("change", async e => {
   const t = e.target.closest("select[data-a]"); if (!t) return;
   const id = t.dataset.id;
@@ -922,7 +974,7 @@ document.addEventListener("input", e => {
   const t = e.target;
   if (t.id === "pickQ") { const q = t.value.trim().toLowerCase(); document.querySelectorAll("#pickList button").forEach(b => b.hidden = q && !b.dataset.n.includes(q)); return; }
   const f = t.closest("form[data-a]"); if (!f) return;
-  if (f.dataset.a === "comment") ui.drafts[f.dataset.id] = t.value;
+  if (f.dataset.a === "comment") ui.drafts[f.dataset.parent ? "r:"+f.dataset.parent : f.dataset.id] = t.value;
   if (f.dataset.a === "sign") { if (t.name === "bucati") ui.qty[f.dataset.id] = t.value; else ui.notes[f.dataset.id] = t.value; }
 });
 
@@ -936,8 +988,8 @@ document.addEventListener("submit", async e => {
   try {
     if (f.dataset.a === "comment") {
       const text = (fd.text||"").trim(); if (!text) return;
-      const id = f.dataset.id; const kidId = kid(ui.me) ? ui.me : "";
-      if (await write(db => db.collection("comentarii").doc().set({ itemId:id, copilId:kidId, text, autor:authorId(), creat:now }), "Comentariu trimis")) { ui.drafts[id] = ""; document.activeElement && document.activeElement.blur(); render(); }
+      const id = f.dataset.id; const parent = f.dataset.parent || ""; const kidId = kid(ui.me) ? ui.me : "";
+      if (await write(db => db.collection("comentarii").doc().set({ itemId:id, copilId:kidId, text, parentId:parent, autor:authorId(), creat:now }), parent ? "Răspuns trimis" : "Comentariu trimis")) { ui.drafts[parent ? "r:"+parent : id] = ""; if (parent) ui.replyTo = ""; document.activeElement && document.activeElement.blur(); render(); }
     } else if (f.dataset.a === "sign") {
       if (!needMe()) return; const id = f.dataset.id;
       const bucati = Math.max(0, Math.min(999, parseInt(fd.bucati, 10) || 0));
@@ -959,7 +1011,7 @@ document.addEventListener("submit", async e => {
       if (await write(db => db.doc("sectiuni/"+id).set(body), "Secțiune salvată")) closeModal();
     } else if (fid === "fFin") {
       const id = fd.id || newUuid(); const prev = D.financiar.find(r=>r.id===id) || {};
-      const body = { tip:fd.tip, suma:+fd.suma||0, descriere:fd.descriere.trim(), data:fd.data, itemId:fd.itemId||"", copilId:fd.copilId||"", creat: prev.creat || now };
+      const body = { tip:fd.tip, sursa: fd.sursa === "cash" ? "cash" : "cont", suma:+fd.suma||0, descriere:fd.descriere.trim(), data:fd.data, itemId:fd.itemId||"", copilId:fd.copilId||"", creat: prev.creat || now };
       if (await write(db => db.doc("financiar/"+id).set(body), "Salvat")) closeModal();
     } else if (fid === "fLogin") {
       const r = await sb.auth.signInWithPassword({ email: fd.email.trim(), password: fd.parola });
