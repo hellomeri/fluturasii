@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#D6E8F8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="description" content="Portalul grupei mici B, Grădinița 246: evenimente, necesar, cine se ocupă de ce și banii grupei.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-26 -23 52 44'%3E%3Cellipse cx='-11' cy='-8' rx='12' ry='9' transform='rotate(-25 -11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='11' cy='-8' rx='12' ry='9' transform='rotate(25 11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='-9' cy='8' rx='8' ry='6.5' transform='rotate(30 -9 8)' fill='%23A88BEF'/%3E%3Cellipse cx='9' cy='8' rx='8' ry='6.5' transform='rotate(-30 9 8)' fill='%23A88BEF'/%3E%3Crect x='-2' y='-12' width='4' height='26' rx='2' fill='%232B2238'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
@@ -49,6 +50,13 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+body.gated .tabs,body.gated .bottom-nav,body.gated #meBtn{display:none}
+body.gated main{padding-bottom:48px}
+.gate{display:grid;place-items:center;padding-block:24px}
+.gate-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;max-width:440px;width:100%;display:grid;gap:12px;box-shadow:var(--shadow)}
+.gate-card h2{font-size:24px;font-weight:800}
+.gate-card p{margin:0}
+.gate-err{color:var(--berry);font-weight:700}
 img{max-width:100%}
 html{padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -545,7 +553,19 @@ async function checkAdmin(){
   const r = await sb.rpc("is_admin");
   cap.admin = !!r.data;
 }
+const gateOk = () => { if (LS.get("fl_ok") === "1") return true; try { return sessionStorage.getItem("fl_ok") === "1"; } catch(e){ return false; } };
+const gateNorm = v => String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
+function showGate(err){
+  document.body.classList.add("gated");
+  $("#view").innerHTML = '<div class="gate"><div class="gate-card"><h2>Bun venit la Fluturașii!</h2><p>Portalul e doar pentru părinții și educatoarele grupei. Răspunde la întrebare ca să intri.</p>'
+    + '<form id="fGate" class="view" style="gap:12px"><label class="field" for="fg-a"><span>Cum le cheamă pe educatoarele Fluturașilor?</span><input class="inp" id="fg-a" name="raspuns" autocomplete="off" autocapitalize="words" required autofocus></label>'
+    + (err ? '<p class="gate-err" role="alert">Nu e răspunsul corect. Mai încearcă.</p>' : '')
+    + '<button class="btn primary" type="submit">Intră</button></form><p class="hint">Te întreabă o singură dată pe acest telefon sau calculator.</p></div></div>';
+  const f = document.getElementById("fg-a"); if (f) f.focus();
+}
 async function boot(){
+  if (!gateOk()) { showGate(); return; }
+  document.body.classList.remove("gated");
   render();
   if (!window.supabase || SUPABASE_URL.indexOf("__") === 0) { ui.mode = "nodb"; render(); return; }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1082,6 +1102,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#modalR
 document.addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target; const fid = f.getAttribute("id"); const fd = Object.fromEntries(new FormData(f).entries());
+  if (fid === "fGate") { if (gateNorm(fd.raspuns).includes("raluca")) { LS.set("fl_ok","1"); try { sessionStorage.setItem("fl_ok","1"); } catch(e){} boot(); } else showGate(true); return; }
   const btn = f.querySelector('[type="submit"]'); if (btn) btn.disabled = true;
   const now = new Date().toISOString();
   try {
