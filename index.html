@@ -292,6 +292,8 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .tick:hover{border-color:var(--meadow)}
 .tick.on{border-style:solid;border-color:var(--meadow);background:var(--meadow-soft);color:var(--meadow)}
 .tick svg{width:18px;height:18px}
+.tick .tick-who{font-weight:700;opacity:.75}
+.mine .hint{flex-basis:100%}
 .count{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px}
 .count b{color:var(--ink);font-size:15px}
 details.all > summary{cursor:pointer;font-size:13.5px;font-weight:800;color:var(--muted);list-style:none;display:inline-flex;align-items:center;gap:6px;padding:4px 0}
@@ -957,7 +959,7 @@ function itemCard(it){
   } else if (tip === "fiecare") {
     const su = signups(it.id); const doneIds = new Set(su.map(s=>s.copilId)); const tot = kidsTotal(); const n = su.filter(s=>kid(s.copilId)).length;
     body = '<div><div class="count num"><span>Gata pentru <b>'+n+'</b> din '+tot+' copii</span><span>'+(tot?Math.round(n/tot*100):0)+'%</span></div><div class="bar"><i style="width:'+(tot?n/tot*100:0)+'%"></i></div></div>';
-    if (isChild(ui.me) && w) { const on = doneIds.has(ui.me); body += '<div class="mine"><button class="tick'+(on?' on':'')+'" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(ui.me)+'" aria-pressed="'+on+'">'+ICON.check+(on ? esc(firstName(kidName(ui.me)))+': gata' : 'Bifează pentru '+esc(firstName(kidName(ui.me))))+'</button></div>'; }
+    if (isChild(ui.me) && w) { const on = doneIds.has(ui.me); body += '<div class="mine"><button class="tick'+(on?' on':'')+'" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(ui.me)+'" aria-pressed="'+on+'">'+ICON.check+(it.bifa ? esc(it.bifa)+' <span class="tick-who">('+esc(firstName(kidName(ui.me)))+')</span>' : (on ? esc(firstName(kidName(ui.me)))+': gata' : 'Bifează pentru '+esc(firstName(kidName(ui.me)))))+'</button>'+(it.bifa && !on ? '<span class="hint">Apasă dacă e valabil pentru copilul tău.</span>' : '')+'</div>'; }
     body += '<details class="all"><summary>Vezi toți copiii</summary><div class="kids">'+sortedKids().map(c => { const on = doneIds.has(c.id); const can = w && (cap.admin || c.id === ui.me); return '<'+(can?'button type="button" data-a="tick" data-id="'+esc(it.id)+'" data-kid="'+esc(c.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(c.nume)+'</span></'+(can?'button':'div')+'>'; }).join("")+'</div></details>';
   } else if (tip === "rotatie") {
     const su = signups(it.id); const months = schoolMonths(); const cur = months[0] && months[0].key;
@@ -1092,7 +1094,8 @@ function itemForm(id, secId){
     + '<label class="field" for="fi-d"><span>Detalii</span><textarea class="ta" id="fi-d" name="detalii" maxlength="2000">'+esc(v.detalii||"")+'</textarea></label>'
     + '<div class="grid2"><label class="field" for="fi-c"><span>Cantitate</span><input class="inp" id="fi-c" name="cantitate" maxlength="60" placeholder="ex. 4 bucăți" value="'+esc(v.cantitate||"")+'"></label>'
     + '<label class="field" for="fi-cost"><span>Cost estimat</span><input class="inp" id="fi-cost" name="cost" maxlength="60" placeholder="ex. ~300 lei / an" value="'+esc(v.cost||"")+'"></label></div>'
-    + '<div class="grid2"><label class="field" for="fi-st"><span>Status</span><select class="sel" id="fi-st" name="status">'+Object.entries(STATUS).map(([k,l])=>'<option value="'+k+'"'+(k===st.status?' selected':'')+'>'+l+'</option>').join("")+'</select></label></div>'
+    + '<div class="grid2"><label class="field" for="fi-st"><span>Status</span><select class="sel" id="fi-st" name="status">'+Object.entries(STATUS).map(([k,l])=>'<option value="'+k+'"'+(k===st.status?' selected':'')+'>'+l+'</option>').join("")+'</select></label>'
+    + '<label class="field" for="fi-b"><span>Text pe bifă (la „Fiecare copil”)</span><input class="inp" id="fi-b" name="bifa" maxlength="60" placeholder="ex. Am deja ie" value="'+esc(v.bifa||"")+'"></label></div>'
     + '<p class="hint">„Cine se ocupă”: unul sau mai mulți părinți preiau, fiecare spune câte bucăți. „Se înscrie oricine”: fiecare scrie ce aduce. „Fiecare copil”: toți bifează. „Pe rând, lunar”: câte un copil pe lună. „Doar de știut”: informație pentru părinți, fără bife.</p>'
     + '<div class="acts">'+(it?'<button type="button" class="btn danger left" data-a="delItem" data-id="'+esc(it.id)+'">'+(ui.confirm==="item"+it.id?'Sigur? Apasă iar':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
     + '<input type="hidden" name="id" value="'+esc(it?it.id:"")+'"></form>');
@@ -1272,7 +1275,7 @@ document.addEventListener("submit", async e => {
       const id = fd.id || ("i"+uid());
       const prev = D.itemi.find(i=>i.id===id) || {};
       const maxO = Math.max(0, ...D.itemi.filter(i=>i.sectiune===fd.sectiune).map(i=>+i.ordine||0));
-      const body = { sectiune:fd.sectiune, titlu:fd.titlu.trim(), detalii:fd.detalii.trim(), tip:fd.tip, cantitate:fd.cantitate.trim(), cost:fd.cost.trim(), ordine: prev.sectiune===fd.sectiune ? (prev.ordine||maxO+1) : maxO+1, creat: prev.creat || now };
+      const body = { sectiune:fd.sectiune, titlu:fd.titlu.trim(), detalii:fd.detalii.trim(), tip:fd.tip, cantitate:fd.cantitate.trim(), cost:fd.cost.trim(), bifa:(fd.bifa||"").trim(), ordine: prev.sectiune===fd.sectiune ? (prev.ordine||maxO+1) : maxO+1, creat: prev.creat || now };
       const ok = await write(async db => { await db.doc("itemi/"+id).set(body); if (((D.stari[id]||{}).status||"todo") !== fd.status) { const cur = Object.assign({ status:"todo", responsabil:"" }, D.stari[id]||{}); delete cur.id; await db.doc("stari/"+id).set(Object.assign(cur, { status:fd.status, modificat:now })); } }, "Item salvat");
       if (ok) closeModal();
     } else if (fid === "fSec") {
