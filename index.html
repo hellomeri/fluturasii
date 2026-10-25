@@ -739,7 +739,7 @@ function viewGuide(){
   const sec = (id, emoji, title, steps) => '<section class="gsec" id="g-'+id+'"><h2><span aria-hidden="true">'+emoji+'</span> '+title+'</h2><ol class="gsteps">'+steps+'</ol></section>';
   let h = '<section><div class="sec-head"><div><h2>Cum folosești portalul</h2><div class="sub">Ghid pentru părinți. Durează 2 minute.</div></div><button class="btn small" data-a="tab" data-k="acasa">Înapoi la Acasă</button></div>'
     + '<nav class="gtoc" aria-label="Cuprins">'
-    + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Gata, am terminat"],["comentarii","Comentarii"],["bani","Banii grupei"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
+    + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Statusul"],["comentarii","Comentarii"],["bani","Banii grupei"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
     + '</nav></section>';
   h += sec("start","🚪","Prima intrare",
       step(1,"Răspunde la întrebare","<p>Prima dată, portalul te întreabă cum le cheamă pe educatoare. Scrie numele lor și apasă "+B("Intră","dark")+". Întreabă o singură dată pe fiecare telefon.</p>")
@@ -758,12 +758,14 @@ function viewGuide(){
       step(1,"Scrie ce aduci","<p>La itemii cu eticheta "+B("Se înscrie oricine","chip")+", scrie în căsuță ce aduci, de exemplu „2 ghivece cu crizanteme”.</p>")
     + step(2,"Apasă Mă înscriu","<p>Apasă "+B("Mă înscriu","blue")+". Te poți înscrie de mai multe ori, dacă aduci mai multe lucruri.</p>"));
   h += sec("bifez","✅","Bifez pentru copilul meu (coajă de portocală, poză, cadou)",
-      step(1,"Bifează când e gata","<p>La itemii cu eticheta "+B("Fiecare copil","chip")+", apasă "+B("✓ Bifează pentru Vlad","tick")+" când ai pregătit lucrul. Se face verde.</p>")
+      step("•","E lista ta de pregătit","<p>Itemii cu eticheta "+B("Fiecare copil","chip")+" sunt ca un checklist: fiecare părinte pregătește lucrul acela pentru copilul lui (de ex. coaja de portocală, poza în ramă, cadoul etichetat). Îi găsești pe toți și la „Ce ai tu de făcut”, pe Acasă.</p>")
+    + step(1,"Bifează când e gata","<p>Când ai pregătit lucrul pentru copilul tău, apasă "+B("✓ Bifează pentru Vlad","tick")+". Se face verde și dispare din „Ce ai tu de făcut”. La „Vezi toți copiii” se vede cine e gata.</p>")
     + step(2,"Ai bifat din greșeală?","<p>Apasă încă o dată și se debifează.</p>"));
   h += sec("luna","🗓️","Iau o lună (hârtie igienică umedă)",
       step(1,"Alege o lună liberă","<p>Lângă o lună care scrie „liber”, apasă "+B("Iau eu")+". Luna e a ta și apare la „Ce ai tu de făcut”.</p>"));
-  h += sec("status","🏁","Gata, am terminat",
-      step(1,"Schimbă statusul","<p>Sus, pe fiecare card, e un buton: "+B("De făcut","st-todo")+" → "+B("În lucru","st-prog")+" → "+B("Rezolvat","st-done")+". Când ai adus sau ai cumpărat ce ai preluat, alege <b>Rezolvat</b>. Cardul trece la „Rezolvate”.</p>"));
+  h += sec("status","🏁","Cum știu în ce stadiu e un lucru",
+      step("•","Statusul de pe card","<p>Sus, pe fiecare card, scrie "+B("De făcut","st-todo")+", "+B("În lucru","st-prog")+" sau "+B("Rezolvat","st-done")+". Statusul îl schimbă doar administratoarea. Când un lucru e rezolvat, cardul trece la „Rezolvate”.</p>")
+    + step("•","Ai terminat ce ai preluat?","<p>Scrie un comentariu pe card (de ex. „Am adus baloții”) sau anunță administratoarea, iar ea marchează itemul ca rezolvat.</p>"));
   h += sec("comentarii","💬","Comentarii, întrebări, linkuri",
       step(1,"Scrie un comentariu","<p>Sub fiecare card apasă "+B("💬 Comentează")+", scrie și apasă "+B("Trimite","dark")+". E locul bun pentru linkuri, oferte sau întrebări.</p>")
     + step(2,"Răspunde și votează","<p>Sub orice comentariu poți apăsa "+B("↩ Răspunde")+" sau poți vota cu "+B("👍")+" / "+B("👎")+" (de exemplu, la două oferte de Moș).</p>"));
@@ -917,14 +919,14 @@ function itemCard(it){
   let meta = isInfo ? '' : '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
   if (it.cantitate) meta += '<span class="chip lilac">'+esc(it.cantitate)+'</span>';
   if (it.cost) meta += '<span class="chip wing">'+esc(it.cost)+'</span>';
-  const statusSel = '<label class="sr" for="st-'+esc(it.id)+'">Status</label><select id="st-'+esc(it.id)+'" class="status '+esc(it.status)+'" data-a="status" data-id="'+esc(it.id)+'"'+(w?'':' disabled')+'>'
+  const statusSel = '<label class="sr" for="st-'+esc(it.id)+'">Status</label><select id="st-'+esc(it.id)+'" class="status '+esc(it.status)+'" data-a="status" data-id="'+esc(it.id)+'"'+(w && cap.admin?'':' disabled title="Statusul îl schimbă administratoarea"')+'>'
     + Object.entries(STATUS).map(([k,l]) => '<option value="'+k+'"'+(k===it.status?' selected':'')+'>'+l+'</option>').join("") + '</select>';
   let body = "";
   const tip = it.tip || "single";
   if (tip === "single" || tip === "multi") {
     const su = signups(it.id); const tgt = targetOf(it); const taken = takenOf(it);
     const rows = su.map(s => personRow(s.copilId, [ (+s.bucati>0 ? s.bucati+" buc." : ""), s.nota ].filter(Boolean).join(" · "), isMine(s)&&w ? '<button class="x" title="Retrage" aria-label="Retrage" data-a="unsign" data-id="'+esc(s.id)+'">'+ICON.x+'</button>' : ''));
-    if (it.responsabil && kid(it.responsabil) && !su.some(s=>s.copilId===it.responsabil)) rows.unshift(personRow(it.responsabil, "", w ? '<button class="x" title="Retrage" aria-label="Retrage" data-a="clearResp" data-id="'+esc(it.id)+'">'+ICON.x+'</button>' : ''));
+    if (it.responsabil && kid(it.responsabil) && !su.some(s=>s.copilId===it.responsabil)) rows.unshift(personRow(it.responsabil, "", w && cap.admin ? '<button class="x" title="Retrage" aria-label="Retrage" data-a="clearResp" data-id="'+esc(it.id)+'">'+ICON.x+'</button>' : ''));
     if (tgt) { const pct = Math.min(100, taken/tgt*100); body += '<div><div class="count num"><span>Preluate <b>'+taken+'</b> din '+tgt+'</span><span>'+(taken>=tgt ? 'Complet' : 'Mai trebuie '+(tgt-taken))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>'; }
     body += rows.length ? '<div class="people">'+rows.join("")+'</div>' : '<div class="hint">'+(tip==="single" ? 'Nu s-a ocupat nimeni încă.' : 'Nu s-a înscris nimeni încă.')+'</div>';
     if (w && it.status !== "done") {
@@ -1249,7 +1251,7 @@ document.addEventListener("submit", async e => {
       const who = kid(fd.pentru) ? fd.pentru : ui.me;
       if (await write(db => db.collection("inscrieri").doc().set({ itemId:id, copilId:who, nota:(fd.nota||"").trim(), bucati, cheie:"", autor:authorId(), creat:now }), bucati ? "Ai preluat "+bucati+" buc. Mulțumim!" : "Te-ai înscris. Mulțumim!")) {
         ui.notes[id] = ""; delete ui.qty[id];
-        if (((D.stari[id]||{}).status||"todo") === "todo") await setStare(id, { status:"progress" });
+        if (cap.admin && ((D.stari[id]||{}).status||"todo") === "todo") await setStare(id, { status:"progress" });
         document.activeElement && document.activeElement.blur(); render();
       }
     } else if (fid === "fItem") {
