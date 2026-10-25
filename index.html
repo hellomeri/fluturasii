@@ -711,6 +711,7 @@ function render(){
   if (!D.sectiuni.length && !D.itemi.length) {
     v.innerHTML = '<div class="state"><h3>Încă nu e nimic pe listă</h3>'+(cap.admin ? 'Adaugă prima secțiune, apoi itemii ei.<div style="margin-top:14px"><button class="btn primary" data-a="secEdit">'+ICON.plus+'Secțiune nouă</button></div>' : 'Administratoarea grupei adaugă aici necesarul și evenimentele.')+'</div>'; return;
   }
+  if (!kid(ui.me) && D.copii.length && !$("#modalRoot").innerHTML) setTimeout(() => { if (!kid(ui.me) && !$("#modalRoot").innerHTML) openPicker(null, true); }, 0);
   const html = ({ acasa: viewHome, necesar: viewNecesar, evenimente: viewEvents, bani: viewMoney, ghid: viewGuide }[ui.tab] || viewHome)();
   v.innerHTML = (cap.admin ? adminBar() : "") + html + '<p class="foot-note">Bifele și comentariile se salvează automat și le văd toți părinții. <button class="linkbtn" data-a="tab" data-k="ghid">Ghid de folosire</button><br>'+(cap.admin ? 'Ești logată ca administratoare ('+esc(ui.adminEmail)+'). <button class="linkbtn" data-a="logout">Ieși</button>' : '<button class="linkbtn" data-a="login">Administrare</button>')+'</p>';
 }
@@ -1055,13 +1056,14 @@ function viewMoney(){
 function modal(html){ $("#modalRoot").innerHTML = '<div class="scrim" data-a="closeScrim"><div class="modal" role="dialog" aria-modal="true">'+html+'</div></div>'; const f = $("#modalRoot [autofocus]"); if (f) f.focus(); }
 function closeModal(){ $("#modalRoot").innerHTML = ""; ui.confirm = null; }
 let afterPick = null;
-function openPicker(then){
-  afterPick = then || null;
+let pickForced = false;
+function openPicker(then, forced){
+  afterPick = then || null; pickForced = !!forced;
   const ks = sortedKids();
-  modal('<h3>Cine ești?</h3><p class="hint">Alege copilul tău (sau numele tău, dacă ești educatoare). Alegerea rămâne pe acest telefon sau calculator. O poți schimba oricând din colțul de sus.</p>'
+  modal('<h3>Cine ești?</h3><p class="hint">Alege copilul tău (sau numele tău, dacă ești educatoare). Alegerea rămâne pe acest telefon sau calculator.</p>'
     + '<label class="sr" for="pickQ">Caută</label><input class="inp" id="pickQ" placeholder="Caută după nume" autocomplete="off">'
     + '<div class="pick" id="pickList">'+ks.concat(sortedEdus()).map(c => '<button type="button" data-a="pickKid" data-id="'+esc(c.id)+'" class="'+(c.id===ui.me?'on':'')+'" data-n="'+esc(c.nume.toLowerCase())+'">'+avHtml(c.id, c.nume)+'<span>'+esc(c.nume)+'</span></button>').join("")+'</div>'
-    + '<div class="acts">'+(ui.me?'<button class="btn ghost left" data-a="pickKid" data-id="">Doar mă uit</button>':'')+'<button class="btn" data-a="close">Închide</button></div>');
+    + (forced ? '<p class="hint">Alege numele ca să intri în portal. Îl poți schimba oricând din colțul de sus.</p>' : '<div class="acts"><button class="btn" data-a="close">Închide</button></div>'));
 }
 
 function itemForm(id, secId){
@@ -1136,7 +1138,7 @@ function needMe(then){ if (kid(ui.me)) return true; openPicker(then); return fal
 document.addEventListener("click", async e => {
   const t = e.target.closest("[data-a]"); if (!t) return;
   const a = t.dataset.a, id = t.dataset.id;
-  if (a === "closeScrim") { if (e.target === t) closeModal(); return; }
+  if (a === "closeScrim") { if (e.target === t && !pickForced) closeModal(); return; }
   if (t.tagName === "SELECT" || t.tagName === "FORM") return;
   switch (a) {
     case "tab": if (t.dataset.k === "ghid") LS.set("fl_ghid","1"); setTab(t.dataset.k); break;
@@ -1144,7 +1146,7 @@ document.addEventListener("click", async e => {
     case "goG": goTo("g-"+id); break;
     case "pick": openPicker(); break;
     case "close": closeModal(); break;
-    case "pickKid": ui.me = id; LS.set("fl_me", id || null); closeModal(); render(); if (afterPick) { const f = afterPick; afterPick = null; f(); } break;
+    case "pickKid": if (!id) break; pickForced = false; ui.me = id; LS.set("fl_me", id); closeModal(); render(); if (afterPick) { const f = afterPick; afterPick = null; f(); } break;
     case "goSec": { const s = sec(id); setTab(tabOfSec(s)); goTo("sec-"+id); break; }
     case "goItem": { const it = D.itemi.find(i=>i.id===id); if (!it) break; setTab(tabOfSec(sec(it.sectiune))); goTo("item-"+id); break; }
     case "toggleC": ui.openC.has(id) ? ui.openC.delete(id) : ui.openC.add(id); render(); if (ui.openC.has(id)) { const ta = document.getElementById("cm-"+id); if (ta && matchMedia("(min-width:721px)").matches) ta.focus(); } break;
@@ -1228,7 +1230,7 @@ document.addEventListener("input", e => {
   if (f.dataset.a === "sign") { if (t.name === "bucati") ui.qty[f.dataset.id] = t.value; else ui.notes[f.dataset.id] = t.value; }
 });
 
-document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#modalRoot").innerHTML) closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#modalRoot").innerHTML && !pickForced) closeModal(); });
 
 document.addEventListener("submit", async e => {
   e.preventDefault();
