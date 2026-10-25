@@ -344,6 +344,10 @@ button.kid:hover{background:var(--surface-2)}
 .vote.on.up{color:var(--wing-ink);background:var(--wing-soft)}
 .vote.on.down{color:var(--berry);background:var(--berry-soft)}
 .vote[disabled]{cursor:default;opacity:.7}
+.sacts{padding:0 0 2px 44px;margin-top:-2px}
+.sreps{padding-left:4px}
+.lnk{color:var(--wing-ink);font-weight:700;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere;word-break:break-word}
+.person .t span .lnk{font-weight:700}
 .cm .body b{font-size:13px;font-weight:800}
 .cm .body time{font-size:12px;color:var(--muted);margin-left:6px}
 .cm .body p{margin:2px 0 0;font-size:14.5px;white-space:pre-line;overflow-wrap:anywhere}
@@ -525,8 +529,8 @@ const STATUS = { todo:"De făcut", progress:"În lucru", done:"Rezolvat" };
 const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar", info:"Doar de știut" };
 
 /* ---------- stare ---------- */
-const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], colecte:[], financiar:[], setari:{} };
-const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","colecte","financiar","setari"];
+const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], voturi_insc:[], colecte:[], financiar:[], setari:{} };
+const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","voturi_insc","colecte","financiar","setari"];
 const ui = {
   tab: ["acasa","necesar","evenimente","bani","ghid"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
   me: LS.get("fl_me") || "",
@@ -602,6 +606,12 @@ function calendarCard(){
 const targetOf = it => { const m = /^\s*(\d+)/.exec(String(it.cantitate||"")); return m ? +m[1] : 0; };
 const takenOf = it => signups(it.id).reduce((a,x)=>a+(+x.bucati||0),0);
 function avHtml(id, label){ return isEdu(id) ? '<span class="av edu" title="Educatoare" aria-label="Educatoare">👩‍🏫</span>' : '<span class="av" style="background:'+avColor(id)+'">'+esc(initials(label || kidName(id)))+'</span>'; }
+function shortUrl(url){ try { const u = new URL(url); let p = decodeURIComponent(u.pathname).replace(/\/$/, ""); if (p.length > 26) p = p.slice(0, 26) + "…"; return u.hostname.replace(/^www\./, "") + p; } catch(e){ return url; } }
+function linkify(raw){
+  raw = String(raw ?? ""); const re = /https?:\/\/[^\s]+/g; let out = "", last = 0, m;
+  while ((m = re.exec(raw))) { const url = m[0].replace(/[),.;:!?»”"']+$/, ""); out += esc(raw.slice(last, m.index)) + '<a class="lnk" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">🔗 '+esc(shortUrl(url))+'</a>'; last = m.index + url.length; re.lastIndex = last; }
+  return out + esc(raw.slice(last));
+}
 function personRow(kidId, sub, action){ return '<div class="person">'+avHtml(kidId)+'<span class="t"><b>'+esc(kidName(kidId))+'</b>'+(sub?' <span>· '+esc(sub)+'</span>':'')+'</span>'+action+'</div>'; }
 function progressOf(it){
   if (it.status === "done") return 1;
@@ -615,7 +625,7 @@ function progressOf(it){
 const SUPABASE_URL = "https://huzurhvdpypruvuaidwp.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JRjoraFkCA5nNPO_X7rvog_rg8A451E";
 const UUID_TABLES = new Set(["inscrieri","comentarii","financiar"]);
-const mapKey = { itemId:"item_id", copilId:"copil_id", parentId:"parent_id", colectaId:"colecta_id" }, unmapKey = { item_id:"itemId", copil_id:"copilId", parent_id:"parentId", comentariu_id:"comentariuId", colecta_id:"colectaId" };
+const mapKey = { itemId:"item_id", copilId:"copil_id", parentId:"parent_id", colectaId:"colecta_id", inscriereId:"inscriere_id" }, unmapKey = { inscriere_id:"inscriereId", item_id:"itemId", copil_id:"copilId", parent_id:"parentId", comentariu_id:"comentariuId", colecta_id:"colectaId" };
 const toDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[mapKey[k]||k] = v; return r; };
 const fromDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[unmapKey[k]||k] = v == null ? "" : v; return r; };
 const newUuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
@@ -636,7 +646,7 @@ const db = {
   doc(path){
     const [t, id] = path.split("/");
     return {
-      async set(data){ const row = toDb(Object.assign({}, data, { id })); if ("item_id" in row && t === "financiar" && !row.item_id) row.item_id = null; if ("parent_id" in row && !row.parent_id) row.parent_id = null; if ("colecta_id" in row && !row.colecta_id) row.colecta_id = null; chk(await sb.from(t).upsert(row)); await refetch(t); },
+      async set(data){ const row = toDb(Object.assign({}, data, { id })); if ("item_id" in row && t === "financiar" && !row.item_id) row.item_id = null; if ("parent_id" in row && !row.parent_id) row.parent_id = null; if ("colecta_id" in row && !row.colecta_id) row.colecta_id = null; if ("inscriere_id" in row && !row.inscriere_id) row.inscriere_id = null; chk(await sb.from(t).upsert(row)); await refetch(t); },
       async delete(){
         if (!cap.admin && (t === "inscrieri" || t === "comentarii")) {
           const ok = chk(await sb.rpc("sterge_propriu", { p_tabel:t, p_id:id, p_token:ui.device }));
@@ -811,7 +821,7 @@ function viewGuide(){
 function viewHome(){
   let h = "";
   if (LS.get("fl_ghid") !== "1") h += '<div class="notice guide-hint"><span class="gh-ico" aria-hidden="true">👋</span><div style="flex:1;min-width:0"><div class="who">Prima dată aici?</div><p>Vezi în 2 minute cum folosești portalul: cum preiei ceva, cum bifezi, cum comentezi.</p><div class="row" style="margin-top:10px"><button class="btn small primary" data-a="tab" data-k="ghid">Deschide ghidul</button><button class="btn small ghost" data-a="ghidOk">Am înțeles</button></div></div></div>';
-  if (D.setari.anunt) h += '<div class="notice">'+ICON.bell+'<div><div class="who">Anunț</div><p>'+esc(D.setari.anunt)+'</p></div></div>';
+  if (D.setari.anunt) h += '<div class="notice">'+ICON.bell+'<div><div class="who">Anunț</div><p>'+linkify(D.setari.anunt)+'</p></div></div>';
   const t = todayStr();
   const up = D.sectiuni.filter(s => isEvent(s) && s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data));
   h += '<section><div class="sec-head"><div><h2>Evenimente următoare</h2><div class="sub">Ce urmează la grupă și cât e gata din pregătiri.</div></div></div>';
@@ -924,7 +934,7 @@ function viewEvents(){
 function secBlock(s){
   const its = itemsOf(s.id); const open = its.filter(i=>i.tip==="info" || i.status!=="done"); const done = its.filter(i=>i.tip!=="info" && i.status==="done");
   let h = '<section class="secblock" id="sec-'+esc(s.id)+'"><div class="sec-head"><div class="sec-title">'+(s.data ? calTile(s) : (s.icon ? '<div class="icotile" aria-hidden="true">'+esc(s.icon)+'</div>' : ''))+'<div style="min-width:0"><h2>'+(s.data && s.icon ? '<span class="h-ico" aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+'</h2>'
-    + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? esc(s.descriere) : '')+'</div></div></div>'
+    + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? linkify(s.descriere) : '')+'</div></div></div>'
     + (cap.admin ? '<div class="row"><button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button></div>' : '')
     + '</div>';
   if (!its.length) h += '<div class="empty">Nu sunt itemi aici încă.</div>';
@@ -937,13 +947,32 @@ function kidOptions(sel, emptyLabel){
   return '<option value="">'+esc(emptyLabel)+'</option>' + sortedKids().map(c => '<option value="'+esc(c.id)+'"'+(c.id===sel?' selected':'')+'>'+esc(c.nume)+'</option>').join("");
 }
 function votesOf(cid){ const v = D.voturi.filter(x => x.comentariuId === cid); return { up: v.filter(x=>+x.valoare===1).length, down: v.filter(x=>+x.valoare===-1).length, mine: (v.find(x => x.autor && x.autor === ui.authorHash) || {}).valoare || 0 }; }
-function cmHtml(c, it, w, isReply){
+function votesOfInsc(iid){ const v = D.voturi_insc.filter(x => x.inscriereId === iid); return { up: v.filter(x=>+x.valoare===1).length, down: v.filter(x=>+x.valoare===-1).length, mine: (v.find(x => x.autor && x.autor === ui.authorHash) || {}).valoare || 0 }; }
+function voteBtns(kind, id, v, w){
+  const a = kind === "i" ? "voteI" : "vote";
+  return '<button type="button" class="vote'+(+v.mine===1?' on up':'')+'" data-a="'+a+'" data-id="'+esc(id)+'" data-v="1" aria-pressed="'+(+v.mine===1)+'" aria-label="Îmi place"'+(w?'':' disabled')+'>'+ICON.up+(v.up?'<span class="num">'+v.up+'</span>':'')+'</button>'
+    + '<button type="button" class="vote'+(+v.mine===-1?' on down':'')+'" data-a="'+a+'" data-id="'+esc(id)+'" data-v="-1" aria-pressed="'+(+v.mine===-1)+'" aria-label="Nu-mi place"'+(w?'':' disabled')+'>'+ICON.down+(v.down?'<span class="num">'+v.down+'</span>':'')+'</button>';
+}
+function signupBlock(s, it, w){
+  const sub = [ (+s.bucati>0 ? s.bucati+" buc." : ""), s.nota ].filter(Boolean).join(" · ");
+  const act = isMine(s)&&w ? '<button class="x" title="Retrage" aria-label="Retrage" data-a="unsign" data-id="'+esc(s.id)+'">'+ICON.x+'</button>' : '';
+  let h = '<div class="person">'+avHtml(s.copilId)+'<span class="t"><b>'+esc(kidName(s.copilId))+'</b>'+(sub?' <span>· '+linkify(sub)+'</span>':'')+'</span>'+act+'</div>';
+  if (!s.nota || !ui.loaded.has("voturi_insc")) return h;
+  const reps = D.comentarii.filter(c => c.inscriereId === s.id).sort((a,b)=>String(a.creat).localeCompare(String(b.creat)));
+  h += '<div class="cacts sacts">'+voteBtns("i", s.id, votesOfInsc(s.id), w)+(w ? '<button type="button" class="vote" data-a="replyI" data-id="'+esc(s.id)+'">'+ICON.reply+'Răspunde'+(reps.length ? ' ('+reps.length+')' : '')+'</button>' : '')+'</div>';
+  if (reps.length || ui.replyTo === "i:"+s.id) h += '<div class="comments sreps">' + reps.map(r => cmHtml(r, it, w, true, s.id)).join("") + (ui.replyTo === "i:"+s.id && w ? replyFormInsc(s, it) : "") + '</div>';
+  return h;
+}
+function replyFormInsc(s, it){
+  if (!(kid(ui.me) || cap.admin)) return '<div><button class="btn small" data-a="pick">Alege copilul ca să răspunzi</button></div>';
+  return '<form class="cform reply" data-a="comment" data-id="'+esc(it.id)+'" data-insc="'+esc(s.id)+'"><label class="sr" for="ri-'+esc(s.id)+'">Răspuns</label><textarea class="ta" id="ri-'+esc(s.id)+'" name="text" maxlength="1000" placeholder="Răspunde-i lui '+esc(firstName(kidName(s.copilId)))+'…">'+esc(ui.drafts["i:"+s.id]||"")+'</textarea><div class="row"><button type="button" class="btn small ghost" data-a="replyI" data-id="">Renunță</button><button class="btn primary small" type="submit">Răspunde</button></div></form>';
+}
+function cmHtml(c, it, w, isReply, inscId){
   const v = votesOf(c.id);
-  return '<div class="cm'+(isReply?' reply':'')+'">'+(c.copilId ? avHtml(c.copilId) : '<span class="av" style="background:var(--surface-2)">A</span>')+'<div class="cbody"><div class="body"><b>'+esc(c.copilId ? kidName(c.copilId) : "Administrator")+'</b><time datetime="'+esc(c.creat)+'">'+esc(ago(c.creat))+'</time><p>'+esc(c.text)+'</p></div>'
+  return '<div class="cm'+(isReply?' reply':'')+'">'+(c.copilId ? avHtml(c.copilId) : '<span class="av" style="background:var(--surface-2)">A</span>')+'<div class="cbody"><div class="body"><b>'+esc(c.copilId ? kidName(c.copilId) : "Administrator")+'</b><time datetime="'+esc(c.creat)+'">'+esc(ago(c.creat))+'</time><p>'+linkify(c.text)+'</p></div>'
     + '<div class="cacts">'
-    + '<button type="button" class="vote'+(+v.mine===1?' on up':'')+'" data-a="vote" data-id="'+esc(c.id)+'" data-v="1" aria-pressed="'+(+v.mine===1)+'" aria-label="Îmi place"'+(w?'':' disabled')+'>'+ICON.up+(v.up?'<span class="num">'+v.up+'</span>':'')+'</button>'
-    + '<button type="button" class="vote'+(+v.mine===-1?' on down':'')+'" data-a="vote" data-id="'+esc(c.id)+'" data-v="-1" aria-pressed="'+(+v.mine===-1)+'" aria-label="Nu-mi place"'+(w?'':' disabled')+'>'+ICON.down+(v.down?'<span class="num">'+v.down+'</span>':'')+'</button>'
-    + (w ? '<button type="button" class="vote" data-a="reply" data-id="'+esc(isReply ? c.parentId : c.id)+'">'+ICON.reply+'Răspunde</button>' : '')
+    + voteBtns("c", c.id, v, w)
+    + (w ? (inscId ? '<button type="button" class="vote" data-a="replyI" data-id="'+esc(inscId)+'">'+ICON.reply+'Răspunde</button>' : '<button type="button" class="vote" data-a="reply" data-id="'+esc(isReply ? c.parentId : c.id)+'">'+ICON.reply+'Răspunde</button>') : '')
     + '</div></div>'
     + (isMine(c)&&w?'<button class="x" aria-label="Șterge comentariul" title="Șterge" data-a="delC" data-id="'+esc(c.id)+'">'+ICON.x+'</button>':'<span></span>')+'</div>';
 }
@@ -963,7 +992,7 @@ function itemCard(it){
   const tip = it.tip || "single";
   if (tip === "single" || tip === "multi") {
     const su = signups(it.id); const tgt = targetOf(it); const taken = takenOf(it);
-    const rows = su.map(s => personRow(s.copilId, [ (+s.bucati>0 ? s.bucati+" buc." : ""), s.nota ].filter(Boolean).join(" · "), isMine(s)&&w ? '<button class="x" title="Retrage" aria-label="Retrage" data-a="unsign" data-id="'+esc(s.id)+'">'+ICON.x+'</button>' : ''));
+    const rows = su.map(s => signupBlock(s, it, w));
     if (it.responsabil && kid(it.responsabil) && !su.some(s=>s.copilId===it.responsabil)) rows.unshift(personRow(it.responsabil, "", w && cap.admin ? '<button class="x" title="Retrage" aria-label="Retrage" data-a="clearResp" data-id="'+esc(it.id)+'">'+ICON.x+'</button>' : ''));
     if (tgt) { const pct = Math.min(100, taken/tgt*100); body += '<div><div class="count num"><span>Preluate <b>'+taken+'</b> din '+tgt+'</span><span>'+(taken>=tgt ? 'Complet' : 'Mai trebuie '+(tgt-taken))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div></div>'; }
     body += rows.length ? '<div class="people">'+rows.join("")+'</div>' : '<div class="hint">'+(tip==="single" ? 'Nu s-a ocupat nimeni încă.' : 'Nu s-a înscris nimeni încă.')+'</div>';
@@ -993,7 +1022,7 @@ function itemCard(it){
         + '</div>'; }).join("")+'</div>';
     if (w && !kid(ui.me)) body += '<div><button class="btn small" data-a="pick">Alege copilul ca să iei o lună</button></div>';
   }
-  const cms = commentsOf(it.id); const open = ui.openC.has(it.id);
+  const cms = commentsOf(it.id).filter(c => !c.inscriereId); const open = ui.openC.has(it.id);
   let foot = '<div class="foot"><button class="cbtn" data-a="toggleC" data-id="'+esc(it.id)+'" aria-expanded="'+open+'">'+ICON.chat+(cms.length ? 'Comentarii <span class="n num">'+cms.length+'</span>' : 'Comentează')+'</button>'
     + (cap.admin ? '<button class="btn small ghost" data-a="itemEdit" data-id="'+esc(it.id)+'">'+ICON.pen+'Editează</button>' : '') + '</div>';
   if (open) {
@@ -1005,7 +1034,7 @@ function itemCard(it){
     foot += '</div>';
   }
   return '<article class="item'+(it.status==="done"&&!isInfo?' is-done':'')+(isInfo?' info':'')+(body?'':' noact')+'" id="item-'+esc(it.id)+'"><div class="i-main"><div class="item-head"><h4>'+esc(it.titlu)+'</h4>'+(isInfo ? '' : statusSel)+'</div>'+(meta ? '<div class="meta">'+meta+'</div>' : '')
-    + (it.detalii ? '<p class="det">'+esc(it.detalii)+'</p>' : '') + '</div>' + (body ? '<div class="i-act">'+body+'</div>' : '') + foot + '</article>';
+    + (it.detalii ? '<p class="det">'+linkify(it.detalii)+'</p>' : '') + '</div>' + (body ? '<div class="i-act">'+body+'</div>' : '') + foot + '</article>';
 }
 
 /* Bani */
@@ -1213,6 +1242,13 @@ document.addEventListener("click", async e => {
       await write(async () => { chk(await sb.rpc("voteaza", { p_com:id, p_token:ui.device, p_val:nv })); await refetch("voturi"); });
       break;
     }
+    case "voteI": {
+      const v = +t.dataset.v; const cur = votesOfInsc(id).mine; const nv = +cur === v ? 0 : v;
+      t.disabled = true;
+      await write(async () => { chk(await sb.rpc("voteaza_insc", { p_insc:id, p_token:ui.device, p_val:nv })); await refetch("voturi_insc"); });
+      break;
+    }
+    case "replyI": ui.replyTo = id ? "i:"+id : ""; render(); if (id) { const ta = document.getElementById("ri-"+id); if (ta) ta.focus(); } break;
     case "reply": ui.replyTo = id || ""; render(); if (id) { const ta = document.getElementById("rp-"+id); if (ta) ta.focus(); } break;
     case "unsign": t.disabled = true; await write(db => db.doc("inscrieri/"+id).delete(), "Retras"); break;
     case "delC": {
@@ -1267,7 +1303,7 @@ document.addEventListener("input", e => {
   const t = e.target;
   if (t.id === "pickQ") { const q = t.value.trim().toLowerCase(); document.querySelectorAll("#pickList button").forEach(b => b.hidden = q && !b.dataset.n.includes(q)); return; }
   const f = t.closest("form[data-a]"); if (!f) return;
-  if (f.dataset.a === "comment") ui.drafts[f.dataset.parent ? "r:"+f.dataset.parent : f.dataset.id] = t.value;
+  if (f.dataset.a === "comment") ui.drafts[f.dataset.insc ? "i:"+f.dataset.insc : f.dataset.parent ? "r:"+f.dataset.parent : f.dataset.id] = t.value;
   if (f.dataset.a === "sign") { if (t.name === "bucati") ui.qty[f.dataset.id] = t.value; else ui.notes[f.dataset.id] = t.value; }
 });
 
@@ -1283,8 +1319,9 @@ document.addEventListener("submit", async e => {
   try {
     if (f.dataset.a === "comment") {
       const text = (fd.text||"").trim(); if (!text) return;
-      const id = f.dataset.id; const parent = f.dataset.parent || ""; const kidId = kid(ui.me) ? ui.me : "";
-      if (await write(db => db.collection("comentarii").doc().set({ itemId:id, copilId:kidId, text, parentId:parent, autor:authorId(), creat:now }), parent ? "Răspuns trimis" : "Comentariu trimis")) { ui.drafts[parent ? "r:"+parent : id] = ""; if (parent) ui.replyTo = ""; document.activeElement && document.activeElement.blur(); render(); }
+      const id = f.dataset.id; const parent = f.dataset.parent || ""; const insc = f.dataset.insc || ""; const kidId = kid(ui.me) ? ui.me : "";
+      const dk = insc ? "i:"+insc : parent ? "r:"+parent : id;
+      if (await write(db => db.collection("comentarii").doc().set(Object.assign({ itemId:id, copilId:kidId, text, parentId:parent, autor:authorId(), creat:now }, insc ? { inscriereId:insc } : {})), parent || insc ? "Răspuns trimis" : "Comentariu trimis")) { ui.drafts[dk] = ""; if (parent || insc) ui.replyTo = ""; document.activeElement && document.activeElement.blur(); render(); }
     } else if (f.dataset.a === "sign") {
       if (!needMe()) return; const id = f.dataset.id;
       const bucati = Math.max(0, Math.min(999, parseInt(fd.bucati, 10) || 0));
