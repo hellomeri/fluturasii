@@ -91,14 +91,17 @@ button{cursor:pointer}
   .tabs{display:none}
   .top .wrap{padding-block:14px 14px}
   .brand h1{font-size:26px}
-  .bottom-nav{display:grid;grid-template-columns:repeat(var(--n,4),1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-  .bottom-nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 8px;font-size:11.5px;font-weight:800;color:var(--muted)}
+  .bottom-nav{display:grid;grid-template-columns:repeat(var(--n,4),1fr);position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 6px 16px -14px rgba(0,0,0,.35);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+  .bottom-nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px 7px;font-size:11.5px;font-weight:800;color:var(--muted);border-bottom:3px solid transparent}
+  .bottom-nav button[aria-current="page"]{border-bottom-color:var(--wing)}
+  :root{--navh:62px}
   .bottom-nav button svg{width:22px;height:22px}
   .bottom-nav button[aria-current="page"]{color:var(--ink)}
   .bottom-nav button[aria-current="page"] svg{color:var(--wing)}
-  main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
 }
-main{padding-block:22px 48px}
+main{padding-block:22px 48px;overflow-x:clip}
+html,body{max-width:100%;overflow-x:clip}
 .view{display:grid;gap:28px}
 
 /* Secțiuni */
@@ -132,9 +135,12 @@ main{padding-block:22px 48px}
 .notice .who{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--wing-ink);margin-bottom:2px}
 
 /* Evenimente următoare */
-.timeline{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.ev{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;text-align:left;box-shadow:var(--shadow);width:100%}
+.timeline{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:14px}
+.timeline > *{min-width:0}
+.ev{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;text-align:left;box-shadow:var(--shadow);width:100%;min-width:0;max-width:100%;cursor:pointer}
 .ev:hover{border-color:var(--ink)}
+.ev h3{overflow-wrap:anywhere}
+.ev .when{overflow-wrap:anywhere}
 .cal{width:58px;border-radius:12px;overflow:hidden;text-align:center;background:var(--surface-2);flex:none}
 .cal .m{background:var(--wing);color:var(--on-wing);font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 0}
 .cal .d{font-family:var(--f-display);font-size:26px;font-weight:800;line-height:1.25;padding:2px 0 0}
@@ -212,7 +218,7 @@ main{padding-block:22px 48px}
 }
 .evnav{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 10px;margin:-8px 0 0;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);scrollbar-width:thin}
 .evnav.wrap{flex-wrap:wrap;overflow:visible;position:static}
-.evbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0 10px;margin-top:-8px}
+.evbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--navh,0px));z-index:5;background:var(--bg);padding:8px 0 10px;margin-top:-8px}
 .evsel{display:block}
 .evsel .sel{font-weight:800;background-color:var(--surface)}
 .evlayout{display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
@@ -398,7 +404,7 @@ button.kid:hover{background:var(--surface-2)}
 .hint{font-size:13px;color:var(--muted);margin:0}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:800;font-size:14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);max-width:calc(100% - 32px)}
-@media (max-width:720px){.toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+@media (max-width:720px){.toast{bottom:calc(20px + env(safe-area-inset-bottom,0px))}}
 .toast.err{background:var(--berry);color:#fff}
 
 .state{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:28px 22px;text-align:center;color:var(--muted);font-weight:600}
@@ -409,6 +415,9 @@ button.kid:hover{background:var(--surface-2)}
 .foot-note{color:var(--muted);font-size:12.5px;text-align:center;padding-block:10px 0;line-height:1.8}
 .linkbtn{border:0;background:none;padding:0;color:var(--muted);font-weight:800;text-decoration:underline;text-underline-offset:3px;font-size:12.5px}
 .linkbtn:hover{color:var(--ink)}
+[id^="sec-"],[id^="item-"],[id^="g-"],[id^="coll-"]{scroll-margin-top:24px}
+@media (max-width:999px){[id^="sec-"],[id^="item-"],[id^="coll-"]{scroll-margin-top:calc(var(--navh,0px) + 76px)}}
+@media (max-width:720px){[id^="g-"]{scroll-margin-top:calc(var(--navh,0px) + 12px)}}
 </style>
 </head>
 <body>
@@ -436,9 +445,9 @@ button.kid:hover{background:var(--surface-2)}
   </div>
   <div class="wrap"><nav class="tabs" id="tabs" aria-label="Secțiuni"></nav></div>
 </header>
+<nav class="bottom-nav" id="bnav" aria-label="Secțiuni"></nav>
 
 <main class="wrap"><div class="view" id="view"></div></main>
-<nav class="bottom-nav" id="bnav" aria-label="Secțiuni"></nav>
 <div id="modalRoot"></div>
 <div id="toastRoot" aria-live="polite"></div>
 
@@ -794,9 +803,9 @@ function viewHome(){
   else h += '<div class="timeline">' + up.map(s => {
     const its = itemsOf(s.id).filter(i=>i.tip!=="info"); const tot = its.length; const done = its.filter(i=>i.status==="done").length;
     const pct = tot ? Math.round(its.reduce((a,i)=>a+progressOf(i),0)/tot*100) : 0;
-    return '<button class="ev" data-a="goSec" data-id="'+esc(s.id)+'">'+calTile(s)+'<div style="min-width:0"><h3>'+(s.icon ? '<span class="h-ico" aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+'</h3><div class="when">'+whenLine(s)+'</div>'
+    return '<div class="ev" role="button" tabindex="0" data-a="goSec" data-id="'+esc(s.id)+'">'+calTile(s)+'<div style="min-width:0"><h3>'+(s.icon ? '<span class="h-ico" aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+'</h3><div class="when">'+whenLine(s)+'</div>'
       + (tot ? '<div class="bar wing"><i style="width:'+pct+'%"></i></div><div class="prog num"><span>'+done+' din '+tot+' rezolvate</span><span>'+pct+'%</span></div>' : (itemsOf(s.id).length ? '<div class="prog info-line"><span>'+esc(s.descriere || itemsOf(s.id).filter(i=>i.tip==="info").map(i=>i.titlu).join(" · "))+'</span></div>' : '<div class="prog"><span>Lista se completează</span></div>'))
-      + '</div></button>';
+      + '</div></div>';
   }).join("") + '</div>';
   h += '</section>';
 
@@ -1232,6 +1241,7 @@ document.addEventListener("input", e => {
   if (f.dataset.a === "sign") { if (t.name === "bucati") ui.qty[f.dataset.id] = t.value; else ui.notes[f.dataset.id] = t.value; }
 });
 
+document.addEventListener("keydown", e => { const rb = e.target && e.target.closest && e.target.closest('[role="button"][data-a]'); if (rb && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); rb.click(); } });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#modalRoot").innerHTML && !pickForced) closeModal(); });
 
 document.addEventListener("submit", async e => {
