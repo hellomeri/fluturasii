@@ -165,6 +165,13 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .qrow .t b{display:block;font-weight:800;font-size:15px}
 .qrow .t small{color:var(--muted);font-size:13px;font-weight:600}
 .qrow .dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--wing)}
+.done-list{margin-top:16px}
+.done-h{color:var(--meadow);margin-bottom:8px}
+.qrow.ok{background:var(--meadow-soft);border-color:transparent}
+.qrow.ok .t b{color:var(--meadow)}
+.qrow.ok small{color:var(--meadow)}
+.okmark{width:22px;height:22px;border-radius:50%;background:var(--meadow);color:#fff;display:grid;place-items:center;flex:none}
+.okmark svg{width:13px;height:13px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 @media (max-width:860px){.two{grid-template-columns:1fr}}
 .calnow{background:var(--wing-soft);color:var(--wing-ink);border-radius:14px;padding:12px 16px;font-size:15px;font-weight:600}
@@ -821,6 +828,7 @@ function viewHome(){
   h += '<section><div class="sec-head"><div><h2>'+(kid(ui.me) ? 'Ce ai tu de făcut' : 'Ce ai de făcut')+'</h2><div class="sub">'+(kid(ui.me) ? 'Pentru '+esc(kidName(ui.me)) : 'Alege-ți copilul ca să vezi lista ta.')+'</div></div></div>';
   if (!kid(ui.me)) h += '<button class="btn wingb" data-a="pick">'+ICON.user+'Alege copilul tău</button>';
   else h += mineH.length ? '<div class="quick">'+mineH.join("")+'</div>' : '<div class="empty">Nimic deschis pentru voi acum. Mulțumim!</div>';
+  if (kid(ui.me)) { const dn = myDone(); if (dn.length) h += '<div class="done-list"><div class="eyebrow done-h">✓ Gata ('+dn.length+')</div><div class="quick">'+dn.join("")+'</div></div>'; }
   h += '</section>';
   h += '<section><div class="sec-head"><div><h2>Unde e nevoie de ajutor</h2><div class="sub">Lucruri care nu au încă pe cineva.</div></div></div>';
   h += help.length ? '<div class="quick">'+help.join("")+'</div>' : '<div class="empty">Totul are pe cineva care se ocupă.</div>';
@@ -847,6 +855,18 @@ function myTodo(){
     else if (it.tip === "fiecare" && isChild(me) && !signups(it.id).some(x=>x.copilId===me)) out.push(qrow(it, "Nebifat încă", "wing"));
     else if (it.tip === "rotatie") { const slot = signups(it.id).find(x => x.copilId===me && mk.has(x.cheie)); if (slot) { const [y,m] = slot.cheie.split("-"); out.push(qrow(it, "Luna ta: "+LUNI[+m-1]+" "+y, "lilac")); } }
   }
+  return out;
+}
+function myDone(){
+  const me = ui.me, out = [];
+  const row = (attrs, title, tag, sub) => '<button class="qrow ok" '+attrs+'><span class="okmark" aria-hidden="true">'+ICON.check+'</span><span class="t"><b>'+esc(title)+'</b><span class="qsub">'+tag+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></button>';
+  for (const it of allItems()) {
+    if (!sectionUpcoming(it) || it.tip === "info") continue;
+    const s = sec(it.sectiune);
+    if (it.tip === "fiecare" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), it.bifa || "Bifat"));
+    else if ((it.tip === "single" || it.tip === "multi") && it.status === "done" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), "Rezolvat"));
+  }
+  if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (collStats(c).ids.has(me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Contribuția a ajuns"));
   return out;
 }
 function needsHelp(){
