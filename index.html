@@ -309,6 +309,9 @@ button.kid:hover{background:var(--surface-2)}
 .coll{display:grid;gap:12px}
 .ccard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
 .ccard h4{font-size:17px;font-weight:700}
+.ccard.closed{opacity:.75}
+.mestat{margin-top:10px;font-size:14px;font-weight:700;border-radius:10px;padding:8px 12px;background:var(--wing-soft);color:var(--wing-ink)}
+.mestat.ok{background:var(--meadow-soft);color:var(--meadow)}
 .ccard .count{margin:8px 0 6px}
 
 /* Modal */
@@ -431,8 +434,8 @@ const STATUS = { todo:"De făcut", progress:"În lucru", done:"Rezolvat" };
 const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar", info:"Doar de știut" };
 
 /* ---------- stare ---------- */
-const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], financiar:[], setari:{} };
-const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","financiar","setari"];
+const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], colecte:[], financiar:[], setari:{} };
+const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","colecte","financiar","setari"];
 const ui = {
   tab: ["acasa","necesar","evenimente","bani"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
   me: LS.get("fl_me") || "",
@@ -477,7 +480,7 @@ function progressOf(it){
 const SUPABASE_URL = "https://huzurhvdpypruvuaidwp.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JRjoraFkCA5nNPO_X7rvog_rg8A451E";
 const UUID_TABLES = new Set(["inscrieri","comentarii","financiar"]);
-const mapKey = { itemId:"item_id", copilId:"copil_id", parentId:"parent_id" }, unmapKey = { item_id:"itemId", copil_id:"copilId", parent_id:"parentId", comentariu_id:"comentariuId" };
+const mapKey = { itemId:"item_id", copilId:"copil_id", parentId:"parent_id", colectaId:"colecta_id" }, unmapKey = { item_id:"itemId", copil_id:"copilId", parent_id:"parentId", comentariu_id:"comentariuId", colecta_id:"colectaId" };
 const toDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[mapKey[k]||k] = v; return r; };
 const fromDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[unmapKey[k]||k] = v == null ? "" : v; return r; };
 const newUuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
@@ -498,7 +501,7 @@ const db = {
   doc(path){
     const [t, id] = path.split("/");
     return {
-      async set(data){ const row = toDb(Object.assign({}, data, { id })); if ("item_id" in row && t === "financiar" && !row.item_id) row.item_id = null; if ("parent_id" in row && !row.parent_id) row.parent_id = null; chk(await sb.from(t).upsert(row)); await refetch(t); },
+      async set(data){ const row = toDb(Object.assign({}, data, { id })); if ("item_id" in row && t === "financiar" && !row.item_id) row.item_id = null; if ("parent_id" in row && !row.parent_id) row.parent_id = null; if ("colecta_id" in row && !row.colecta_id) row.colecta_id = null; chk(await sb.from(t).upsert(row)); await refetch(t); },
       async delete(){
         if (!cap.admin && (t === "inscrieri" || t === "comentarii")) {
           const ok = chk(await sb.rpc("sterge_propriu", { p_tabel:t, p_id:id, p_token:ui.device }));
@@ -641,6 +644,7 @@ function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
 function myTodo(){
   const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
+  for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) out.push('<button class="qrow" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--meadow)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>De trimis '+esc(lei(c.suma))+'</small></span></span></button>');
   for (const it of allItems()) {
     if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
     const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
@@ -727,7 +731,6 @@ function itemCard(it){
   let meta = isInfo ? '' : '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
   if (it.cantitate) meta += '<span class="chip lilac">'+esc(it.cantitate)+'</span>';
   if (it.cost) meta += '<span class="chip wing">'+esc(it.cost)+'</span>';
-  if (+it.colecta > 0) meta += '<span class="chip meadow">Colectă '+lei(it.colecta)+' / copil</span>';
   const statusSel = '<label class="sr" for="st-'+esc(it.id)+'">Status</label><select id="st-'+esc(it.id)+'" class="status '+esc(it.status)+'" data-a="status" data-id="'+esc(it.id)+'"'+(w?'':' disabled')+'>'
     + Object.entries(STATUS).map(([k,l]) => '<option value="'+k+'"'+(k===it.status?' selected':'')+'>'+l+'</option>').join("") + '</select>';
   let body = "";
@@ -782,6 +785,48 @@ const SURSE = { cont:{ lung:"În contul clasei", scurt:"Cont", opt:"Contul clase
 const srcOf = r => SURSE[r.sursa] ? r.sursa : "cont";
 const dstOf = r => SURSE[r.destinatie] ? r.destinatie : (srcOf(r) === "cash" ? "cont" : "cash");
 const srcOptions = sel => Object.entries(SURSE).map(([k,o]) => '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+o.opt+'</option>').join("");
+function collStats(c){
+  const pays = D.financiar.filter(r => r.tip === "in" && r.colectaId === c.id && r.copilId);
+  const ids = new Set(pays.map(r => r.copilId)); const tot = kidsTotal();
+  return { pays, ids, tot, got: pays.reduce((a,r)=>a+(+r.suma||0),0), target: (+c.suma||0)*tot };
+}
+function viewStrangeri(){
+  const all = D.colecte.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+  const open = all.filter(c => !c.inchisa), closed = all.filter(c => c.inchisa);
+  let h = '<section><div class="sec-head"><div><h2>Strângeri de bani</h2><div class="sub">Suma pe copil și cine a trimis deja.</div></div>'
+    + (cap.admin ? '<div class="row"><button class="btn small primary" data-a="collEdit">'+ICON.plus+'Strângere nouă</button></div>' : '') + '</div>';
+  if (!all.length) h += '<div class="empty">'+(cap.admin ? 'Nicio strângere încă. Apasă „Strângere nouă”, alege suma pe copil, apoi bifează copiii pe măsură ce trimit banii.' : 'Nu e nicio strângere de bani acum.')+'</div>';
+  h += '<div class="coll">' + open.map(collCard).join("") + '</div>';
+  if (closed.length) h += '<details class="done-group"><summary>Strângeri încheiate ('+closed.length+')</summary><div class="coll" style="margin-top:10px">'+closed.map(collCard).join("")+'</div></details>';
+  return h + '</section>';
+}
+function collCard(c){
+  const st = collStats(c); const pct = st.target ? Math.min(100, st.got/st.target*100) : 0; const missing = sortedKids().filter(k => !st.ids.has(k.id));
+  const meOk = kid(ui.me) && st.ids.has(ui.me);
+  return '<div class="ccard'+(c.inchisa?' closed':'')+'" id="coll-'+esc(c.id)+'"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><h4>'+esc(c.titlu)+'</h4>'
+    + '<div class="hint">'+esc(fmtShort(c.data))+' · intră în '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+(c.descriere ? ' · '+esc(c.descriere) : '')+'</div></div><span class="chip meadow">'+lei(c.suma)+' / copil</span></div>'
+    + '<div class="count num" style="margin-top:10px"><span><b>'+st.ids.size+'</b> din '+st.tot+' copii au trimis</span><span>'+lei(r2g(st.got))+' din '+lei(r2g(st.target))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'
+    + (kid(ui.me) && !c.inchisa ? '<div class="mestat '+(meOk?'ok':'')+'">'+(meOk ? 'Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!' : 'Încă n-a ajuns contribuția pentru '+esc(firstName(kidName(ui.me)))+': '+lei(c.suma)+'.')+'</div>' : '')
+    + '<details class="all" style="margin-top:8px"'+(cap.admin && !c.inchisa ? ' open' : '')+'><summary>'+(missing.length ? 'Lipsesc '+missing.length+' copii · vezi lista' : 'Au trimis toți copiii')+'</summary><div class="kids">'
+    + sortedKids().map(k => { const on = st.ids.has(k.id); const can = cap.admin; return '<'+(can?'button type="button" data-a="paid" data-id="'+esc(c.id)+'" data-kid="'+esc(k.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(k.nume)+'</span></'+(can?'button':'div')+'>'; }).join("")
+    + '</div>'+(cap.admin ? '<p class="hint" style="margin-top:8px">Bifează un copil când îi ajung banii. Contribuția apare automat la soldul din '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+'.</p>' : '')+'</details>'
+    + (cap.admin ? '<div class="row" style="margin-top:10px;gap:6px"><button class="btn small ghost" data-a="collEdit" data-id="'+esc(c.id)+'">'+ICON.pen+'Editează</button><button class="btn small ghost" data-a="collToggle" data-id="'+esc(c.id)+'">'+(c.inchisa ? 'Redeschide' : 'Încheie strângerea')+'</button></div>' : '')
+    + '</div>';
+}
+const r2g = n => Math.round(n*100)/100;
+function collForm(id){
+  const c = id ? D.colecte.find(x=>x.id===id) : null; const v = c || { data: todayStr(), sursa:"cont" };
+  const n = c ? collStats(c).pays.length : 0;
+  modal('<h3>'+(c?'Editează strângerea':'Strângere nouă')+'</h3><form id="fColl" class="view" style="gap:12px">'
+    + '<label class="field" for="fc-t"><span>Pentru ce strângem</span><input class="inp" id="fc-t" name="titlu" required maxlength="100" placeholder="ex. Cadouri de Crăciun" value="'+esc(v.titlu||"")+'" autofocus></label>'
+    + '<div class="grid2"><label class="field" for="fc-s"><span>Sumă pe copil (lei)</span><input class="inp num" id="fc-s" name="suma" type="number" min="0" step="0.01" inputmode="decimal" required value="'+esc(v.suma||"")+'"></label>'
+    + '<label class="field" for="fc-src"><span>Banii intră în</span><select class="sel" id="fc-src" name="sursa">'+srcOptions(srcOf(v))+'</select></label></div>'
+    + '<div class="grid2"><label class="field" for="fc-d"><span>Data anunțului</span><input class="inp" id="fc-d" name="data" type="date" required value="'+esc(v.data||"")+'"></label>'
+    + '<label class="field" for="fc-ds"><span>Detalii (opțional)</span><input class="inp" id="fc-ds" name="descriere" maxlength="140" placeholder="ex. până pe 15 noiembrie" value="'+esc(v.descriere||"")+'"></label></div>'
+    + (n ? '<p class="hint">Au trimis deja '+n+' copii. Dacă schimbi suma, contribuțiile deja notate rămân cu suma veche.</p>' : '')
+    + '<div class="acts">'+(c?'<button type="button" class="btn danger left" data-a="delColl" data-id="'+esc(c.id)+'">'+(ui.confirm==="coll"+c.id?(n?'Șterge și cele '+n+' contribuții?':'Sigur? Apasă iar'):'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
+    + '<input type="hidden" name="id" value="'+esc(c?c.id:"")+'"></form>');
+}
 function viewMoney(){
   const rows = D.financiar.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)) || String(b.creat).localeCompare(String(a.creat)));
   const inn = rows.filter(r=>r.tip==="in").reduce((a,r)=>a+(+r.suma||0),0);
@@ -797,28 +842,24 @@ function viewMoney(){
     + shown.map(k => '<div class="tile"><div class="lab">'+SURSE[k].lung+'</div><div class="val'+(r2(bal[k])<0?' out':'')+'">'+lei(r2(bal[k]))+'</div>'+(r2(bal[k])<0 ? '<div class="note">Grupa are de dat înapoi '+lei(-r2(bal[k]))+'</div>' : '')+'</div>').join("") + '</div>'
     + '<div class="money-sub num"><span>Strânși în total: <b class="in">'+lei(inn)+'</b></span><span>Cheltuiți în total: <b class="out">'+lei(out)+'</b></span></div></section>';
 
-  const colls = D.itemi.map(itemFull).filter(i => +i.colecta > 0);
-  if (colls.length) {
-    h += '<section><div class="sec-head"><div><h2>Colecte în curs</h2><div class="sub">Cine a contribuit la fiecare strângere de bani.</div></div></div><div class="coll">';
-    h += colls.map(it => {
-      const paid = rows.filter(r => r.tip==="in" && r.itemId===it.id && r.copilId);
-      const ids = new Set(paid.map(r=>r.copilId)); const tot = kidsTotal(); const target = (+it.colecta)*tot; const got = rows.filter(r=>r.tip==="in"&&r.itemId===it.id).reduce((a,r)=>a+(+r.suma||0),0);
-      return '<div class="ccard"><div class="row" style="justify-content:space-between"><h4>'+esc(it.titlu)+'</h4><span class="chip meadow">'+lei(it.colecta)+' / copil</span></div>'
-        + '<div class="count num"><span><b>'+lei(got)+'</b> din '+lei(target)+'</span><span>'+ids.size+' din '+tot+' copii</span></div><div class="bar"><i style="width:'+(target?Math.min(100,got/target*100):0)+'%"></i></div>'
-        + '<details class="all" style="margin-top:8px"><summary>Cine a contribuit</summary><div class="kids">'+sortedKids().map(c => { const on = ids.has(c.id); return '<'+(cap.admin?'button type="button" data-a="paid" data-id="'+esc(it.id)+'" data-kid="'+esc(c.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(c.nume)+'</span></'+(cap.admin?'button':'div')+'>'; }).join("")+'</div>'+(cap.admin?'<p class="hint" style="margin-top:8px">Bifează un copil ca să înregistrezi contribuția lui ca încasare.</p>':'')+'</details></div>';
-    }).join("");
-    h += '</div></section>';
-  }
+  h += viewStrangeri(rows);
 
   h += '<section><div class="sec-head"><div><h2>Mișcări</h2><div class="sub">Cea mai recentă sus.</div></div></div>';
   if (!rows.length) h += '<div class="empty">'+(cap.admin ? 'Nu ai notat încă nicio sumă. Începe cu o încasare.' : 'Nu s-a notat încă nicio sumă.')+'</div>';
-  else h += '<div class="ledger">' + rows.map(r => {
+  const grouped = [], seen = {};
+  for (const r of rows) {
+    if (r.colectaId && r.tip === "in") { const k = r.colectaId+"|"+srcOf(r); if (seen[k]) { seen[k].suma = r2(+seen[k].suma + (+r.suma||0)); seen[k].n++; continue; }
+      const c = D.colecte.find(x => x.id === r.colectaId); seen[k] = Object.assign({}, r, { id:"", grup:true, n:1, descriere:"Strângere: "+(c ? c.titlu : "contribuții"), itemId:"", copilId:"" }); grouped.push(seen[k]); }
+    else grouped.push(r);
+  }
+  for (const g of grouped) if (g.grup) g.descriere += " · "+g.n+(g.n===1?" copil":" copii");
+  if (rows.length) h += '<div class="ledger">' + grouped.map(r => {
     const it = r.itemId ? D.itemi.find(i=>i.id===r.itemId) : null;
     const sub = [it ? it.titlu : "", r.copilId ? kidName(r.copilId) : ""].filter(Boolean).join(" · ");
     const src = srcOf(r); const where = r.tip === "transfer" ? SURSE[src].scurt+" → "+SURSE[dstOf(r)].scurt : SURSE[src].scurt;
     const cls = r.tip === "in" ? "in" : r.tip === "out" ? "out" : "mv"; const sign = r.tip === "in" ? "+" : r.tip === "out" ? "−" : "";
     return '<div class="lrow"><span class="d num">'+esc(fmtShort(r.data))+'</span><span class="desc"><b>'+esc(r.descriere || (r.tip==="in"?"Încasare":r.tip==="out"?"Cheltuială":"Mutare de bani"))+'</b><small><span class="src '+(r.tip==="transfer"?"mv":src)+'">'+where+'</span>'+(sub?' '+esc(sub):'')+'</small></span><span class="amt '+cls+'">'+sign+lei(r.suma)+'</span>'
-      + (cap.admin ? '<button class="x" aria-label="Editează" title="Editează" data-a="finEdit" data-id="'+esc(r.id)+'">'+ICON.pen+'</button>' : '<span></span>') + '</div>';
+      + (cap.admin && !r.grup ? '<button class="x" aria-label="Editează" title="Editează" data-a="finEdit" data-id="'+esc(r.id)+'">'+ICON.pen+'</button>' : (r.grup ? '<button class="x" aria-label="Vezi strângerea" title="Vezi strângerea" data-a="goColl" data-id="'+esc(r.colectaId)+'">'+ICON.list+'</button>' : '<span></span>')) + '</div>';
   }).join("") + '</div>';
   return h + '</section>';
 }
@@ -847,8 +888,7 @@ function itemForm(id, secId){
     + '<label class="field" for="fi-d"><span>Detalii</span><textarea class="ta" id="fi-d" name="detalii" maxlength="2000">'+esc(v.detalii||"")+'</textarea></label>'
     + '<div class="grid2"><label class="field" for="fi-c"><span>Cantitate</span><input class="inp" id="fi-c" name="cantitate" maxlength="60" placeholder="ex. 4 bucăți" value="'+esc(v.cantitate||"")+'"></label>'
     + '<label class="field" for="fi-cost"><span>Cost estimat</span><input class="inp" id="fi-cost" name="cost" maxlength="60" placeholder="ex. ~300 lei / an" value="'+esc(v.cost||"")+'"></label></div>'
-    + '<div class="grid2"><label class="field" for="fi-col"><span>Colectă per copil (lei)</span><input class="inp num" id="fi-col" name="colecta" type="number" min="0" step="1" inputmode="numeric" placeholder="0 = fără colectă" value="'+esc(v.colecta||"")+'"></label>'
-    + '<label class="field" for="fi-st"><span>Status</span><select class="sel" id="fi-st" name="status">'+Object.entries(STATUS).map(([k,l])=>'<option value="'+k+'"'+(k===st.status?' selected':'')+'>'+l+'</option>').join("")+'</select></label></div>'
+    + '<div class="grid2"><label class="field" for="fi-st"><span>Status</span><select class="sel" id="fi-st" name="status">'+Object.entries(STATUS).map(([k,l])=>'<option value="'+k+'"'+(k===st.status?' selected':'')+'>'+l+'</option>').join("")+'</select></label></div>'
     + '<p class="hint">„Cine se ocupă”: unul sau mai mulți părinți preiau, fiecare spune câte bucăți. „Se înscrie oricine”: fiecare scrie ce aduce. „Fiecare copil”: toți bifează. „Pe rând, lunar”: câte un copil pe lună. „Doar de știut”: informație pentru părinți, fără bife.</p>'
     + '<div class="acts">'+(it?'<button type="button" class="btn danger left" data-a="delItem" data-id="'+esc(it.id)+'">'+(ui.confirm==="item"+it.id?'Sigur? Apasă iar':'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
     + '<input type="hidden" name="id" value="'+esc(it?it.id:"")+'"></form>');
@@ -964,12 +1004,21 @@ document.addEventListener("click", async e => {
       if (ui.confirm !== "fin"+id) { ui.confirm = "fin"+id; t.textContent = "Sigur? Apasă iar"; break; }
       await write(db => db.doc("financiar/"+id).delete(), "Șters"); closeModal(); break;
     case "paid": {
-      const k = t.dataset.kid; const it = D.itemi.find(i=>i.id===id); const ex = D.financiar.find(r => r.tip==="in" && r.itemId===id && r.copilId===k);
+      const k = t.dataset.kid; const c = D.colecte.find(x=>x.id===id); if (!c) break;
+      const ex = D.financiar.find(r => r.tip==="in" && r.colectaId===id && r.copilId===k);
       t.disabled = true;
-      if (ex) await write(db => db.doc("financiar/"+ex.id).delete(), "Contribuție scoasă");
-      else await write(db => db.collection("financiar").doc().set({ tip:"in", sursa:"cont", suma:+it.colecta||0, descriere:"Contribuție "+it.titlu, data:todayStr(), itemId:id, copilId:k, creat:new Date().toISOString() }), "Contribuție notată ✓");
+      if (ex) await write(db => db.doc("financiar/"+ex.id).delete(), "Debifat: "+firstName(kidName(k)));
+      else await write(db => db.collection("financiar").doc().set({ tip:"in", sursa:srcOf(c), destinatie:"", suma:+c.suma||0, descriere:"Contribuție "+kidName(k), data:todayStr(), itemId:"", copilId:k, colectaId:id, creat:new Date().toISOString() }), "Bifat: "+firstName(kidName(k))+" ✓");
       break;
     }
+    case "collEdit": collForm(id); break;
+    case "collToggle": { const c = D.colecte.find(x=>x.id===id); if (!c) break; const body = Object.assign({}, c, { inchisa: !c.inchisa }); delete body.id; await write(db => db.doc("colecte/"+id).set(body), body.inchisa ? "Strângere încheiată" : "Strângere redeschisă"); break; }
+    case "delColl": {
+      if (ui.confirm !== "coll"+id) { const n = D.financiar.filter(r=>r.colectaId===id).length; ui.confirm = "coll"+id; t.textContent = n ? "Șterge și cele "+n+" contribuții?" : "Sigur? Apasă iar"; break; }
+      await write(async db => { for (const r of D.financiar.filter(x=>x.colectaId===id)) await db.doc("financiar/"+r.id).delete(); await db.doc("colecte/"+id).delete(); }, "Strângere ștearsă"); closeModal(); break;
+    }
+    case "goColl": goTo("coll-"+id); break;
+    case "goCollTab": setTab("bani"); goTo("coll-"+id); break;
   }
 });
 
@@ -1013,7 +1062,7 @@ document.addEventListener("submit", async e => {
       const id = fd.id || ("i"+uid());
       const prev = D.itemi.find(i=>i.id===id) || {};
       const maxO = Math.max(0, ...D.itemi.filter(i=>i.sectiune===fd.sectiune).map(i=>+i.ordine||0));
-      const body = { sectiune:fd.sectiune, titlu:fd.titlu.trim(), detalii:fd.detalii.trim(), tip:fd.tip, cantitate:fd.cantitate.trim(), cost:fd.cost.trim(), colecta: fd.colecta ? +fd.colecta : 0, ordine: prev.sectiune===fd.sectiune ? (prev.ordine||maxO+1) : maxO+1, creat: prev.creat || now };
+      const body = { sectiune:fd.sectiune, titlu:fd.titlu.trim(), detalii:fd.detalii.trim(), tip:fd.tip, cantitate:fd.cantitate.trim(), cost:fd.cost.trim(), ordine: prev.sectiune===fd.sectiune ? (prev.ordine||maxO+1) : maxO+1, creat: prev.creat || now };
       const ok = await write(async db => { await db.doc("itemi/"+id).set(body); if (((D.stari[id]||{}).status||"todo") !== fd.status) { const cur = Object.assign({ status:"todo", responsabil:"" }, D.stari[id]||{}); delete cur.id; await db.doc("stari/"+id).set(Object.assign(cur, { status:fd.status, modificat:now })); } }, "Item salvat");
       if (ok) closeModal();
     } else if (fid === "fSec") {
@@ -1024,6 +1073,10 @@ document.addEventListener("submit", async e => {
       const id = fd.id || newUuid(); const prev = D.financiar.find(r=>r.id===id) || {};
       const body = { tip:fd.tip, sursa: SURSE[fd.sursa] ? fd.sursa : "cont", destinatie: fd.tip === "transfer" && SURSE[fd.destinatie] ? fd.destinatie : "", suma:+fd.suma||0, descriere:fd.descriere.trim(), data:fd.data, itemId:fd.itemId||"", copilId:fd.copilId||"", creat: prev.creat || now };
       if (await write(db => db.doc("financiar/"+id).set(body), "Salvat")) closeModal();
+    } else if (fid === "fColl") {
+      const id = fd.id || ("c"+uid()); const prev = D.colecte.find(x=>x.id===id) || {};
+      const body = { titlu:fd.titlu.trim(), suma:+fd.suma||0, sursa: SURSE[fd.sursa] ? fd.sursa : "cont", data:fd.data, descriere:(fd.descriere||"").trim(), inchisa: !!prev.inchisa, creat: prev.creat || now };
+      if (await write(db => db.doc("colecte/"+id).set(body), "Strângere salvată")) closeModal();
     } else if (fid === "fLogin") {
       const r = await sb.auth.signInWithPassword({ email: fd.email.trim(), password: fd.parola });
       if (r.error) { toast("Email sau parolă greșită.", true); return; }
