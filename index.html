@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2B2238">
+<meta name="theme-color" content="#D6E8F8">
 <meta name="description" content="Portalul grupei mici B, Grădinița 246: evenimente, necesar, cine se ocupă de ce și banii grupei.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-26 -23 52 44'%3E%3Cellipse cx='-11' cy='-8' rx='12' ry='9' transform='rotate(-25 -11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='11' cy='-8' rx='12' ry='9' transform='rotate(25 11 -8)' fill='%23F0A92B'/%3E%3Cellipse cx='-9' cy='8' rx='8' ry='6.5' transform='rotate(30 -9 8)' fill='%23A88BEF'/%3E%3Cellipse cx='9' cy='8' rx='8' ry='6.5' transform='rotate(-30 9 8)' fill='%23A88BEF'/%3E%3Crect x='-2' y='-12' width='4' height='26' rx='2' fill='%232B2238'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
@@ -12,39 +12,39 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap">
 <style>
-/* Layout: bandă de antet bleumarin cu fluture; pe telefon navigare fixă jos; câte un item pe rând (pe desktop: detalii stânga, acțiune dreapta) */
+/* Layout: bandă de antet bleu pastel cu fluture; pe telefon navigare fixă jos; câte un item pe rând (pe desktop: detalii stânga, acțiune dreapta) */
 :root{
   color-scheme:light;
-  --bg:#F3F6FB; --surface:#FFFFFF; --surface-2:#E9EFF8; --ink:#14213D; --muted:#5D6B85; --line:#D9E2EF;
-  --wing:#2F6FEB; --wing-ink:#1D4FB8; --wing-soft:#E3ECFD; --on-wing:#FFFFFF;
+  --bg:#F7FAFD; --surface:#FFFFFF; --surface-2:#EBF2FA; --ink:#123A63; --muted:#5B7591; --line:#DCE7F2;
+  --wing:#3A86D1; --wing-ink:#1F5E9E; --wing-soft:#E2EEFA; --on-wing:#FFFFFF;
   --meadow:#2E7A55; --meadow-soft:#DCEEE3;
   --lilac:#7457C4; --lilac-soft:#ECE6FA;
   --berry:#BE3F37; --berry-soft:#F8E0DC;
-  --head:#14213D; --head-ink:#F4F7FD; --head-muted:#AEBBD3;
-  --logo1:#FFC23D; --logo2:#7FB0FF; --logo3:#F4F7FD; --me:#2F6FEB;
-  --shadow:0 1px 0 rgba(20,33,61,.04),0 10px 24px -18px rgba(20,33,61,.35);
+  --head:#D6E8F8; --head-ink:#123A63; --head-muted:#4F6E8F;
+  --logo1:#F7B731; --logo2:#3A86D1; --logo3:#123A63; --me:#3A86D1;
+  --shadow:0 1px 0 rgba(18,58,99,.04),0 10px 24px -18px rgba(18,58,99,.3);
   --f-display:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;
   --f-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --r:16px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0F1626; --surface:#172238; --surface-2:#1E2B45; --ink:#E8EEF9; --muted:#9AA8C2; --line:#2A3954;
-  --wing:#5B8FF5; --wing-ink:#9DBBFF; --wing-soft:#1C2D52; --on-wing:#FFFFFF;
+  --bg:#0E1A2A; --surface:#15243A; --surface-2:#1C2E48; --ink:#E6F0FA; --muted:#9DB2C9; --line:#263A57;
+  --wing:#5AA2E8; --wing-ink:#9CCBF5; --wing-soft:#183253; --on-wing:#FFFFFF;
   --meadow:#62BE90; --meadow-soft:#1D3328;
   --lilac:#A78DF2; --lilac-soft:#2D2544;
   --berry:#F08077; --berry-soft:#3C2125;
-  --head:#0A101D; --head-ink:#EEF3FC; --head-muted:#93A2BF;
-  --logo1:#FFC23D; --logo2:#7FB0FF; --logo3:#EEF3FC; --me:#5B8FF5;
+  --head:#12263F; --head-ink:#E6F0FA; --head-muted:#9DB2C9;
+  --logo1:#F7B731; --logo2:#5AA2E8; --logo3:#E6F0FA; --me:#5AA2E8;
   --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#0F1626; --surface:#172238; --surface-2:#1E2B45; --ink:#E8EEF9; --muted:#9AA8C2; --line:#2A3954;
-  --wing:#5B8FF5; --wing-ink:#9DBBFF; --wing-soft:#1C2D52; --on-wing:#FFFFFF;
+  --bg:#0E1A2A; --surface:#15243A; --surface-2:#1C2E48; --ink:#E6F0FA; --muted:#9DB2C9; --line:#263A57;
+  --wing:#5AA2E8; --wing-ink:#9CCBF5; --wing-soft:#183253; --on-wing:#FFFFFF;
   --meadow:#62BE90; --meadow-soft:#1D3328;
   --lilac:#A78DF2; --lilac-soft:#2D2544;
   --berry:#F08077; --berry-soft:#3C2125;
-  --head:#0A101D; --head-ink:#EEF3FC; --head-muted:#93A2BF;
-  --logo1:#FFC23D; --logo2:#7FB0FF; --logo3:#EEF3FC; --me:#5B8FF5;
+  --head:#12263F; --head-ink:#E6F0FA; --head-muted:#9DB2C9;
+  --logo1:#F7B731; --logo2:#5AA2E8; --logo3:#E6F0FA; --me:#5AA2E8;
   --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
 }
 *{box-sizing:border-box}
