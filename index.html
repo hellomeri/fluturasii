@@ -170,6 +170,33 @@ main{padding-block:22px 48px}
 .calrow .cd{color:var(--muted);font-weight:700;white-space:nowrap}
 .calrow.now{background:var(--surface);box-shadow:inset 0 0 0 2px var(--wing)}
 .calrow.past{opacity:.5}
+.hdr-acts{display:flex;align-items:center;gap:8px;max-width:100%}
+.helpbtn{display:inline-flex;align-items:center;gap:4px;border:1px solid color-mix(in srgb,var(--head-ink) 25%,transparent);background:color-mix(in srgb,var(--head-ink) 8%,transparent);color:var(--head-ink);border-radius:999px;padding:7px 14px;font-weight:800;font-size:14px;min-height:42px}
+.helpbtn:hover{background:color-mix(in srgb,var(--head-ink) 16%,transparent)}
+@media (max-width:420px){.helpbtn span{display:none}.helpbtn{width:42px;justify-content:center;padding:0}}
+.guide-hint{background:var(--surface);border:1px solid var(--line)}
+.guide-hint .gh-ico{font-size:24px;line-height:1}
+.guide-hint .who{color:var(--wing-ink)}
+.guide-hint p{font-weight:600}
+.gtoc{display:flex;flex-wrap:wrap;gap:8px}
+.gsec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 18px 8px;scroll-margin-top:16px}
+.gsec h2{font-size:21px;font-weight:800;margin-bottom:12px}
+.gsteps{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.gstep{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding-bottom:12px;border-bottom:1px dashed var(--line)}
+.gstep:last-child{border-bottom:0}
+.gnum{min-width:30px;height:30px;padding:0 8px;border-radius:999px;background:var(--wing-soft);color:var(--wing-ink);display:grid;place-items:center;font-weight:800;font-size:13px}
+.gbody{min-width:0}
+.gbody h3{font-size:16.5px;font-weight:800;margin-bottom:4px}
+.gbody p{margin:0 0 6px;line-height:1.7}
+.gbtn{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:1px 9px;font-weight:800;font-size:13.5px;white-space:nowrap;line-height:1.6}
+.gbtn.blue{background:var(--wing);border-color:var(--wing);color:var(--on-wing)}
+.gbtn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.gbtn.chip{background:var(--surface-2);border-color:transparent;color:var(--muted);border-radius:999px}
+.gbtn.tick{border:2px dashed var(--line)}
+.gbtn.st-todo{background:var(--wing-soft);color:var(--wing-ink);border-color:transparent;border-radius:999px}
+.gbtn.st-prog{background:var(--lilac-soft);color:var(--lilac);border-color:transparent;border-radius:999px}
+.gbtn.st-done{background:var(--meadow-soft);color:var(--meadow);border-color:transparent;border-radius:999px}
+.gbtn.x{color:var(--muted)}
 .empty{color:var(--muted);background:var(--surface-2);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600}
 
 /* Carduri item */
@@ -405,7 +432,7 @@ button.kid:hover{background:var(--surface-2)}
         <p>Grădinița 246 · Grupa mică B</p>
       </div>
     </div>
-    <button class="me" id="meBtn" type="button" data-a="pick"></button>
+    <div class="hdr-acts"><button class="helpbtn" type="button" data-a="tab" data-k="ghid" aria-label="Ghid de folosire">?<span> Ghid</span></button><button class="me" id="meBtn" type="button" data-a="pick"></button></div>
   </div>
   <div class="wrap"><nav class="tabs" id="tabs" aria-label="Secțiuni"></nav></div>
 </header>
@@ -477,7 +504,7 @@ const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fie
 const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], colecte:[], financiar:[], setari:{} };
 const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","colecte","financiar","setari"];
 const ui = {
-  tab: ["acasa","necesar","evenimente","bani"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
+  tab: ["acasa","necesar","evenimente","bani","ghid"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
   me: LS.get("fl_me") || "",
   device: LS.get("fl_dev") || (()=>{ const d = uid(); LS.set("fl_dev", d); return d; })(),
   openC: new Set(), drafts: {}, notes: {}, qty: {}, confirm: null,
@@ -684,8 +711,8 @@ function render(){
   if (!D.sectiuni.length && !D.itemi.length) {
     v.innerHTML = '<div class="state"><h3>Încă nu e nimic pe listă</h3>'+(cap.admin ? 'Adaugă prima secțiune, apoi itemii ei.<div style="margin-top:14px"><button class="btn primary" data-a="secEdit">'+ICON.plus+'Secțiune nouă</button></div>' : 'Administratoarea grupei adaugă aici necesarul și evenimentele.')+'</div>'; return;
   }
-  const html = { acasa: viewHome, necesar: viewNecesar, evenimente: viewEvents, bani: viewMoney }[ui.tab]();
-  v.innerHTML = (cap.admin ? adminBar() : "") + html + '<p class="foot-note">Bifele și comentariile se salvează automat și le văd toți părinții.<br>'+(cap.admin ? 'Ești logată ca administratoare ('+esc(ui.adminEmail)+'). <button class="linkbtn" data-a="logout">Ieși</button>' : '<button class="linkbtn" data-a="login">Administrare</button>')+'</p>';
+  const html = ({ acasa: viewHome, necesar: viewNecesar, evenimente: viewEvents, bani: viewMoney, ghid: viewGuide }[ui.tab] || viewHome)();
+  v.innerHTML = (cap.admin ? adminBar() : "") + html + '<p class="foot-note">Bifele și comentariile se salvează automat și le văd toți părinții. <button class="linkbtn" data-a="tab" data-k="ghid">Ghid de folosire</button><br>'+(cap.admin ? 'Ești logată ca administratoare ('+esc(ui.adminEmail)+'). <button class="linkbtn" data-a="logout">Ieși</button>' : '<button class="linkbtn" data-a="login">Administrare</button>')+'</p>';
 }
 
 function adminBar(){
@@ -705,8 +732,57 @@ function whenLine(s){
 }
 
 /* Acasă */
+function viewGuide(){
+  const B = (txt, cls) => '<span class="gbtn '+(cls||"")+'">'+txt+'</span>';
+  const step = (n, title, body) => '<li class="gstep"><span class="gnum">'+n+'</span><div class="gbody"><h3>'+title+'</h3>'+body+'</div></li>';
+  const sec = (id, emoji, title, steps) => '<section class="gsec" id="g-'+id+'"><h2><span aria-hidden="true">'+emoji+'</span> '+title+'</h2><ol class="gsteps">'+steps+'</ol></section>';
+  let h = '<section><div class="sec-head"><div><h2>Cum folosești portalul</h2><div class="sub">Ghid pentru părinți. Durează 2 minute.</div></div><button class="btn small" data-a="tab" data-k="acasa">Înapoi la Acasă</button></div>'
+    + '<nav class="gtoc" aria-label="Cuprins">'
+    + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Gata, am terminat"],["comentarii","Comentarii"],["bani","Banii grupei"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
+    + '</nav></section>';
+  h += sec("start","🚪","Prima intrare",
+      step(1,"Răspunde la întrebare","<p>Prima dată, portalul te întreabă cum le cheamă pe educatoare. Scrie numele lor și apasă "+B("Intră","dark")+". Întreabă o singură dată pe fiecare telefon.</p>")
+    + step(2,"Alege-ți copilul","<p>Sus, în dreapta, apasă "+B("👤 Alege copilul tău")+" și caută numele copilului. Telefonul ține minte alegerea.</p><p class='hint'>Ai doi copii în grupă sau ai ales greșit? Apasă oricând pe numele de sus și alege altul.</p>"));
+  h += sec("acasa","🏠","Ce vezi pe Acasă",
+      step("•","Evenimente următoare","<p>Ce urmează la grupă, în câte zile și cât e gata din pregătiri. Apasă pe un eveniment ca să vezi lista lui.</p>")
+    + step("•","Anul școlar","<p>Dacă suntem în vacanță, când revin copiii la grădiniță și când e următoarea vacanță. La „Tot calendarul” găsești tot anul.</p>")
+    + step("•","Ce ai tu de făcut","<p>Doar lucrurile tale: ce ai preluat, ce n-ai bifat încă și strângerile de bani la care n-ai trimis încă.</p>")
+    + step("•","Unde e nevoie de ajutor","<p>Lucruri de care nu se ocupă încă nimeni. Apasă pe unul ca să ajungi direct la el.</p>"));
+  h += sec("preiau","🙋","Preiau ceva (de ex. baloți, reflectoare, Moș Crăciun)",
+      step(1,"Găsește itemul","<p>În tabul "+B("Evenimente")+" sau "+B("Necesar")+". Itemul are eticheta "+B("Cine se ocupă","chip")+".</p>")
+    + step(2,"Scrie câte bucăți iei","<p>Dacă scrie „4 bucăți” și tu aduci 2, scrie <b>2</b> în căsuța cu număr. La „Detalii” poți scrie de unde le iei (opțional).</p>")
+    + step(3,"Apasă Preiau","<p>Apasă "+B("Preiau","blue")+". Numele copilului tău apare pe card, iar ceilalți văd „Mai trebuie 2”.</p>")
+    + step(4,"Te-ai răzgândit?","<p>Apasă "+B("✕","x")+" de lângă numele tău. Merge doar de pe telefonul de pe care ai preluat.</p>"));
+  h += sec("inscriu","🥧","Aduc ceva (decor, plăcinte, murături…)",
+      step(1,"Scrie ce aduci","<p>La itemii cu eticheta "+B("Se înscrie oricine","chip")+", scrie în căsuță ce aduci, de exemplu „2 ghivece cu crizanteme”.</p>")
+    + step(2,"Apasă Mă înscriu","<p>Apasă "+B("Mă înscriu","blue")+". Te poți înscrie de mai multe ori, dacă aduci mai multe lucruri.</p>"));
+  h += sec("bifez","✅","Bifez pentru copilul meu (coajă de portocală, poză, cadou)",
+      step(1,"Bifează când e gata","<p>La itemii cu eticheta "+B("Fiecare copil","chip")+", apasă "+B("✓ Bifează pentru Vlad","tick")+" când ai pregătit lucrul. Se face verde.</p>")
+    + step(2,"Ai bifat din greșeală?","<p>Apasă încă o dată și se debifează.</p>"));
+  h += sec("luna","🗓️","Iau o lună (hârtie igienică umedă)",
+      step(1,"Alege o lună liberă","<p>Lângă o lună care scrie „liber”, apasă "+B("Iau eu")+". Luna e a ta și apare la „Ce ai tu de făcut”.</p>"));
+  h += sec("status","🏁","Gata, am terminat",
+      step(1,"Schimbă statusul","<p>Sus, pe fiecare card, e un buton: "+B("De făcut","st-todo")+" → "+B("În lucru","st-prog")+" → "+B("Rezolvat","st-done")+". Când ai adus sau ai cumpărat ce ai preluat, alege <b>Rezolvat</b>. Cardul trece la „Rezolvate”.</p>"));
+  h += sec("comentarii","💬","Comentarii, întrebări, linkuri",
+      step(1,"Scrie un comentariu","<p>Sub fiecare card apasă "+B("💬 Comentează")+", scrie și apasă "+B("Trimite","dark")+". E locul bun pentru linkuri, oferte sau întrebări.</p>")
+    + step(2,"Răspunde și votează","<p>Sub orice comentariu poți apăsa "+B("↩ Răspunde")+" sau poți vota cu "+B("👍")+" / "+B("👎")+" (de exemplu, la două oferte de Moș).</p>"));
+  h += sec("bani","💰","Banii grupei",
+      step("•","Vezi tot, la vedere","<p>În tabul "+B("Bani")+" vezi câți bani sunt în contul clasei și cash la educatoare, plus fiecare încasare și cheltuială.</p>")
+    + step("•","Strângeri de bani","<p>La fiecare strângere vezi suma pe copil și dacă a ajuns contribuția copilului tău. Bifele le pune doar administratoarea, după ce vede banii în cont.</p>")
+    + step("•","Cum trimiți banii","<p>Detaliile de plată sunt în anunțul de pe Acasă sau în grupul părinților. Scrie la plată numele copilului.</p>"));
+  h += sec("telefon","📱","Pune portalul pe ecranul telefonului",
+      step("iPhone","Safari","<p>Deschide portalul în Safari → apasă "+B("Distribuie ⬆︎")+" → "+B("Adaugă pe ecranul principal")+".</p>")
+    + step("Android","Chrome","<p>Deschide portalul în Chrome → apasă "+B("⋮")+" sus în dreapta → "+B("Adaugă pe ecranul de pornire")+".</p>"));
+  h += sec("probleme","🛟","Dacă ceva nu merge",
+      step("?","Nu văd ce a bifat altcineva","<p>De obicei apare singur în câteva secunde. Dacă nu, trage pagina în jos ca să se reîncarce.</p>")
+    + step("?","Pe alt telefon îmi cere iar întrebarea","<p>E normal: întrebarea și alegerea copilului se țin minte pe fiecare telefon separat.</p>")
+    + step("?","Nu pot șterge ce am pus","<p>Poți retrage doar ce ai adăugat de pe același telefon. Pentru altceva, scrie-i administratoarei.</p>")
+    + step("?","Apare „Nu s-a salvat”","<p>Verifică internetul și încearcă din nou. Dacă tot nu merge, anunță administratoarea.</p>"));
+  return h;
+}
 function viewHome(){
   let h = "";
+  if (LS.get("fl_ghid") !== "1") h += '<div class="notice guide-hint"><span class="gh-ico" aria-hidden="true">👋</span><div style="flex:1;min-width:0"><div class="who">Prima dată aici?</div><p>Vezi în 2 minute cum folosești portalul: cum preiei ceva, cum bifezi, cum comentezi.</p><div class="row" style="margin-top:10px"><button class="btn small primary" data-a="tab" data-k="ghid">Deschide ghidul</button><button class="btn small ghost" data-a="ghidOk">Am înțeles</button></div></div></div>';
   if (D.setari.anunt) h += '<div class="notice">'+ICON.bell+'<div><div class="who">Anunț</div><p>'+esc(D.setari.anunt)+'</p></div></div>';
   const t = todayStr();
   const up = D.sectiuni.filter(s => isEvent(s) && s.data && s.data >= t).sort((a,b)=>a.data.localeCompare(b.data));
@@ -1063,7 +1139,9 @@ document.addEventListener("click", async e => {
   if (a === "closeScrim") { if (e.target === t) closeModal(); return; }
   if (t.tagName === "SELECT" || t.tagName === "FORM") return;
   switch (a) {
-    case "tab": setTab(t.dataset.k); break;
+    case "tab": if (t.dataset.k === "ghid") LS.set("fl_ghid","1"); setTab(t.dataset.k); break;
+    case "ghidOk": LS.set("fl_ghid","1"); render(); break;
+    case "goG": goTo("g-"+id); break;
     case "pick": openPicker(); break;
     case "close": closeModal(); break;
     case "pickKid": ui.me = id; LS.set("fl_me", id || null); closeModal(); render(); if (afterPick) { const f = afterPick; afterPick = null; f(); } break;
@@ -1211,7 +1289,7 @@ document.addEventListener("submit", async e => {
   } finally { if (btn && document.body.contains(btn)) btn.disabled = false; }
 });
 
-window.addEventListener("hashchange", () => { const k = location.hash.slice(1); if (TABS.some(t=>t[0]===k)) setTab(k); });
+window.addEventListener("hashchange", () => { const k = location.hash.slice(1); if (TABS.some(t=>t[0]===k) || k === "ghid") setTab(k); });
 
 boot();
 })();
