@@ -216,6 +216,39 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .gbtn.st-prog{background:var(--lilac-soft);color:var(--lilac);border-color:transparent;border-radius:999px}
 .gbtn.st-done{background:var(--meadow-soft);color:var(--meadow);border-color:transparent;border-radius:999px}
 .gbtn.x{color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.segb{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:800;font-size:14.5px;display:inline-flex;align-items:center;gap:6px}
+.segb small{font-weight:600;color:var(--muted)}
+.segb.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.segb.small{padding:5px 12px;font-size:13px}
+.months-seg{margin-top:10px}
+.optinfo{margin-top:12px;background:var(--surface-2);border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:600}
+.optmonth{margin-top:-8px}
+.opt-tiles{margin-bottom:14px}
+.optlist{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.orow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px}
+.orow.mine{box-shadow:inset 0 0 0 2px var(--me)}
+.orow .on{min-width:0}
+.orow .on b{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dots{display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap}
+.dots i{width:10px;height:10px;border-radius:50%;border:2px solid var(--line)}
+.dots i.p{background:var(--meadow);border-color:var(--meadow)}
+.dots span{font-size:12.5px;font-weight:800;color:var(--muted);margin-left:4px}
+.oright{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.osum{font-weight:800;font-size:15px;white-space:nowrap}
+.opaid{border:0;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:800;background:var(--wing-soft);color:var(--wing-ink);white-space:nowrap}
+.opaid.on{background:var(--meadow-soft);color:var(--meadow)}
+.opaid.none{background:transparent;color:var(--muted)}
+button.opaid{cursor:pointer;min-height:26px}
+.impsum{font-size:14px}
+.implist{display:grid;gap:6px;max-height:44vh;overflow:auto}
+.improw{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.2fr);gap:8px;align-items:center;font-size:13.5px}
+.improw .xn{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.improw .xc{color:var(--muted);font-weight:700}
+.improw .sel{min-height:36px;padding-top:4px;padding-bottom:4px;font-size:14px}
+.improw.warn .sel{border-color:var(--berry)}
+@media (max-width:480px){.improw{grid-template-columns:minmax(0,1fr) auto}.improw .sel{grid-column:1/-1}}
+@media (max-width:720px){.bottom-nav button{font-size:10.5px;padding-left:2px;padding-right:2px}}
 .empty{color:var(--muted);background:var(--surface-2);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600}
 
 /* Carduri item */
@@ -512,6 +545,7 @@ const ICON = {
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
   list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
   cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>',
   wallet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a1 1 0 0 1-1-1z"/><path d="M4 7l11-3v3"/><circle cx="16" cy="13.5" r="1.3" fill="currentColor"/></svg>',
   chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -529,10 +563,10 @@ const STATUS = { todo:"De făcut", progress:"În lucru", done:"Rezolvat" };
 const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar", info:"Doar de știut" };
 
 /* ---------- stare ---------- */
-const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], voturi_insc:[], colecte:[], financiar:[], setari:{} };
-const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","voturi_insc","colecte","financiar","setari"];
+const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], voturi_insc:[], colecte:[], optionale:[], optional_luni:[], optional_prezente:[], financiar:[], setari:{} };
+const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","voturi_insc","colecte","optionale","optional_luni","optional_prezente","financiar","setari"];
 const ui = {
-  tab: ["acasa","necesar","evenimente","bani","ghid"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
+  tab: ["acasa","necesar","evenimente","optionale","bani","ghid"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
   me: LS.get("fl_me") || "",
   device: LS.get("fl_dev") || (()=>{ const d = uid(); LS.set("fl_dev", d); return d; })(),
   openC: new Set(), drafts: {}, notes: {}, qty: {}, confirm: null,
@@ -625,7 +659,7 @@ function progressOf(it){
 const SUPABASE_URL = "https://huzurhvdpypruvuaidwp.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JRjoraFkCA5nNPO_X7rvog_rg8A451E";
 const UUID_TABLES = new Set(["inscrieri","comentarii","financiar"]);
-const mapKey = { itemId:"item_id", copilId:"copil_id", parentId:"parent_id", colectaId:"colecta_id", inscriereId:"inscriere_id" }, unmapKey = { inscriere_id:"inscriereId", item_id:"itemId", copil_id:"copilId", parent_id:"parentId", comentariu_id:"comentariuId", colecta_id:"colectaId" };
+const mapKey = { itemId:"item_id", copilId:"copil_id", parentId:"parent_id", colectaId:"colecta_id", inscriereId:"inscriere_id", optionalId:"optional_id", lunaId:"luna_id", dataPlata:"data_plata" }, unmapKey = { inscriere_id:"inscriereId", optional_id:"optionalId", luna_id:"lunaId", data_plata:"dataPlata", item_id:"itemId", copil_id:"copilId", parent_id:"parentId", comentariu_id:"comentariuId", colecta_id:"colectaId" };
 const toDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[mapKey[k]||k] = v; return r; };
 const fromDb = o => { const r = {}; for (const [k,v] of Object.entries(o)) r[unmapKey[k]||k] = v == null ? "" : v; return r; };
 const newUuid = () => (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
@@ -725,7 +759,7 @@ function toast(msg, err){
 }
 
 /* ---------- randare ---------- */
-const TABS = [["acasa","Acasă","home"],["necesar","Necesar","list"],["evenimente","Evenimente","cal"],["bani","Bani","wallet"]];
+const TABS = [["acasa","Acasă","home"],["necesar","Necesar","list"],["evenimente","Evenimente","cal"],["optionale","Opționale","star"],["bani","Bani","wallet"]];
 function render(){
   pending = false;
   const me = kid(ui.me);
@@ -734,7 +768,7 @@ function render(){
     : '<span class="av" style="background:var(--wing)">'+ICON.user.replace('<svg','<svg width="16" height="16"')+'</span><span class="lbl">Alege copilul tău</span>';
   const tabsHtml = TABS.map(([k,l,i]) => '<button type="button" class="tab" data-a="tab" data-k="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+ICON[i]+l+'</button>').join("");
   $("#tabs").innerHTML = tabsHtml;
-  $("#bnav").innerHTML = TABS.map(([k,l,i]) => '<button type="button" data-a="tab" data-k="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+ICON[i]+'<span>'+l+'</span></button>').join("");
+  $("#bnav").style.setProperty("--n", TABS.length); $("#bnav").innerHTML = TABS.map(([k,l,i]) => '<button type="button" data-a="tab" data-k="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+ICON[i]+'<span>'+l+'</span></button>').join("");
   const v = $("#view");
   if (ui.mode === "loading" || (ui.mode === "live" && !["copii","sectiuni","itemi"].every(n => ui.loaded.has(n)))) {
     v.innerHTML = '<div class="state"><h3>Se încarcă lista grupei…</h3>Evenimentele, necesarul și banii apar în câteva secunde.</div>'; return;
@@ -746,7 +780,7 @@ function render(){
     v.innerHTML = '<div class="state"><h3>Încă nu e nimic pe listă</h3>'+(cap.admin ? 'Adaugă prima secțiune, apoi itemii ei.<div style="margin-top:14px"><button class="btn primary" data-a="secEdit">'+ICON.plus+'Secțiune nouă</button></div>' : 'Administratoarea grupei adaugă aici necesarul și evenimentele.')+'</div>'; return;
   }
   if (!kid(ui.me) && D.copii.length && !$("#modalRoot").innerHTML) setTimeout(() => { if (!kid(ui.me) && !$("#modalRoot").innerHTML) openPicker(null, true); }, 0);
-  const html = ({ acasa: viewHome, necesar: viewNecesar, evenimente: viewEvents, bani: viewMoney, ghid: viewGuide }[ui.tab] || viewHome)();
+  const html = ({ acasa: viewHome, necesar: viewNecesar, evenimente: viewEvents, optionale: viewOptionale, bani: viewMoney, ghid: viewGuide }[ui.tab] || viewHome)();
   v.innerHTML = (cap.admin ? adminBar() : "") + html + '<p class="foot-note">Bifele și comentariile se salvează automat și le văd toți părinții. <button class="linkbtn" data-a="tab" data-k="ghid">Ghid de folosire</button><br>'+(cap.admin ? 'Ești logată ca administratoare ('+esc(ui.adminEmail)+'). <button class="linkbtn" data-a="logout">Ieși</button>' : '<button class="linkbtn" data-a="login">Administrare</button>')+'</p>';
 }
 
@@ -773,7 +807,7 @@ function viewGuide(){
   const sec = (id, emoji, title, steps) => '<section class="gsec" id="g-'+id+'"><h2><span aria-hidden="true">'+emoji+'</span> '+title+'</h2><ol class="gsteps">'+steps+'</ol></section>';
   let h = '<section><div class="sec-head"><div><h2>Cum folosești portalul</h2><div class="sub">Ghid pentru părinți. Durează 2 minute.</div></div><button class="btn small" data-a="tab" data-k="acasa">Înapoi la Acasă</button></div>'
     + '<nav class="gtoc" aria-label="Cuprins">'
-    + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Statusul"],["comentarii","Comentarii"],["bani","Banii grupei"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
+    + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Statusul"],["comentarii","Comentarii"],["bani","Banii grupei"],["optionale","Opționale"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
     + '</nav></section>';
   h += sec("start","🚪","Prima intrare",
       step(1,"Răspunde la întrebare","<p>Prima dată, portalul te întreabă cum le cheamă pe educatoare. Scrie numele lor și apasă "+B("Intră","dark")+". Întreabă o singură dată pe fiecare telefon.</p>")
@@ -808,6 +842,9 @@ function viewGuide(){
       step("•","Vezi tot, la vedere","<p>În tabul "+B("Bani")+" vezi câți bani sunt în contul clasei și cash la educatoare, plus fiecare încasare și cheltuială.</p>")
     + step("•","Strângeri de bani","<p>La fiecare strângere vezi suma pe copil și dacă a ajuns contribuția copilului tău. Bifele le pune doar administratoarea, după ce vede banii în cont.</p>")
     + step("•","Cum trimiți banii","<p>Detaliile de plată sunt în anunțul de pe Acasă sau în grupul părinților. Scrie la plată numele copilului.</p>"));
+  h += sec("optionale","⭐","Opționale (dans, engleză, dezvoltare personală)",
+      step("•","Prezența și suma","<p>În tabul "+B("Opționale")+" alegi opționalul și luna. Fiecare bulină verde e o ședință la care a fost copilul. Suma = ședințe × prețul pe ședință.</p>")
+    + step("•","Cât ai de plată","<p>Sus apare direct pentru copilul tău, de ex. „Vlad: 2 din 6 ședințe · 20 lei de plată”. Apare și pe Acasă, la „Ce ai tu de făcut”. După ce plătești, administratoarea marchează „Plătit” și trece la „Gata”.</p>"));
   h += sec("telefon","📱","Pune portalul pe ecranul telefonului",
       step("iPhone","Safari","<p>Deschide portalul în Safari → apasă "+B("Distribuie ⬆︎")+" → "+B("Adaugă pe ecranul principal")+".</p>")
     + step("Android","Chrome","<p>Deschide portalul în Chrome → apasă "+B("⋮")+" sus în dreapta → "+B("Adaugă pe ecranul de pornire")+".</p>"));
@@ -856,6 +893,7 @@ function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
 function myTodo(){
   const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
+  if (isChild(me)) for (const o of optDues(me).filter(x => !x.p.platit)) out.push('<div role="button" tabindex="0" class="qrow" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--lilac)"></span><span class="t"><b>'+esc(o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>De plată '+esc(lei(o.sum))+' ('+o.n+' '+(o.n===1?'ședință':'ședințe')+')</small></span></span></div>');
   if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) out.push('<div role="button" tabindex="0" class="qrow" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--meadow)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>De trimis '+esc(lei(c.suma))+'</small></span></span></div>');
   for (const it of allItems()) {
     if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
@@ -879,6 +917,7 @@ function myDone(){
     if (it.tip === "fiecare" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), it.bifa || "Bifat"));
     else if ((it.tip === "single" || it.tip === "multi") && it.status === "done" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), "Rezolvat"));
   }
+  if (isChild(me)) for (const o of optDues(me).filter(x => x.p.platit && x.latest)) out.push(row('data-a="goOpt" data-id="'+esc(o.l.id)+'"', o.o.nume+' · '+lunaLabel(o.l.luna), '<span class="tag">Opțional</span>', "Plătit · "+lei(o.sum)));
   if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (collStats(c).ids.has(me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Contribuția a ajuns"));
   return out;
 }
@@ -1084,6 +1123,122 @@ function collForm(id){
     + '<div class="acts">'+(c?'<button type="button" class="btn danger left" data-a="delColl" data-id="'+esc(c.id)+'">'+(ui.confirm==="coll"+c.id?(n?'Șterge și cele '+n+' contribuții?':'Sigur? Apasă iar'):'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
     + '<input type="hidden" name="id" value="'+esc(c?c.id:"")+'"></form>');
 }
+/* ---------- Opționale ---------- */
+const lunaLabel = k => { const [y,m] = String(k).split("-"); return LUNI[+m-1] ? LUNI[+m-1]+" "+y : k; };
+const presSum = p => (Array.isArray(p.prezente) ? p.prezente : []).reduce((a,v)=>a+(+v?1:0),0);
+function optDues(me){
+  const out = [];
+  for (const p of D.optional_prezente.filter(x => x.copilId === me)) {
+    const l = D.optional_luni.find(x => x.id === p.lunaId); if (!l) continue; const o = D.optionale.find(x => x.id === l.optionalId); if (!o) continue;
+    const n = presSum(p); const sum = n * (+l.pret || 0); if (!sum) continue;
+    const latest = !D.optional_luni.some(x => x.optionalId === l.optionalId && x.luna > l.luna);
+    out.push({ p, l, o, n, sum, latest });
+  }
+  return out.sort((a,b)=>String(b.l.luna).localeCompare(a.l.luna));
+}
+function viewOptionale(){
+  const opts = D.optionale.slice().sort((a,b)=>(a.ordine||0)-(b.ordine||0));
+  let h = '<section><div class="sec-head"><div><h2>Opționale</h2><div class="sub">Prezența de fiecare lună și cât e de plată, după fișa de la grădiniță.</div></div>'
+    + (cap.admin ? '<div class="row"><button class="btn small primary" data-a="optImport">'+ICON.plus+'Încarcă prezența (Excel)</button></div>' : '') + '</div>';
+  if (!opts.length) return h + '<div class="empty">Nu sunt opționale încă.</div></section>';
+  const sel = opts.some(o=>o.id===ui.opt) ? ui.opt : opts[0].id; const O = opts.find(o=>o.id===sel);
+  h += '<div class="seg" role="tablist">'+opts.map(o => { const n = D.optional_luni.filter(l=>l.optionalId===o.id).length; return '<button type="button" role="tab" class="segb'+(o.id===sel?' on':'')+'" aria-selected="'+(o.id===sel)+'" data-a="optSel" data-id="'+esc(o.id)+'"><span aria-hidden="true">'+esc(o.icon||"")+'</span> '+esc(o.nume)+(n?'':' <small>(fără date)</small>')+'</button>'; }).join("")+'</div>';
+  if (O.descriere || cap.admin) h += '<div class="optinfo">'+(O.descriere ? linkify(O.descriere) : '<span class="hint">Adaugă cum se plătește (cui, până când).</span>')+(cap.admin ? ' <button class="linkbtn" data-a="optEdit" data-id="'+esc(O.id)+'">Editează</button>' : '')+'</div>';
+  const luni = D.optional_luni.filter(l=>l.optionalId===sel).sort((a,b)=>String(b.luna).localeCompare(a.luna));
+  if (!luni.length) return h + '<div class="empty" style="margin-top:12px">Încă nu e încărcată prezența la '+esc(O.nume.toLowerCase())+'.'+(cap.admin?' Apasă „Încarcă prezența (Excel)”.':'')+'</div></section>';
+  const L = luni.find(l=>l.id===ui.optLuna) || luni[0];
+  if (luni.length > 1) h += '<div class="seg months-seg">'+luni.map(l => '<button type="button" class="segb small'+(l.id===L.id?' on':'')+'" data-a="optLuna" data-id="'+esc(l.id)+'">'+esc(lunaLabel(l.luna))+'</button>').join("")+'</div>';
+  const ses = Array.isArray(L.sedinte) ? L.sedinte : [];
+  const recs = D.optional_prezente.filter(p => p.lunaId === L.id).map(p => ({ p, k: kid(p.copilId), n: presSum(p) })).filter(r => r.k).sort((a,b)=>(a.k.ordine||0)-(b.k.ordine||0));
+  const pret = +L.pret || 0; const total = recs.reduce((a,r)=>a+r.n*pret,0); const paid = recs.filter(r=>r.p.platit).reduce((a,r)=>a+r.n*pret,0);
+  h += '</section><section class="optmonth" id="opt-'+esc(L.id)+'"><div class="sec-head"><div><h2>'+esc(O.icon||"")+' '+esc(O.nume)+' · '+esc(lunaLabel(L.luna))+'</h2><div class="sub">'+ses.length+' ședințe: '+esc(ses.map(d=>parseD(d) ? parseD(d).getDate() : d).join(", "))+' '+esc(LUNI_S[(parseD(ses[0])||new Date()).getMonth()])+'. · '+esc(lei(pret))+' / ședință</div></div>'
+    + (cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div>';
+  const mine = recs.find(r => r.p.copilId === ui.me);
+  if (mine) h += '<div class="mestat '+(mine.p.platit || !mine.n ?'ok':'')+'" style="margin-bottom:14px">'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (mine.p.platit ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</div>';
+  h += '<div class="money opt-tiles" style="--n:2"><div class="tile big"><div class="lab">Total de plată</div><div class="val">'+lei(total)+'</div></div><div class="tile"><div class="lab">Plătit</div><div class="val in">'+lei(paid)+'</div></div><div class="tile"><div class="lab">Rămas</div><div class="val'+(total-paid>0?' out':'')+'">'+lei(total-paid)+'</div></div></div>';
+  h += '<div class="optlist">' + recs.map(r => {
+    const pres = Array.isArray(r.p.prezente) ? r.p.prezente : [];
+    const sum = r.n * pret;
+    const paidEl = !sum ? '<span class="opaid none">—</span>' : cap.admin
+      ? '<button type="button" class="opaid'+(r.p.platit?' on':'')+'" data-a="optPaid" data-id="'+esc(r.p.id)+'" aria-pressed="'+!!r.p.platit+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</button>'
+      : '<span class="opaid'+(r.p.platit?' on':'')+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</span>';
+    return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' prezent':' absent')+'"></i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
+  }).join("") + '</div>';
+  return h + '</section>';
+}
+function optEditForm(id){
+  const o = D.optionale.find(x=>x.id===id); if (!o) return;
+  modal('<h3>Editează opționalul</h3><form id="fOpt" class="view" style="gap:12px">'
+    + '<div class="grid2"><label class="field" for="fo-n"><span>Nume</span><input class="inp" id="fo-n" name="nume" required maxlength="60" value="'+esc(o.nume)+'"></label>'
+    + '<label class="field" for="fo-i"><span>Iconiță</span><input class="inp" id="fo-i" name="icon" maxlength="8" value="'+esc(o.icon||"")+'"></label></div>'
+    + '<label class="field" for="fo-d"><span>Cum se plătește (apare la părinți)</span><textarea class="ta" id="fo-d" name="descriere" maxlength="400" placeholder="ex. Plata se face cash la doamna Raluca, până pe 5 ale lunii.">'+esc(o.descriere||"")+'</textarea></label>'
+    + '<div class="acts"><button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div><input type="hidden" name="id" value="'+esc(o.id)+'"></form>');
+}
+/* import Excel */
+async function loadXLSX(){ if (window.XLSX) return; await new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); }); }
+const normName = v => String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z ]+/g," ").replace(/\s+/g," ").trim();
+function lev(a, b){ const m = a.length, n = b.length; const d = Array.from({length:m+1}, (_, i) => [i].concat(Array(n).fill(0))); for (let j=1;j<=n;j++) d[0][j]=j; for (let i=1;i<=m;i++) for (let j=1;j<=n;j++) d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1)); return d[m][n]; }
+function matchKid(name, idx){
+  const toks = normName(name).split(" ").filter(Boolean); let best = null, bs = 0;
+  for (const k of sortedKids()) { const kt = normName(k.nume).split(" "); let sc = 0; for (const t of toks) { if (kt.includes(t)) sc += 2; else if (t.length >= 4 && kt.some(x => x.length >= 4 && lev(x, t) <= 2)) sc += 1; } if (sc > bs) { bs = sc; best = k; } }
+  if (bs < 2) { const k = sortedKids()[idx]; return k ? k.id : ""; }
+  return best ? best.id : "";
+}
+const LUNA_MAP = { ian:1, feb:2, mar:3, apr:4, mai:5, iun:6, iul:7, aug:8, sep:9, oct:10, noi:11, nov:11, dec:12 };
+function schoolYearStart(){ const d = new Date(); return d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1; }
+function parseDateCell(v){
+  if (v == null || v === "") return null; const ys = schoolYearStart();
+  if (v instanceof Date && !isNaN(v)) return isoOf(v);
+  if (typeof v === "number" && v > 20000) return isoOf(new Date(Math.round((v - 25569) * 86400000)));
+  const m = /(\d{1,2})\s*[.\-\/ ]\s*([A-Za-zăâîșțĂÂÎȘȚ]+|\d{1,2})/.exec(String(v)); if (!m) return null;
+  const day = +m[1]; const mw = normName(m[2]).toLowerCase(); const mon = /^\d+$/.test(m[2]) ? +m[2] : (LUNA_MAP[mw.slice(0,3)] || 0);
+  if (!mon || day < 1 || day > 31) return null; const y = mon >= 8 ? ys : ys + 1;
+  return y+"-"+pad(mon)+"-"+pad(day);
+}
+function parseAttendance(wb){
+  const ws = wb.Sheets[wb.SheetNames[0]]; const rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:null });
+  const txt = c => String(c == null ? "" : c);
+  const title = (rows.find(r => r && r.some(c => txt(c).trim())) || []).find(c => txt(c).trim()) || "";
+  const hdr = rows.findIndex(r => r && r.some(c => /nume/i.test(txt(c)))); if (hdr < 0) throw new Error("Nu găsesc coloana cu numele copiilor.");
+  const H = rows[hdr]; const nameCol = H.findIndex(c => /nume/i.test(txt(c)));
+  let endCol = H.findIndex((c, i) => i > nameCol && /total|pret|preț|valoare/i.test(txt(c))); if (endCol < 0) endCol = Math.max(...rows.map(r => r ? r.length : 0));
+  const priceCol = H.findIndex(c => /pret|preț/i.test(txt(c)));
+  const dates = [];
+  for (let c = nameCol + 1; c < endCol; c++) { const d = parseDateCell((rows[hdr+1]||[])[c]) || parseDateCell(H[c]); if (d) dates.push({ c, d }); }
+  if (!dates.length) throw new Error("Nu găsesc datele ședințelor în fișier.");
+  const kids = []; const prices = {};
+  for (let r = hdr + 1; r < rows.length; r++) {
+    const row = rows[r] || []; const nm = txt(row[nameCol]).trim();
+    if (!nm) { if (kids.length) break; else continue; }
+    if (/total|prezent/i.test(nm)) break;
+    const pres = dates.map(x => { const v = row[x.c]; return (v === 1 || v === true || /^\s*(1|x|da|p)\s*$/i.test(txt(v))) ? 1 : 0; });
+    kids.push({ nume: nm, pres });
+    if (priceCol >= 0 && +row[priceCol] > 0) prices[+row[priceCol]] = (prices[+row[priceCol]] || 0) + 1;
+  }
+  const pret = +(Object.entries(prices).sort((a,b)=>b[1]-a[1])[0] || [0])[0];
+  const luni = {}; dates.forEach(x => { const k = x.d.slice(0,7); luni[k] = (luni[k]||0)+1; });
+  const luna = Object.entries(luni).sort((a,b)=>b[1]-a[1])[0][0];
+  return { title: txt(title).trim(), dates: dates.map(x=>x.d), kids: kids.map((k, i) => Object.assign(k, { copilId: matchKid(k.nume, i) })), pret, luna };
+}
+function importForm(){
+  const opts = D.optionale.slice().sort((a,b)=>(a.ordine||0)-(b.ordine||0));
+  modal('<h3>Încarcă prezența</h3><p class="hint">Alege fișierul Excel primit de la grădiniță. Îți arăt ce am înțeles din el înainte să salvez.</p><form id="fImp" class="view" style="gap:12px">'
+    + '<label class="field" for="fx-o"><span>Opționalul</span><select class="sel" id="fx-o" name="opt">'+opts.map(o=>'<option value="'+esc(o.id)+'"'+(o.id===(ui.opt||"")?' selected':'')+'>'+esc((o.icon?o.icon+" ":"")+o.nume)+'</option>').join("")+'</select></label>'
+    + '<label class="field" for="fx-f"><span>Fișierul (.xlsx)</span><input class="inp" id="fx-f" type="file" accept=".xlsx,.xls,.csv"></label>'
+    + '<div id="impPrev"></div>'
+    + '<div class="acts"><button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit" id="impSave" disabled>Salvează prezența</button></div></form>');
+}
+let IMP = null;
+function renderImportPreview(){
+  const el = document.getElementById("impPrev"); if (!el || !IMP) return;
+  const used = {}; IMP.kids.forEach(k => { if (k.copilId) used[k.copilId] = (used[k.copilId]||0)+1; });
+  el.innerHTML = '<div class="impsum"><b>'+esc(IMP.title || "Fișier")+'</b> · '+IMP.dates.length+' ședințe ('+esc(IMP.dates.map(d=>parseD(d).getDate()).join(", "))+') · '+IMP.kids.length+' copii</div>'
+    + '<div class="grid2"><label class="field" for="fx-l"><span>Luna</span><input class="inp" id="fx-l" name="luna" type="month" value="'+esc(IMP.luna)+'" required></label>'
+    + '<label class="field" for="fx-p"><span>Preț / ședință (lei)</span><input class="inp num" id="fx-p" name="pret" type="number" min="0" step="0.01" value="'+esc(IMP.pret||"")+'" required></label></div>'
+    + '<div class="eyebrow">Verifică potrivirea numelor</div><div class="implist">'+IMP.kids.map((k,i) => '<div class="improw'+(!k.copilId || used[k.copilId] > 1 ? ' warn' : '')+'"><span class="xn">'+esc(k.nume)+'</span><span class="num xc">'+k.pres.reduce((a,b)=>a+b,0)+'/'+IMP.dates.length+'</span><select class="sel" data-imp="'+i+'" aria-label="Copilul pentru '+esc(k.nume)+'"><option value="">— nu salva —</option>'+sortedKids().map(c=>'<option value="'+esc(c.id)+'"'+(c.id===k.copilId?' selected':'')+'>'+esc(c.nume)+'</option>').join("")+'</select></div>').join("")+'</div>'
+    + (Object.values(used).some(n=>n>1) ? '<p class="gate-err">Un copil apare de două ori. Corectează rândurile marcate.</p>' : '');
+  const b = document.getElementById("impSave"); if (b) b.disabled = Object.values(used).some(n=>n>1);
+}
 function viewMoney(){
   const rows = D.financiar.slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)) || String(b.creat).localeCompare(String(a.creat)));
   const inn = rows.filter(r=>r.tip==="in").reduce((a,r)=>a+(+r.suma||0),0);
@@ -1256,6 +1411,15 @@ document.addEventListener("click", async e => {
       ui.confirm = null; await write(db => db.doc("comentarii/"+id).delete(), "Comentariu șters"); break;
     }
     case "settings": settingsForm(); break;
+    case "optSel": ui.opt = id; ui.optLuna = ""; render(); break;
+    case "optLuna": ui.optLuna = id; render(); break;
+    case "goOpt": { const l = D.optional_luni.find(x=>x.id===id); if (l) { ui.opt = l.optionalId; ui.optLuna = l.id; } setTab("optionale"); break; }
+    case "optImport": IMP = null; importForm(); break;
+    case "optEdit": optEditForm(id); break;
+    case "optPaid": { const p = D.optional_prezente.find(x=>x.id===id); if (!p) break; t.disabled = true; const body = Object.assign({}, p, { platit: !p.platit, dataPlata: !p.platit ? todayStr() : "" }); delete body.id; await write(db => db.doc("optional_prezente/"+id).set(body), body.platit ? "Marcat plătit: "+firstName(kidName(p.copilId)) : "Marcat de plată"); break; }
+    case "optDelLuna":
+      if (ui.confirm !== "ol"+id) { ui.confirm = "ol"+id; t.textContent = "Sigur? Apasă iar"; break; }
+      ui.confirm = null; await write(async db => { chk(await sb.from("optional_luni").delete().eq("id", id)); await refetch("optional_prezente"); await refetch("optional_luni"); }, "Luna a fost ștearsă"); break;
     case "pickIcon": { const inp = document.getElementById("fs-i"); if (inp) inp.value = t.dataset.v; break; }
     case "login": loginForm(); break;
     case "logout": await sb.auth.signOut(); cap.admin = false; ui.adminEmail = ""; render(); toast("Ai ieșit din administrare"); break;
@@ -1291,6 +1455,16 @@ document.addEventListener("click", async e => {
 });
 
 document.addEventListener("change", e => { if (e.target && e.target.id === "ff-tip") { const l = document.getElementById("ff-src-l"); if (l) l.textContent = e.target.value === "transfer" ? "Banii pleacă din" : "Unde"; const w = document.getElementById("ff-dst-w"); if (w) w.hidden = e.target.value !== "transfer"; } });
+document.addEventListener("change", async e => {
+  const t = e.target; if (!t) return;
+  if (t.id === "fx-f" && t.files && t.files[0]) {
+    try { await loadXLSX(); const buf = await t.files[0].arrayBuffer(); const wb = XLSX.read(buf, { type:"array", cellDates:true }); IMP = parseAttendance(wb);
+      const o = D.optionale.find(x => normName(IMP.title).includes(normName(x.nume)) || normName(x.nume).includes(normName(IMP.title))); if (o) { const s = document.getElementById("fx-o"); if (s) s.value = o.id; }
+      renderImportPreview(); }
+    catch(err){ IMP = null; const el = document.getElementById("impPrev"); if (el) el.innerHTML = '<p class="gate-err">Nu am putut citi fișierul: '+esc(err.message||err)+'</p>'; }
+  }
+  if (t.dataset && t.dataset.imp != null && IMP) { IMP.kids[+t.dataset.imp].copilId = t.value; renderImportPreview(); }
+});
 document.addEventListener("change", e => { if (e.target && e.target.id === "evsel" && e.target.value) { const id = e.target.value; e.target.value = ""; goTo("sec-"+id); } });
 document.addEventListener("change", async e => {
   const t = e.target.closest("select[data-a]"); if (!t) return;
@@ -1350,6 +1524,19 @@ document.addEventListener("submit", async e => {
       const id = fd.id || ("c"+uid()); const prev = D.colecte.find(x=>x.id===id) || {};
       const body = { titlu:fd.titlu.trim(), suma:+fd.suma||0, sursa: SURSE[fd.sursa] ? fd.sursa : "cont", data:fd.data, descriere:(fd.descriere||"").trim(), inchisa: !!prev.inchisa, creat: prev.creat || now };
       if (await write(db => db.doc("colecte/"+id).set(body), "Strângere salvată")) closeModal();
+    } else if (fid === "fOpt") {
+      const o = D.optionale.find(x=>x.id===fd.id) || {}; const body = Object.assign({}, o, { nume:fd.nume.trim(), icon:(fd.icon||"").trim(), descriere:(fd.descriere||"").trim() }); delete body.id;
+      if (await write(db => db.doc("optionale/"+fd.id).set(body), "Salvat")) closeModal();
+    } else if (fid === "fImp") {
+      if (!IMP) { toast("Alege întâi fișierul.", true); return; }
+      const opt = fd.opt; const luna = fd.luna || IMP.luna; const pret = +fd.pret || 0; const lid = opt+"-"+luna;
+      const rows = IMP.kids.filter(k => k.copilId).map(k => { const id = lid+"_"+k.copilId; const prev = D.optional_prezente.find(x=>x.id===id); return { id, luna_id: lid, copil_id: k.copilId, prezente: k.pres, platit: prev ? !!prev.platit : false, data_plata: prev ? (prev.dataPlata||"") : "" }; });
+      const ok = await write(async () => {
+        chk(await sb.from("optional_luni").upsert({ id: lid, optional_id: opt, luna, sedinte: IMP.dates, pret }));
+        chk(await sb.from("optional_prezente").upsert(rows));
+        await refetch("optional_luni"); await refetch("optional_prezente");
+      }, "Prezența a fost salvată ("+rows.length+" copii)");
+      if (ok) { ui.opt = opt; ui.optLuna = lid; IMP = null; closeModal(); render(); }
     } else if (fid === "fLogin") {
       const r = await sb.auth.signInWithPassword({ email: fd.email.trim(), password: fd.parola });
       if (r.error) { toast("Email sau parolă greșită.", true); return; }
