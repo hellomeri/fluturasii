@@ -766,7 +766,7 @@ function toast(msg, err){
 }
 
 /* ---------- randare ---------- */
-const TABS = [["acasa","Acasă","home"],["necesar","Necesar","list"],["evenimente","Evenimente","cal"],["optionale","Opționale","star"],["bani","Bani","wallet"]];
+const TABS = [["acasa","Acasă","home"],["necesar","Necesar","list"],["evenimente","Evenimente","cal"],["optionale","Opționale","star"],["bani","Buget","wallet"]];
 function render(){
   pending = false;
   const me = kid(ui.me);
@@ -814,7 +814,7 @@ function viewGuide(){
   const sec = (id, emoji, title, steps) => '<section class="gsec" id="g-'+id+'"><h2><span aria-hidden="true">'+emoji+'</span> '+title+'</h2><ol class="gsteps">'+steps+'</ol></section>';
   let h = '<section><div class="sec-head"><div><h2>Cum folosești portalul</h2><div class="sub">Ghid pentru părinți. Durează 2 minute.</div></div><button class="btn small" data-a="tab" data-k="acasa">Înapoi la Acasă</button></div>'
     + '<nav class="gtoc" aria-label="Cuprins">'
-    + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Statusul"],["comentarii","Comentarii"],["bani","Banii grupei"],["optionale","Opționale"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
+    + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Statusul"],["comentarii","Comentarii"],["bani","Bugetul grupei"],["optionale","Opționale"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
     + '</nav></section>';
   h += sec("start","🚪","Prima intrare",
       step(1,"Răspunde la întrebare","<p>Prima dată, portalul te întreabă cum le cheamă pe educatoare. Scrie numele lor și apasă "+B("Intră","dark")+". Întreabă o singură dată pe fiecare telefon.</p>")
@@ -845,8 +845,8 @@ function viewGuide(){
   h += sec("comentarii","💬","Comentarii, întrebări, linkuri",
       step(1,"Scrie un comentariu","<p>Sub fiecare card apasă "+B("💬 Comentează")+", scrie și apasă "+B("Trimite","dark")+". E locul bun pentru linkuri, oferte sau întrebări.</p>")
     + step(2,"Răspunde și votează","<p>Sub orice comentariu poți apăsa "+B("↩ Răspunde")+" sau poți vota cu "+B("👍")+" / "+B("👎")+" (de exemplu, la două oferte de Moș).</p>"));
-  h += sec("bani","💰","Banii grupei",
-      step("•","Vezi tot, la vedere","<p>În tabul "+B("Bani")+" vezi câți bani sunt în contul clasei și cash la educatoare, plus fiecare încasare și cheltuială.</p>")
+  h += sec("bani","💰","Bugetul grupei",
+      step("•","Vezi tot, la vedere","<p>În tabul "+B("Buget")+" vezi câți bani sunt în contul clasei și cash la educatoare, plus fiecare încasare și cheltuială.</p>")
     + step("•","Strângeri de bani","<p>La fiecare strângere vezi suma pe copil și dacă a ajuns contribuția copilului tău. Bifele le pune doar administratoarea, după ce vede banii în cont.</p>")
     + step("•","Cum trimiți banii","<p>Detaliile de plată sunt în anunțul de pe Acasă sau în grupul părinților. Scrie la plată numele copilului.</p>"));
   h += sec("optionale","⭐","Opționale (dans, engleză, dezvoltare personală)",
@@ -1264,7 +1264,7 @@ function viewMoney(){
     if (r.tip === "in") bal[src] += v; else if (r.tip === "out") bal[src] -= v; else if (r.tip === "transfer") { bal[src] -= v; bal[dst] += v; } }
   const shown = Object.keys(SURSE).filter(k => k !== "adelina" || rows.some(r => srcOf(r) === "adelina" || (r.tip === "transfer" && dstOf(r) === "adelina")));
   const r2 = n => Math.round(n*100)/100;
-  let h = '<section><div class="sec-head"><div><h2>Banii grupei</h2><div class="sub">Tot ce s-a strâns și s-a cheltuit, la vedere pentru toți părinții.</div></div>'
+  let h = '<section><div class="sec-head"><div><h2>Bugetul grupei</h2><div class="sub">Tot ce s-a strâns și s-a cheltuit, la vedere pentru toți părinții.</div></div>'
     + (cap.admin ? '<div class="row"><button class="btn small primary" data-a="finEdit" data-tip="in">'+ICON.plus+'Încasare</button><button class="btn small" data-a="finEdit" data-tip="out">'+ICON.plus+'Cheltuială</button><button class="btn small" data-a="finEdit" data-tip="transfer">'+ICON.plus+'Mutare cont ↔ cash</button></div>' : '') + '</div>';
   h += '<div class="money" style="--n:'+shown.length+'"><div class="tile big"><div class="lab">Sold total</div><div class="val">'+lei(r2(shown.reduce((a,k)=>a+bal[k],0)))+'</div>'+(shown.some(k=>r2(bal[k])<0) ? '<div class="note big-note">După ce se dau înapoi banii avansați</div>' : '')+'</div>'
     + shown.map(k => '<div class="tile"><div class="lab">'+SURSE[k].lung+'</div><div class="val'+(r2(bal[k])<0?' out':'')+'">'+lei(r2(bal[k]))+'</div>'+(r2(bal[k])<0 ? '<div class="note">Grupa are de dat înapoi '+lei(-r2(bal[k]))+'</div>' : '')+'</div>').join("") + '</div>'
