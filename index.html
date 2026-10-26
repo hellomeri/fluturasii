@@ -169,6 +169,12 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .qrow .t small{color:var(--muted);font-size:13px;font-weight:600}
 .qrow .dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--wing)}
 .done-list{margin-top:16px}
+.todo-grp + .todo-grp{margin-top:16px}
+.todo-grp .eyebrow{margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline}
+.pay-h{color:var(--berry)}
+.pay-h .num{font-size:14px;letter-spacing:0;text-transform:none}
+.qrow.pay{border-color:color-mix(in srgb,var(--berry) 35%,var(--line))}
+.qrow .pamt{font-weight:800;font-size:15px;white-space:nowrap;margin-left:auto;padding-left:8px}
 .done-h{color:var(--meadow);margin-bottom:8px}
 .qrow.ok{background:var(--meadow-soft);border-color:transparent}
 .qrow.ok .t b{color:var(--meadow)}
@@ -231,8 +237,9 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .orow .on{min-width:0}
 .orow .on b{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dots{display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap}
-.dots i{width:10px;height:10px;border-radius:50%;border:2px solid var(--line)}
-.dots i.p{background:var(--meadow);border-color:var(--meadow)}
+.dots{gap:3px}
+.dots i{font-style:normal;min-width:24px;height:22px;padding:0 4px;border-radius:7px;border:1.5px dashed var(--line);display:inline-grid;place-items:center;font-size:11.5px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
+.dots i.p{background:var(--meadow);border:1.5px solid var(--meadow);color:#fff;text-decoration:none}
 .dots span{font-size:12.5px;font-weight:800;color:var(--muted);margin-left:4px}
 .oright{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 .osum{font-weight:800;font-size:15px;white-space:nowrap}
@@ -877,7 +884,11 @@ function viewHome(){
   h += '<div class="two">';
   h += '<section><div class="sec-head"><div><h2>'+(kid(ui.me) ? 'Ce ai tu de făcut' : 'Ce ai de făcut')+'</h2><div class="sub">'+(kid(ui.me) ? 'Pentru '+esc(kidName(ui.me)) : 'Alege-ți copilul ca să vezi lista ta.')+'</div></div></div>';
   if (!kid(ui.me)) h += '<button class="btn wingb" data-a="pick">'+ICON.user+'Alege copilul tău</button>';
-  else h += mineH.length ? '<div class="quick">'+mineH.join("")+'</div>' : '<div class="empty">Nimic deschis pentru voi acum. Mulțumim!</div>';
+  else {
+    const pay = myPay();
+    if (pay.rows.length) h += '<div class="todo-grp"><div class="eyebrow pay-h">💳 De plătit<span class="num">'+esc(lei(pay.total))+'</span></div><div class="quick">'+pay.rows.join("")+'</div></div>';
+    h += '<div class="todo-grp"><div class="eyebrow">📋 De pregătit și de adus</div>'+(mineH.length ? '<div class="quick">'+mineH.join("")+'</div>' : '<div class="empty">Nimic deschis pentru voi acum. Mulțumim!</div>')+'</div>';
+  }
   if (kid(ui.me)) { const dn = myDone(); if (dn.length) h += '<div class="done-list"><div class="eyebrow done-h">✓ Gata ('+dn.length+')</div><div class="quick">'+dn.join("")+'</div></div>'; }
   h += '</section>';
   h += '<section><div class="sec-head"><div><h2>Unde e nevoie de ajutor</h2><div class="sub">Lucruri care nu au încă pe cineva.</div></div></div>';
@@ -891,10 +902,15 @@ function qrow(it, sub, color){
 }
 function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a.sectiune)||{}, sb = sec(b.sectiune)||{}; return String(sa.data||"9999").localeCompare(String(sb.data||"9999")) || (a.ordine||0)-(b.ordine||0); }); }
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
+function myPay(){
+  const me = ui.me, out = []; let total = 0;
+  if (!isChild(me)) return { rows: out, total };
+  for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) { total += +c.suma||0; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>Contribuție</small></span></span><span class="pamt num">'+esc(lei(c.suma))+'</span></div>'); }
+  for (const o of optDues(me).filter(x => !x.p.platit)) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+(o.n===1?'ședință':'ședințe')+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pamt num">'+esc(lei(o.sum))+'</span></div>'); }
+  return { rows: out, total };
+}
 function myTodo(){
   const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
-  if (isChild(me)) for (const o of optDues(me).filter(x => !x.p.platit)) out.push('<div role="button" tabindex="0" class="qrow" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--lilac)"></span><span class="t"><b>'+esc(o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>De plată '+esc(lei(o.sum))+' ('+o.n+' '+(o.n===1?'ședință':'ședințe')+')</small></span></span></div>');
-  if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) out.push('<div role="button" tabindex="0" class="qrow" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--meadow)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>De trimis '+esc(lei(c.suma))+'</small></span></span></div>');
   for (const it of allItems()) {
     if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
     const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
@@ -1162,7 +1178,7 @@ function viewOptionale(){
     const paidEl = !sum ? '<span class="opaid none">—</span>' : cap.admin
       ? '<button type="button" class="opaid'+(r.p.platit?' on':'')+'" data-a="optPaid" data-id="'+esc(r.p.id)+'" aria-pressed="'+!!r.p.platit+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</button>'
       : '<span class="opaid'+(r.p.platit?' on':'')+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</span>';
-    return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' prezent':' absent')+'"></i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
+    return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' – prezent':' – absent')+'">'+(parseD(d)?parseD(d).getDate():'')+'</i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
   }).join("") + '</div>';
   return h + '</section>';
 }
