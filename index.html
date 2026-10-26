@@ -174,6 +174,8 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .pay-h{color:var(--berry)}
 .pay-h .num{font-size:14px;letter-spacing:0;text-transform:none}
 .qrow.pay{border-color:color-mix(in srgb,var(--berry) 35%,var(--line))}
+.qrow .pright{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none;margin-left:auto;padding-left:8px}
+.qrow .pright .pamt{margin:0;padding:0}
 .qrow .pamt{font-weight:800;font-size:15px;white-space:nowrap;margin-left:auto;padding-left:8px}
 .done-h{color:var(--meadow);margin-bottom:8px}
 .qrow.ok{background:var(--meadow-soft);border-color:transparent}
@@ -247,6 +249,16 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .opaid.on{background:var(--meadow-soft);color:var(--meadow)}
 .opaid.none{background:transparent;color:var(--muted)}
 button.opaid{cursor:pointer;min-height:26px}
+button.opaid.own{background:var(--surface);border:1.5px solid var(--meadow);color:var(--meadow)}
+.paybtn{border:0;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;background:var(--meadow);color:#fff;cursor:pointer;white-space:nowrap;min-height:32px;font-family:inherit}
+.paybtn.undo{background:transparent;color:var(--muted);border:1px solid var(--line);padding:4px 10px;font-size:12px;min-height:28px}
+.qrow.ok .paybtn.undo{margin-left:auto;flex:none}
+.mestat{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.kid.decl i{border-color:var(--meadow);border-style:dashed}
+.kid small{font-weight:700;color:var(--meadow);font-size:11px}
+.linkcopy{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;min-height:28px;vertical-align:middle}
+.linkcopy:hover{color:var(--ink);border-color:var(--ink)}
+.gsec h2 .linkcopy{margin-left:6px}
 .impsum{font-size:14px}
 .implist{display:grid;gap:6px;max-height:44vh;overflow:auto}
 .improw{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.2fr);gap:8px;align-items:center;font-size:13.5px}
@@ -570,16 +582,39 @@ const STATUS = { todo:"De făcut", progress:"În lucru", done:"Rezolvat" };
 const TIP = { single:"Cine se ocupă", multi:"Se înscrie oricine", fiecare:"Fiecare copil", rotatie:"Pe rând, lunar", info:"Doar de știut" };
 
 /* ---------- stare ---------- */
-const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], voturi_insc:[], colecte:[], optionale:[], optional_luni:[], optional_prezente:[], financiar:[], setari:{} };
-const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","voturi_insc","colecte","optionale","optional_luni","optional_prezente","financiar","setari"];
+const D = { copii:[], sectiuni:[], itemi:[], stari:{}, inscrieri:[], comentarii:[], voturi:[], voturi_insc:[], colecte:[], optionale:[], optional_luni:[], optional_prezente:[], plati_declarate:[], financiar:[], setari:{} };
+const COLS = ["copii","sectiuni","itemi","stari","inscrieri","comentarii","voturi","voturi_insc","colecte","optionale","optional_luni","optional_prezente","plati_declarate","financiar","setari"];
 const ui = {
-  tab: ["acasa","necesar","evenimente","optionale","bani","ghid"].includes(location.hash.slice(1)) ? location.hash.slice(1) : (LS.get("fl_tab") || "acasa"),
+  tab: LS.get("fl_tab") || "acasa", opt: "", optLuna: "",
   me: LS.get("fl_me") || "",
   device: LS.get("fl_dev") || (()=>{ const d = uid(); LS.set("fl_dev", d); return d; })(),
   openC: new Set(), drafts: {}, notes: {}, qty: {}, confirm: null,
   loaded: new Set(), mode: "loading", replyTo: "", authorHash: "", adminEmail: ""
 };
 const cap = { db:null, admin:false, canWrite:true };
+/* ---------- linkuri directe: #optionale/dans/2026-10, #evenimente/<id>, #buget/<strangere>, #ghid/<capitol> ---------- */
+const HASH_TAB = { acasa:"acasa", necesar:"necesar", evenimente:"evenimente", optionale:"optionale", buget:"bani", bani:"bani", ghid:"ghid" };
+const TAB_HASH = { bani:"buget" };
+let routeTarget = "";
+function parseRoute(){
+  let parts = []; try { parts = decodeURIComponent(location.hash.slice(1)).split("/").filter(Boolean); } catch(e){}
+  const tab = HASH_TAB[parts[0]]; if (!tab) return false;
+  ui.tab = tab; routeTarget = "";
+  if (tab === "optionale") { ui.opt = parts[1] || ""; ui.optLuna = parts[1] && parts[2] ? parts[1]+"-"+parts[2] : ""; }
+  else if ((tab === "necesar" || tab === "evenimente") && parts[1]) routeTarget = parts[2] ? "item-"+parts[2] : "sec-"+parts[1];
+  else if (tab === "bani" && parts[1]) routeTarget = "coll-"+parts[1];
+  else if (tab === "ghid" && parts[1]) routeTarget = "g-"+parts[1];
+  return true;
+}
+function curPath(){
+  let h = TAB_HASH[ui.tab] || ui.tab;
+  if (ui.tab === "optionale" && ui.opt) { h += "/"+ui.opt; const l = D.optional_luni.find(x => x.id === ui.optLuna); if (l) h += "/"+l.luna; }
+  return h;
+}
+function syncHash(path){ const h = "#"+(path || curPath()); if (location.hash !== h) try { history.replaceState(null, "", h); } catch(e){} }
+const secPath = s => (isEvent(s) ? "evenimente/" : "necesar/")+s.id;
+const linkBtn = path => '<button type="button" class="linkcopy" data-a="copyLink" data-h="'+esc(path)+'" title="Copiază linkul către această parte">'+'🔗 Link</button>';
+parseRoute();
 
 const kid = id => D.copii.find(c => c.id === id);
 const isEvent = s => !!s && (s.categorie === "eveniment" || (s.categorie !== "necesar" && !!s.data));
@@ -787,6 +822,7 @@ function render(){
     v.innerHTML = '<div class="state"><h3>Încă nu e nimic pe listă</h3>'+(cap.admin ? 'Adaugă prima secțiune, apoi itemii ei.<div style="margin-top:14px"><button class="btn primary" data-a="secEdit">'+ICON.plus+'Secțiune nouă</button></div>' : 'Administratoarea grupei adaugă aici necesarul și evenimentele.')+'</div>'; return;
   }
   if (!kid(ui.me) && D.copii.length && !$("#modalRoot").innerHTML) setTimeout(() => { if (!kid(ui.me) && !$("#modalRoot").innerHTML) openPicker(null, true); }, 0);
+  setTimeout(() => { if (routeTarget && document.getElementById(routeTarget)) { const t = routeTarget; routeTarget = ""; goTo(t); } }, 0);
   const html = ({ acasa: viewHome, necesar: viewNecesar, evenimente: viewEvents, optionale: viewOptionale, bani: viewMoney, ghid: viewGuide }[ui.tab] || viewHome)();
   v.innerHTML = (cap.admin ? adminBar() : "") + html + '<p class="foot-note">Bifele și comentariile se salvează automat și le văd toți părinții. <button class="linkbtn" data-a="tab" data-k="ghid">Ghid de folosire</button><br>'+(cap.admin ? 'Ești logată ca administratoare ('+esc(ui.adminEmail)+'). <button class="linkbtn" data-a="logout">Ieși</button>' : '<button class="linkbtn" data-a="login">Administrare</button>')+'</p>';
 }
@@ -811,7 +847,7 @@ function whenLine(s){
 function viewGuide(){
   const B = (txt, cls) => '<span class="gbtn '+(cls||"")+'">'+txt+'</span>';
   const step = (n, title, body) => '<li class="gstep"><span class="gnum">'+n+'</span><div class="gbody"><h3>'+title+'</h3>'+body+'</div></li>';
-  const sec = (id, emoji, title, steps) => '<section class="gsec" id="g-'+id+'"><h2><span aria-hidden="true">'+emoji+'</span> '+title+'</h2><ol class="gsteps">'+steps+'</ol></section>';
+  const sec = (id, emoji, title, steps) => '<section class="gsec" id="g-'+id+'"><h2><span aria-hidden="true">'+emoji+'</span> '+title+' '+linkBtn("ghid/"+id)+'</h2><ol class="gsteps">'+steps+'</ol></section>';
   let h = '<section><div class="sec-head"><div><h2>Cum folosești portalul</h2><div class="sub">Ghid pentru părinți. Durează 2 minute.</div></div><button class="btn small" data-a="tab" data-k="acasa">Înapoi la Acasă</button></div>'
     + '<nav class="gtoc" aria-label="Cuprins">'
     + [["start","Prima intrare"],["acasa","Ce vezi pe Acasă"],["preiau","Preiau ceva"],["inscriu","Aduc ceva"],["bifez","Bifez pentru copil"],["luna","Iau o lună"],["status","Statusul"],["comentarii","Comentarii"],["bani","Bugetul grupei"],["optionale","Opționale"],["telefon","Pe ecranul telefonului"],["probleme","Dacă ceva nu merge"]].map(([k,l]) => '<button type="button" class="evchip" data-a="goG" data-id="'+k+'">'+l+'</button>').join("")
@@ -902,11 +938,13 @@ function qrow(it, sub, color){
 }
 function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a.sectiune)||{}, sb = sec(b.sectiune)||{}; return String(sa.data||"9999").localeCompare(String(sb.data||"9999")) || (a.ordine||0)-(b.ordine||0); }); }
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
+const declared = (cid, k) => D.plati_declarate.some(x => x.colectaId === cid && x.copilId === k);
+const payBtn = (tip, ref, on, kidId) => '<button type="button" class="paybtn'+(on?'':' undo')+'" data-a="payMark" data-t="'+tip+'" data-ref="'+esc(ref)+'" data-on="'+(on?1:0)+'"'+(kidId?' data-kid="'+esc(kidId)+'"':'')+'>'+(on ? '✓ Am plătit' : 'Anulează')+'</button>';
 function myPay(){
   const me = ui.me, out = []; let total = 0;
   if (!isChild(me)) return { rows: out, total };
-  for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me)) { total += +c.suma||0; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>Contribuție</small></span></span><span class="pamt num">'+esc(lei(c.suma))+'</span></div>'); }
-  for (const o of optDues(me).filter(x => !x.p.platit)) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+(o.n===1?'ședință':'ședințe')+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pamt num">'+esc(lei(o.sum))+'</span></div>'); }
+  for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me) && !declared(c.id, me)) { total += +c.suma||0; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>Contribuție</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(c.suma))+'</span>'+payBtn("colecta", c.id, true)+'</span></div>'); }
+  for (const o of optDues(me).filter(x => !x.p.platit)) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+(o.n===1?'ședință':'ședințe')+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(o.sum))+'</span>'+payBtn("optional", o.l.id, true)+'</span></div>'); }
   return { rows: out, total };
 }
 function myTodo(){
@@ -926,15 +964,18 @@ function myTodo(){
 }
 function myDone(){
   const me = ui.me, out = [];
-  const row = (attrs, title, tag, sub) => '<div role="button" tabindex="0" class="qrow ok" '+attrs+'><span class="okmark" aria-hidden="true">'+ICON.check+'</span><span class="t"><b>'+esc(title)+'</b><span class="qsub">'+tag+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></div>';
+  const row = (attrs, title, tag, sub, extra) => '<div role="button" tabindex="0" class="qrow ok" '+attrs+'><span class="okmark" aria-hidden="true">'+ICON.check+'</span><span class="t"><b>'+esc(title)+'</b><span class="qsub">'+tag+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span>'+(extra||'')+'</div>';
   for (const it of allItems()) {
     if (!sectionUpcoming(it) || it.tip === "info") continue;
     const s = sec(it.sectiune);
     if (it.tip === "fiecare" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), it.bifa || "Bifat"));
     else if ((it.tip === "single" || it.tip === "multi") && it.status === "done" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), "Rezolvat"));
   }
-  if (isChild(me)) for (const o of optDues(me).filter(x => x.p.platit && x.latest)) out.push(row('data-a="goOpt" data-id="'+esc(o.l.id)+'"', o.o.nume+' · '+lunaLabel(o.l.luna), '<span class="tag">Opțional</span>', "Plătit · "+lei(o.sum)));
-  if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) if (collStats(c).ids.has(me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Contribuția a ajuns"));
+  if (isChild(me)) for (const o of optDues(me).filter(x => x.p.platit && x.latest)) out.push(row('data-a="goOpt" data-id="'+esc(o.l.id)+'"', o.o.nume+' · '+lunaLabel(o.l.luna), '<span class="tag">Opțional</span>', "Plătit · "+lei(o.sum), payBtn("optional", o.l.id, false)));
+  if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) {
+    if (collStats(c).ids.has(me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Contribuția a ajuns"));
+    else if (declared(c.id, me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Ai marcat plătit · se confirmă când ajung banii", payBtn("colecta", c.id, false)));
+  }
   return out;
 }
 function needsHelp(){
@@ -990,7 +1031,7 @@ function secBlock(s){
   const its = itemsOf(s.id); const open = its.filter(i=>i.tip==="info" || i.status!=="done"); const done = its.filter(i=>i.tip!=="info" && i.status==="done");
   let h = '<section class="secblock" id="sec-'+esc(s.id)+'"><div class="sec-head"><div class="sec-title">'+(s.data ? calTile(s) : (s.icon ? '<div class="icotile" aria-hidden="true">'+esc(s.icon)+'</div>' : ''))+'<div style="min-width:0"><h2>'+(s.data && s.icon ? '<span class="h-ico" aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+'</h2>'
     + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? linkify(s.descriere) : '')+'</div></div></div>'
-    + (cap.admin ? '<div class="row"><button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button></div>' : '')
+    + '<div class="row">'+linkBtn(secPath(s))+(cap.admin ? '<button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button>' : '')+'</div>'
     + '</div>';
   if (!its.length) h += '<div class="empty">Nu sunt itemi aici încă.</div>';
   if (open.length) h += '<div class="grid">'+open.map(itemCard).join("")+'</div>';
@@ -1114,14 +1155,15 @@ function viewStrangeri(){
 }
 function collCard(c){
   const st = collStats(c); const pct = st.target ? Math.min(100, st.got/st.target*100) : 0; const missing = sortedKids().filter(k => !st.ids.has(k.id));
-  const meOk = kid(ui.me) && st.ids.has(ui.me);
+  const meOk = kid(ui.me) && st.ids.has(ui.me), meDecl = !meOk && declared(c.id, ui.me);
+  const nDecl = sortedKids().filter(k => !st.ids.has(k.id) && declared(c.id, k.id)).length;
   return '<div class="ccard'+(c.inchisa?' closed':'')+'" id="coll-'+esc(c.id)+'"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><h4>'+esc(c.titlu)+'</h4>'
-    + '<div class="hint">'+esc(fmtShort(c.data))+' · intră în '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+(c.descriere ? ' · '+esc(c.descriere) : '')+'</div></div><span class="chip meadow">'+lei(c.suma)+' / copil</span></div>'
-    + '<div class="count num" style="margin-top:10px"><span><b>'+st.ids.size+'</b> din '+st.tot+' copii au trimis</span><span>'+lei(r2g(st.got))+' din '+lei(r2g(st.target))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'
-    + (isChild(ui.me) && !c.inchisa ? '<div class="mestat '+(meOk?'ok':'')+'">'+(meOk ? 'Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!' : 'Încă n-a ajuns contribuția pentru '+esc(firstName(kidName(ui.me)))+': '+lei(c.suma)+'.')+'</div>' : '')
+    + '<div class="hint">'+esc(fmtShort(c.data))+' · intră în '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+(c.descriere ? ' · '+esc(c.descriere) : '')+'</div></div><div class="row" style="gap:6px;flex:none"><span class="chip meadow">'+lei(c.suma)+' / copil</span>'+linkBtn("buget/"+c.id)+'</div></div>'
+    + '<div class="count num" style="margin-top:10px"><span><b>'+st.ids.size+'</b> din '+st.tot+' copii au trimis'+(nDecl ? ' · '+nDecl+' au marcat plătit' : '')+'</span><span>'+lei(r2g(st.got))+' din '+lei(r2g(st.target))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'
+    + (isChild(ui.me) && !c.inchisa ? '<div class="mestat '+(meOk||meDecl?'ok':'')+'">'+(meOk ? 'Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!' : meDecl ? '<span>Ai marcat că ai plătit pentru '+esc(firstName(kidName(ui.me)))+'. Se confirmă când ajung banii.</span>'+payBtn("colecta", c.id, false) : '<span>Încă n-a ajuns contribuția pentru '+esc(firstName(kidName(ui.me)))+': '+lei(c.suma)+'.</span>'+payBtn("colecta", c.id, true))+'</div>' : '')
     + '<details class="all" style="margin-top:8px"'+(cap.admin && !c.inchisa ? ' open' : '')+'><summary>'+(missing.length ? 'Lipsesc '+missing.length+' copii · vezi lista' : 'Au trimis toți copiii')+'</summary><div class="kids">'
-    + sortedKids().map(k => { const on = st.ids.has(k.id); const can = cap.admin; return '<'+(can?'button type="button" data-a="paid" data-id="'+esc(c.id)+'" data-kid="'+esc(k.id)+'"':'div')+' class="kid '+(on?'on':'off')+'"><i></i><span>'+esc(k.nume)+'</span></'+(can?'button':'div')+'>'; }).join("")
-    + '</div>'+(cap.admin ? '<p class="hint" style="margin-top:8px">Bifează un copil când îi ajung banii. Contribuția apare automat la soldul din '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+'.</p>' : '')+'</details>'
+    + sortedKids().map(k => { const on = st.ids.has(k.id), dc = !on && declared(c.id, k.id); const can = cap.admin; return '<'+(can?'button type="button" data-a="paid" data-id="'+esc(c.id)+'" data-kid="'+esc(k.id)+'"':'div')+' class="kid '+(on?'on':dc?'decl':'off')+'"'+(dc?' title="Părintele a marcat că a plătit"':'')+'><i></i><span>'+esc(k.nume)+(dc?' <small>a marcat plătit</small>':'')+'</span></'+(can?'button':'div')+'>'; }).join("")
+    + '</div>'+(cap.admin ? '<p class="hint" style="margin-top:8px">Bifează un copil când îi ajung banii. Cei cu „a marcat plătit” au anunțat ei că au trimis; bifează-i după ce vezi banii. Contribuția apare automat la soldul din '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+'.</p>' : '')+'</details>'
     + (cap.admin ? '<div class="row" style="margin-top:10px;gap:6px"><button class="btn small ghost" data-a="collEdit" data-id="'+esc(c.id)+'">'+ICON.pen+'Editează</button><button class="btn small ghost" data-a="collToggle" data-id="'+esc(c.id)+'">'+(c.inchisa ? 'Redeschide' : 'Încheie strângerea')+'</button></div>' : '')
     + '</div>';
 }
@@ -1163,21 +1205,24 @@ function viewOptionale(){
   const luni = D.optional_luni.filter(l=>l.optionalId===sel).sort((a,b)=>String(b.luna).localeCompare(a.luna));
   if (!luni.length) return h + '<div class="empty" style="margin-top:12px">Încă nu e încărcată prezența la '+esc(O.nume.toLowerCase())+'.'+(cap.admin?' Apasă „Încarcă prezența (Excel)”.':'')+'</div></section>';
   const L = luni.find(l=>l.id===ui.optLuna) || luni[0];
+  if (ui.tab === "optionale" && location.hash.indexOf("#optionale") === 0) syncHash("optionale/"+sel+"/"+L.luna);
   if (luni.length > 1) h += '<div class="seg months-seg">'+luni.map(l => '<button type="button" class="segb small'+(l.id===L.id?' on':'')+'" data-a="optLuna" data-id="'+esc(l.id)+'">'+esc(lunaLabel(l.luna))+'</button>').join("")+'</div>';
   const ses = Array.isArray(L.sedinte) ? L.sedinte : [];
   const recs = D.optional_prezente.filter(p => p.lunaId === L.id).map(p => ({ p, k: kid(p.copilId), n: presSum(p) })).filter(r => r.k).sort((a,b)=>(a.k.ordine||0)-(b.k.ordine||0));
   const pret = +L.pret || 0; const total = recs.reduce((a,r)=>a+r.n*pret,0); const paid = recs.filter(r=>r.p.platit).reduce((a,r)=>a+r.n*pret,0);
   h += '</section><section class="optmonth" id="opt-'+esc(L.id)+'"><div class="sec-head"><div><h2>'+esc(O.icon||"")+' '+esc(O.nume)+' · '+esc(lunaLabel(L.luna))+'</h2><div class="sub">'+ses.length+' ședințe: '+esc(ses.map(d=>parseD(d) ? parseD(d).getDate() : d).join(", "))+' '+esc(LUNI_S[(parseD(ses[0])||new Date()).getMonth()])+'. · '+esc(lei(pret))+' / ședință</div></div>'
-    + (cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div>';
+    + '<div class="row">'+linkBtn("optionale/"+sel+"/"+L.luna)+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
   const mine = recs.find(r => r.p.copilId === ui.me);
-  if (mine) h += '<div class="mestat '+(mine.p.platit || !mine.n ?'ok':'')+'" style="margin-bottom:14px">'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (mine.p.platit ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</div>';
+  if (mine) h += '<div class="mestat '+(mine.p.platit || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (mine.p.platit ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n ? payBtn("optional", L.id, !mine.p.platit) : '')+'</div>';
   h += '<div class="money opt-tiles" style="--n:2"><div class="tile big"><div class="lab">Total de plată</div><div class="val">'+lei(total)+'</div></div><div class="tile"><div class="lab">Plătit</div><div class="val in">'+lei(paid)+'</div></div><div class="tile"><div class="lab">Rămas</div><div class="val'+(total-paid>0?' out':'')+'">'+lei(total-paid)+'</div></div></div>';
   h += '<div class="optlist">' + recs.map(r => {
     const pres = Array.isArray(r.p.prezente) ? r.p.prezente : [];
     const sum = r.n * pret;
     const paidEl = !sum ? '<span class="opaid none">—</span>' : cap.admin
       ? '<button type="button" class="opaid'+(r.p.platit?' on':'')+'" data-a="optPaid" data-id="'+esc(r.p.id)+'" aria-pressed="'+!!r.p.platit+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</button>'
-      : '<span class="opaid'+(r.p.platit?' on':'')+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</span>';
+      : r.p.copilId === ui.me
+        ? '<button type="button" class="opaid'+(r.p.platit?' on':' own')+'" data-a="payMark" data-t="optional" data-ref="'+esc(L.id)+'" data-on="'+(r.p.platit?0:1)+'" aria-pressed="'+!!r.p.platit+'">'+(r.p.platit?'✓ Plătit':'Am plătit?')+'</button>'
+        : '<span class="opaid'+(r.p.platit?' on':'')+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</span>';
     return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' – prezent':' – absent')+'">'+(parseD(d)?parseD(d).getDate():'')+'</i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
   }).join("") + '</div>';
   return h + '</section>';
@@ -1369,7 +1414,7 @@ function settingsForm(){
 }
 
 /* ---------- evenimente ---------- */
-function setTab(k){ ui.tab = k; LS.set("fl_tab", k); render(); window.scrollTo({ top:0 }); }
+function setTab(k){ ui.tab = k; LS.set("fl_tab", k); syncHash(); render(); window.scrollTo({ top:0 }); }
 function goTo(elId){
   setTimeout(() => { const el = document.getElementById(elId); if (!el) return; const det = el.closest("details"); if (det) det.open = true; el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }, 30);
 }
@@ -1384,11 +1429,11 @@ document.addEventListener("click", async e => {
   switch (a) {
     case "tab": if (t.dataset.k === "ghid") LS.set("fl_ghid","1"); setTab(t.dataset.k); break;
     case "ghidOk": LS.set("fl_ghid","1"); render(); break;
-    case "goG": goTo("g-"+id); break;
+    case "goG": syncHash("ghid/"+id); goTo("g-"+id); break;
     case "pick": openPicker(); break;
     case "close": closeModal(); break;
     case "pickKid": if (!id) break; pickForced = false; ui.me = id; LS.set("fl_me", id); closeModal(); render(); if (afterPick) { const f = afterPick; afterPick = null; f(); } break;
-    case "goSec": { const s = sec(id); setTab(tabOfSec(s)); goTo("sec-"+id); break; }
+    case "goSec": { const s = sec(id); setTab(tabOfSec(s)); if (s) syncHash(secPath(s)); goTo("sec-"+id); break; }
     case "goItem": { const it = D.itemi.find(i=>i.id===id); if (!it) break; setTab(tabOfSec(sec(it.sectiune))); goTo("item-"+id); break; }
     case "toggleC": ui.openC.has(id) ? ui.openC.delete(id) : ui.openC.add(id); render(); if (ui.openC.has(id)) { const ta = document.getElementById("cm-"+id); if (ta && matchMedia("(min-width:721px)").matches) ta.focus(); } break;
     case "takeIt": t.disabled = true; await setStare(id, { responsabil: ui.me, status: (D.stari[id]||{}).status === "done" ? "done" : "progress" }) && toast("Mulțumim! Te ocupi tu."); break;
@@ -1427,8 +1472,8 @@ document.addEventListener("click", async e => {
       ui.confirm = null; await write(db => db.doc("comentarii/"+id).delete(), "Comentariu șters"); break;
     }
     case "settings": settingsForm(); break;
-    case "optSel": ui.opt = id; ui.optLuna = ""; render(); break;
-    case "optLuna": ui.optLuna = id; render(); break;
+    case "optSel": ui.opt = id; ui.optLuna = ""; syncHash(); render(); break;
+    case "optLuna": ui.optLuna = id; syncHash(); render(); break;
     case "goOpt": { const l = D.optional_luni.find(x=>x.id===id); if (l) { ui.opt = l.optionalId; ui.optLuna = l.id; } setTab("optionale"); break; }
     case "optImport": IMP = null; importForm(); break;
     case "optEdit": optEditForm(id); break;
@@ -1466,7 +1511,28 @@ document.addEventListener("click", async e => {
       await write(async db => { for (const r of D.financiar.filter(x=>x.colectaId===id)) await db.doc("financiar/"+r.id).delete(); await db.doc("colecte/"+id).delete(); }, "Strângere ștearsă"); closeModal(); break;
     }
     case "goColl": goTo("coll-"+id); break;
-    case "goCollTab": setTab("bani"); goTo("coll-"+id); break;
+    case "goCollTab": setTab("bani"); syncHash("buget/"+id); goTo("coll-"+id); break;
+    case "payMark": {
+      if (!needMe()) break;
+      const tip = t.dataset.t, ref = t.dataset.ref, on = t.dataset.on === "1", k = t.dataset.kid || ui.me;
+      t.disabled = true;
+      if (tip === "colecta" && cap.admin && on) {
+        const c = D.colecte.find(x=>x.id===ref); if (!c || collStats(c).ids.has(k)) break;
+        await write(db => db.collection("financiar").doc().set({ tip:"in", sursa:srcOf(c), destinatie:"", suma:+c.suma||0, descriere:"Contribuție "+kidName(k), data:todayStr(), itemId:"", copilId:k, colectaId:ref, creat:new Date().toISOString() }), "Marcat plătit: "+firstName(kidName(k))+" ✓");
+        break;
+      }
+      await write(async () => { chk(await sb.rpc("marcheaza_platit", { p_tip: tip, p_ref: ref, p_copil: k, p_on: on })); await refetch(tip === "colecta" ? "plati_declarate" : "optional_prezente"); },
+        on ? (tip === "colecta" ? "Notat ✓ Se confirmă când ajung banii." : "Marcat plătit ✓") : "Anulat");
+      break;
+    }
+    case "copyLink": {
+      const url = location.origin + location.pathname + "#" + t.dataset.h;
+      syncHash(t.dataset.h);
+      let ok = false; try { await navigator.clipboard.writeText(url); ok = true; } catch(e){}
+      if (!ok) { try { const ta = document.createElement("textarea"); ta.value = url; ta.setAttribute("readonly",""); ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove(); } catch(e){} }
+      toast(ok ? "Link copiat. Îl poți lipi pe WhatsApp." : url);
+      break;
+    }
   }
 });
 
@@ -1573,7 +1639,7 @@ document.addEventListener("submit", async e => {
   } finally { if (btn && document.body.contains(btn)) btn.disabled = false; }
 });
 
-window.addEventListener("hashchange", () => { const k = location.hash.slice(1); if (TABS.some(t=>t[0]===k) || k === "ghid") setTab(k); });
+window.addEventListener("hashchange", () => { if (parseRoute()) { LS.set("fl_tab", ui.tab); render(); if (!routeTarget) window.scrollTo({ top:0 }); } });
 
 boot();
 })();
