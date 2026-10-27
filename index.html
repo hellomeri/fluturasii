@@ -315,7 +315,8 @@ button.opaid.own{background:var(--surface);border:1.5px solid var(--meadow);colo
 @media (prefers-reduced-motion:reduce){.item.flash{animation:none;outline:3px solid var(--wing)}}
 .item-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
 .item-head h4{font-size:18px;font-weight:700;min-width:0;overflow-wrap:anywhere}
-.item.is-done h4{color:var(--muted)}
+.item.is-done{background:var(--meadow-soft);border-color:color-mix(in srgb,var(--meadow) 30%,transparent);box-shadow:none}
+.item.is-done h4{color:var(--meadow)}
 .item.info{background:var(--wing-soft);border-color:transparent;box-shadow:none}
 .item.info .foot{border-top-color:rgba(0,0,0,.08)}
 .meta{display:flex;flex-wrap:wrap;gap:6px}
@@ -876,7 +877,7 @@ function viewGuide(){
   h += sec("luna","🗓️","Iau o lună (hârtie igienică umedă)",
       step(1,"Alege o lună liberă","<p>Lângă o lună care scrie „liber”, apasă "+B("Iau eu")+". Luna e a ta și apare la „Ce ai tu de făcut”.</p>"));
   h += sec("status","🏁","Cum știu în ce stadiu e un lucru",
-      step("•","Statusul de pe card","<p>Sus, pe fiecare card, scrie "+B("De făcut","st-todo")+", "+B("În lucru","st-prog")+" sau "+B("Rezolvat","st-done")+". Statusul îl schimbă doar administratoarea. Când un lucru e rezolvat, cardul trece la „Rezolvate”.</p>")
+      step("•","Statusul de pe card","<p>Sus, pe fiecare card, scrie "+B("De făcut","st-todo")+", "+B("În lucru","st-prog")+" sau "+B("Rezolvat","st-done")+". Statusul îl schimbă doar administratoarea. Când un lucru e rezolvat, cardul se face verde și trece la finalul listei.</p>")
     + step("•","Ai terminat ce ai preluat?","<p>Scrie un comentariu pe card (de ex. „Am adus baloții”) sau anunță administratoarea, iar ea marchează itemul ca rezolvat.</p>"));
   h += sec("comentarii","💬","Comentarii, întrebări, linkuri",
       step(1,"Scrie un comentariu","<p>Sub fiecare card apasă "+B("💬 Comentează")+", scrie și apasă "+B("Trimite","dark")+". E locul bun pentru linkuri, oferte sau întrebări.</p>")
@@ -1034,8 +1035,7 @@ function secBlock(s){
     + '<div class="row">'+linkBtn(secPath(s))+(cap.admin ? '<button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button>' : '')+'</div>'
     + '</div>';
   if (!its.length) h += '<div class="empty">Nu sunt itemi aici încă.</div>';
-  if (open.length) h += '<div class="grid">'+open.map(itemCard).join("")+'</div>';
-  if (done.length) h += '<details class="done-group"'+(open.length?'':' open')+'><summary>Rezolvate ('+done.length+')</summary><div class="grid">'+done.map(itemCard).join("")+'</div></details>';
+  if (its.length) h += '<div class="grid">'+open.concat(done).map(itemCard).join("")+'</div>';
   return h + '</section>';
 }
 
