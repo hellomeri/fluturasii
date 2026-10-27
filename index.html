@@ -401,6 +401,11 @@ button.kid:hover{background:var(--surface-2)}
 .vote.on.up{color:var(--wing-ink);background:var(--wing-soft)}
 .vote.on.down{color:var(--berry);background:var(--berry-soft)}
 .vote[disabled]{cursor:default;opacity:.7}
+.vgrp{display:inline-flex;align-items:center}
+.vcnt{border:0;background:transparent;color:var(--muted);font-weight:800;font-size:12.5px;padding:4px 6px 4px 1px;margin-left:-4px;border-radius:8px;min-height:28px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.vcnt:hover{color:var(--ink);background:var(--surface-2)}
+.vcnt.up{color:var(--wing-ink)}
+.vcnt.down{color:var(--berry)}
 .sacts{padding:0 0 2px 44px;margin-top:-2px}
 .sacts + .vwho{padding-left:52px}
 .sreps{padding-left:4px}
@@ -1048,9 +1053,10 @@ function kidOptions(sel, emptyLabel){
   return '<option value="">'+esc(emptyLabel)+'</option>' + sortedKids().map(c => '<option value="'+esc(c.id)+'"'+(c.id===sel?' selected':'')+'>'+esc(c.nume)+'</option>').join("");
 }
 const voteWho = (v, val) => v.filter(x=>+x.valoare===val).map(x => x.copilId);
-function whoLine(v){
-  const nm = ids => { const known = ids.filter(id => kid(id)).map(id => isEdu(id) ? kidName(id) : firstName(kidName(id))); const anon = ids.length - known.length; return known.join(", ") + (anon ? (known.length ? " și încă " : "") + anon + (anon === 1 ? " părinte" : " părinți") : ""); };
-  const parts = [];
+function whoNames(ids){ const known = ids.filter(id => kid(id)).map(id => isEdu(id) ? kidName(id) : firstName(kidName(id))); const anon = ids.length - known.length; return known.join(", ") + (anon ? (known.length ? " și încă " : "") + anon + (anon === 1 ? " părinte" : " părinți") : ""); }
+function whoLine(v, key){
+  if (!ui.whoOpen || !ui.whoOpen.has(key)) return '';
+  const nm = whoNames; const parts = [];
   if (v.upIds.length) parts.push('<span>'+ICON.up+esc(nm(v.upIds))+'</span>');
   if (v.downIds.length) parts.push('<span class="dn">'+ICON.down+esc(nm(v.downIds))+'</span>');
   return parts.length ? '<div class="vwho">'+parts.join("")+'</div>' : '';
@@ -1058,9 +1064,11 @@ function whoLine(v){
 function votesOf(cid){ const v = D.voturi.filter(x => x.comentariuId === cid); return { upIds: voteWho(v,1), downIds: voteWho(v,-1), up: v.filter(x=>+x.valoare===1).length, down: v.filter(x=>+x.valoare===-1).length, mine: (v.find(x => x.autor && x.autor === ui.authorHash) || {}).valoare || 0 }; }
 function votesOfInsc(iid){ const v = D.voturi_insc.filter(x => x.inscriereId === iid); return { upIds: voteWho(v,1), downIds: voteWho(v,-1), up: v.filter(x=>+x.valoare===1).length, down: v.filter(x=>+x.valoare===-1).length, mine: (v.find(x => x.autor && x.autor === ui.authorHash) || {}).valoare || 0 }; }
 function voteBtns(kind, id, v, w){
-  const a = kind === "i" ? "voteI" : "vote";
-  return '<button type="button" class="vote'+(+v.mine===1?' on up':'')+'" data-a="'+a+'" data-id="'+esc(id)+'" data-v="1" aria-pressed="'+(+v.mine===1)+'" aria-label="Îmi place"'+(w?'':' disabled')+'>'+ICON.up+(v.up?'<span class="num">'+v.up+'</span>':'')+'</button>'
-    + '<button type="button" class="vote'+(+v.mine===-1?' on down':'')+'" data-a="'+a+'" data-id="'+esc(id)+'" data-v="-1" aria-pressed="'+(+v.mine===-1)+'" aria-label="Nu-mi place"'+(w?'':' disabled')+'>'+ICON.down+(v.down?'<span class="num">'+v.down+'</span>':'')+'</button>';
+  const a = kind === "i" ? "voteI" : "vote", key = kind+":"+id;
+  const nm = ids => whoNames(ids);
+  const one = (val, on, cls, icon, n, ids, label) => '<span class="vgrp"><button type="button" class="vote'+(on?' on '+cls:'')+'" data-a="'+a+'" data-id="'+esc(id)+'" data-v="'+val+'" aria-pressed="'+on+'" aria-label="'+label+'"'+(w?'':' disabled')+'>'+icon+'</button>'
+    + (n ? '<button type="button" class="vcnt num'+(on?' '+cls:'')+'" data-a="whoV" data-id="'+esc(key)+'" title="'+esc(nm(ids))+'" aria-label="'+n+' – vezi cine">'+n+'</button>' : '') + '</span>';
+  return one(1, +v.mine===1, "up", ICON.up, v.up, v.upIds, "Îmi place") + one(-1, +v.mine===-1, "down", ICON.down, v.down, v.downIds, "Nu-mi place");
 }
 function signupBlock(s, it, w){
   const sub = [ (+s.bucati>0 ? s.bucati+" buc." : ""), s.nota ].filter(Boolean).join(" · ");
@@ -1068,7 +1076,7 @@ function signupBlock(s, it, w){
   let h = '<div class="person">'+avHtml(s.copilId)+'<span class="t"><b>'+esc(kidName(s.copilId))+'</b>'+(sub?' <span>· '+linkify(sub)+'</span>':'')+'</span>'+act+'</div>';
   if (!s.nota || !ui.loaded.has("voturi_insc")) return h;
   const reps = D.comentarii.filter(c => c.inscriereId === s.id).sort((a,b)=>String(a.creat).localeCompare(String(b.creat)));
-  h += '<div class="cacts sacts">'+voteBtns("i", s.id, votesOfInsc(s.id), w)+(w ? '<button type="button" class="vote" data-a="replyI" data-id="'+esc(s.id)+'">'+ICON.reply+'Răspunde'+(reps.length ? ' ('+reps.length+')' : '')+'</button>' : '')+'</div>'+whoLine(votesOfInsc(s.id));
+  h += '<div class="cacts sacts">'+voteBtns("i", s.id, votesOfInsc(s.id), w)+(w ? '<button type="button" class="vote" data-a="replyI" data-id="'+esc(s.id)+'">'+ICON.reply+'Răspunde'+(reps.length ? ' ('+reps.length+')' : '')+'</button>' : '')+'</div>'+whoLine(votesOfInsc(s.id), 'i:'+s.id);
   if (reps.length || ui.replyTo === "i:"+s.id) h += '<div class="comments sreps">' + reps.map(r => cmHtml(r, it, w, true, s.id)).join("") + (ui.replyTo === "i:"+s.id && w ? replyFormInsc(s, it) : "") + '</div>';
   return h;
 }
@@ -1082,7 +1090,7 @@ function cmHtml(c, it, w, isReply, inscId){
     + '<div class="cacts">'
     + voteBtns("c", c.id, v, w)
     + (w ? (inscId ? '<button type="button" class="vote" data-a="replyI" data-id="'+esc(inscId)+'">'+ICON.reply+'Răspunde</button>' : '<button type="button" class="vote" data-a="reply" data-id="'+esc(isReply ? c.parentId : c.id)+'">'+ICON.reply+'Răspunde</button>') : '')
-    + '</div>'+whoLine(v)+'</div>'
+    + '</div>'+whoLine(v, 'c:'+c.id)+'</div>'
     + (isMine(c)&&w?'<button class="x" aria-label="Șterge comentariul" title="Șterge" data-a="delC" data-id="'+esc(c.id)+'">'+ICON.x+'</button>':'<span></span>')+'</div>';
 }
 function replyForm(c, it){
@@ -1465,6 +1473,7 @@ document.addEventListener("click", async e => {
       break;
     }
     case "clearResp": t.disabled = true; await setStare(id, { responsabil:"" }) && toast("Retras"); break;
+    case "whoV": { ui.whoOpen = ui.whoOpen || new Set(); if (ui.whoOpen.has(id)) ui.whoOpen.delete(id); else ui.whoOpen.add(id); render(); break; }
     case "vote": {
       const v = +t.dataset.v; const cur = votesOf(id).mine; const nv = +cur === v ? 0 : v;
       t.disabled = true;
