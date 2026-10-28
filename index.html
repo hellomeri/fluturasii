@@ -21,6 +21,7 @@
   --meadow:#2E7A55; --meadow-soft:#DCEEE3;
   --lilac:#7457C4; --lilac-soft:#ECE6FA;
   --berry:#BE3F37; --berry-soft:#F8E0DC;
+  --amber:#A85F00; --amber-soft:#FDECC8;
   --head:#D6E8F8; --head-ink:#123A63; --head-muted:#4F6E8F;
   --logo1:#F7B731; --logo2:#3A86D1; --logo3:#123A63; --me:#3A86D1;
   --shadow:0 1px 0 rgba(18,58,99,.04),0 10px 24px -18px rgba(18,58,99,.3);
@@ -34,6 +35,7 @@
   --meadow:#62BE90; --meadow-soft:#1D3328;
   --lilac:#A78DF2; --lilac-soft:#2D2544;
   --berry:#F08077; --berry-soft:#3C2125;
+  --amber:#F2B45A; --amber-soft:#3A2C16;
   --head:#12263F; --head-ink:#E6F0FA; --head-muted:#9DB2C9;
   --logo1:#F7B731; --logo2:#5AA2E8; --logo3:#E6F0FA; --me:#5AA2E8;
   --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
@@ -44,6 +46,7 @@
   --meadow:#62BE90; --meadow-soft:#1D3328;
   --lilac:#A78DF2; --lilac-soft:#2D2544;
   --berry:#F08077; --berry-soft:#3C2125;
+  --amber:#F2B45A; --amber-soft:#3A2C16;
   --head:#12263F; --head-ink:#E6F0FA; --head-muted:#9DB2C9;
   --logo1:#F7B731; --logo2:#5AA2E8; --logo3:#E6F0FA; --me:#5AA2E8;
   --shadow:0 1px 0 rgba(0,0,0,.2); color-scheme:dark;
@@ -263,8 +266,13 @@ button.opaid.own{background:var(--surface);border:1.5px solid var(--meadow);colo
 .paybtn.undo{background:transparent;color:var(--muted);border:1px solid var(--line);padding:4px 10px;font-size:12px;min-height:28px}
 .qrow.ok .paybtn.undo{margin-left:auto;flex:none}
 .mestat{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.kid.decl i{border-color:var(--meadow);border-style:dashed}
-.kid small{font-weight:700;color:var(--meadow);font-size:11px}
+.kid.decl{background:var(--amber-soft)}
+.kid.decl i{border-color:var(--amber);background:var(--amber-soft)}
+.kid.decl i::after{content:"";width:8px;height:2px;background:var(--amber);border-radius:2px}
+.kid small{font-weight:800;color:var(--amber);font-size:11px}
+.amb{color:var(--amber);font-weight:800}
+.amb-note{background:var(--amber-soft);color:var(--amber);font-size:13.5px;font-weight:700;border-radius:10px;padding:8px 12px;margin-bottom:10px}
+.opaid.amb{background:var(--amber-soft);color:var(--amber);box-shadow:inset 0 0 0 1.5px var(--amber)}
 .linkcopy{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;min-height:28px;vertical-align:middle}
 .linkcopy:hover{color:var(--ink);border-color:var(--ink)}
 .gsec h2 .linkcopy{margin-left:6px}
@@ -958,13 +966,14 @@ function qrow(it, sub, color){
 }
 function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a.sectiune)||{}, sb = sec(b.sectiune)||{}; return String(sa.data||"9999").localeCompare(String(sb.data||"9999")) || (a.ordine||0)-(b.ordine||0); }); }
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
+const optOk = p => !!(p.platit || p.platit_declarat), optDecl = p => !p.platit && !!p.platit_declarat;
 const declared = (cid, k) => D.plati_declarate.some(x => x.colectaId === cid && x.copilId === k);
 const payBtn = (tip, ref, on, kidId) => '<button type="button" class="paybtn'+(on?'':' undo')+'" data-a="payMark" data-t="'+tip+'" data-ref="'+esc(ref)+'" data-on="'+(on?1:0)+'"'+(kidId?' data-kid="'+esc(kidId)+'"':'')+'>'+(on ? '✓ Am plătit' : 'Anulează')+'</button>';
 function myPay(){
   const me = ui.me, out = []; let total = 0;
   if (!isChild(me)) return { rows: out, total };
   for (const c of D.colecte.filter(c => !c.inchisa)) if (!collStats(c).ids.has(me) && !declared(c.id, me)) { total += +c.suma||0; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>Contribuție</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(c.suma))+'</span>'+payBtn("colecta", c.id, true)+'</span></div>'); }
-  for (const o of optDues(me).filter(x => !x.p.platit)) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+(o.n===1?'ședință':'ședințe')+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(o.sum))+'</span>'+payBtn("optional", o.l.id, true)+'</span></div>'); }
+  for (const o of optDues(me).filter(x => !optOk(x.p))) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+(o.n===1?'ședință':'ședințe')+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(o.sum))+'</span>'+payBtn("optional", o.l.id, true)+'</span></div>'); }
   return { rows: out, total };
 }
 function myTodo(){
@@ -991,10 +1000,10 @@ function myDone(){
     if (it.tip === "fiecare" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), it.bifa || "Bifat"));
     else if ((it.tip === "single" || it.tip === "multi") && it.status === "done" && signups(it.id).some(x=>x.copilId===me)) out.push(row('data-a="goItem" data-id="'+esc(it.id)+'"', it.titlu, secTag(s), "Rezolvat"));
   }
-  if (isChild(me)) for (const o of optDues(me).filter(x => x.p.platit && x.latest)) out.push(row('data-a="goOpt" data-id="'+esc(o.l.id)+'"', o.o.nume+' · '+lunaLabel(o.l.luna), '<span class="tag">Opțional</span>', "Plătit · "+lei(o.sum), payBtn("optional", o.l.id, false)));
+  if (isChild(me)) for (const o of optDues(me).filter(x => optOk(x.p) && x.latest)) out.push(row('data-a="goOpt" data-id="'+esc(o.l.id)+'"', o.o.nume+' · '+lunaLabel(o.l.luna), '<span class="tag">Opțional</span>', "Plătit · "+lei(o.sum), optDecl(o.p) ? payBtn("optional", o.l.id, false) : ''));
   if (isChild(me)) for (const c of D.colecte.filter(c => !c.inchisa)) {
     if (collStats(c).ids.has(me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Contribuția a ajuns"));
-    else if (declared(c.id, me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Ai marcat plătit · se confirmă când ajung banii", payBtn("colecta", c.id, false)));
+    else if (declared(c.id, me)) out.push(row('data-a="goCollTab" data-id="'+esc(c.id)+'"', c.titlu, '<span class="tag">Strângere de bani</span>', "Contribuția trimisă", payBtn("colecta", c.id, false)));
   }
   return out;
 }
@@ -1187,13 +1196,14 @@ function collCard(c){
   const st = collStats(c); const pct = st.target ? Math.min(100, st.got/st.target*100) : 0; const missing = sortedKids().filter(k => !st.ids.has(k.id));
   const meOk = kid(ui.me) && st.ids.has(ui.me), meDecl = !meOk && declared(c.id, ui.me);
   const nDecl = sortedKids().filter(k => !st.ids.has(k.id) && declared(c.id, k.id)).length;
+  const nShown = cap.admin ? st.ids.size : st.ids.size + nDecl; const missing2 = sortedKids().filter(k => !st.ids.has(k.id) && (cap.admin || !declared(c.id, k.id)));
   return '<div class="ccard'+(c.inchisa?' closed':'')+'" id="coll-'+esc(c.id)+'"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="min-width:0"><h4>'+esc(c.titlu)+'</h4>'
     + '<div class="hint">'+esc(fmtShort(c.data))+' · intră în '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+(c.descriere ? ' · '+esc(c.descriere) : '')+'</div></div><div class="row" style="gap:6px;flex:none"><span class="chip meadow">'+lei(c.suma)+' / copil</span>'+linkBtn("buget/"+c.id)+'</div></div>'
-    + '<div class="count num" style="margin-top:10px"><span><b>'+st.ids.size+'</b> din '+st.tot+' copii au trimis'+(nDecl ? ' · '+nDecl+' au marcat plătit' : '')+'</span><span>'+lei(r2g(st.got))+' din '+lei(r2g(st.target))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'
-    + (isChild(ui.me) && !c.inchisa ? '<div class="mestat '+(meOk||meDecl?'ok':'')+'">'+(meOk ? 'Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!' : meDecl ? '<span>Ai marcat că ai plătit pentru '+esc(firstName(kidName(ui.me)))+'. Se confirmă când ajung banii.</span>'+payBtn("colecta", c.id, false) : '<span>Încă n-a ajuns contribuția pentru '+esc(firstName(kidName(ui.me)))+': '+lei(c.suma)+'.</span>'+payBtn("colecta", c.id, true))+'</div>' : '')
-    + '<details class="all" style="margin-top:8px"'+(cap.admin && !c.inchisa ? ' open' : '')+'><summary>'+(missing.length ? 'Lipsesc '+missing.length+' copii · vezi lista' : 'Au trimis toți copiii')+'</summary><div class="kids">'
-    + sortedKids().map(k => { const on = st.ids.has(k.id), dc = !on && declared(c.id, k.id); const can = cap.admin; return '<'+(can?'button type="button" data-a="paid" data-id="'+esc(c.id)+'" data-kid="'+esc(k.id)+'"':'div')+' class="kid '+(on?'on':dc?'decl':'off')+'"'+(dc?' title="Părintele a marcat că a plătit"':'')+'><i></i><span>'+esc(k.nume)+(dc?' <small>a marcat plătit</small>':'')+'</span></'+(can?'button':'div')+'>'; }).join("")
-    + '</div>'+(cap.admin ? '<p class="hint" style="margin-top:8px">Bifează un copil când îi ajung banii. Cei cu „a marcat plătit” au anunțat ei că au trimis; bifează-i după ce vezi banii. Contribuția apare automat la soldul din '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+'.</p>' : '')+'</details>'
+    + '<div class="count num" style="margin-top:10px"><span><b>'+nShown+'</b> din '+st.tot+' copii au trimis'+(cap.admin && nDecl ? ' · <span class="amb">'+nDecl+' de confirmat</span>' : '')+'</span><span>'+lei(r2g(st.got))+' din '+lei(r2g(st.target))+'</span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'
+    + (isChild(ui.me) && !c.inchisa ? '<div class="mestat '+(meOk||meDecl?'ok':'')+'">'+(meOk ? 'Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!' : meDecl ? '<span>Ai trimis contribuția pentru '+esc(firstName(kidName(ui.me)))+'. Mulțumim!</span>'+payBtn("colecta", c.id, false) : '<span>Încă n-a ajuns contribuția pentru '+esc(firstName(kidName(ui.me)))+': '+lei(c.suma)+'.</span>'+payBtn("colecta", c.id, true))+'</div>' : '')
+    + '<details class="all" style="margin-top:8px"'+(cap.admin && !c.inchisa ? ' open' : '')+'><summary>'+(missing2.length ? 'Lipsesc '+missing2.length+' copii · vezi lista' : 'Au trimis toți copiii')+'</summary><div class="kids">'
+    + sortedKids().map(k => { const can = cap.admin, on = st.ids.has(k.id) || (!can && declared(c.id, k.id)), dc = can && !on && declared(c.id, k.id); return '<'+(can?'button type="button" data-a="paid" data-id="'+esc(c.id)+'" data-kid="'+esc(k.id)+'"':'div')+' class="kid '+(on?'on':dc?'decl':'off')+'"'+(dc?' title="Părintele a marcat că a plătit. Apasă ca să confirmi."':'')+'><i></i><span>'+esc(k.nume)+(dc?' <small>de confirmat</small>':'')+'</span></'+(can?'button':'div')+'>'; }).join("")
+    + '</div>'+(cap.admin ? '<p class="hint" style="margin-top:8px">Bifează un copil când îi ajung banii. Cei cu portocaliu („de confirmat”) au bifat ei că au trimis; îi bifezi tu după ce vezi banii, și devin verzi. Contribuția apare automat la soldul din '+esc(SURSE[srcOf(c)].scurt.toLowerCase())+'.</p>' : '')+'</details>'
     + (cap.admin ? '<div class="row" style="margin-top:10px;gap:6px"><button class="btn small ghost" data-a="collEdit" data-id="'+esc(c.id)+'">'+ICON.pen+'Editează</button><button class="btn small ghost" data-a="collToggle" data-id="'+esc(c.id)+'">'+(c.inchisa ? 'Redeschide' : 'Încheie strângerea')+'</button></div>' : '')
     + '</div>';
 }
@@ -1239,21 +1249,23 @@ function viewOptionale(){
   if (luni.length > 1) h += '<div class="seg months-seg">'+luni.map(l => '<button type="button" class="segb small'+(l.id===L.id?' on':'')+'" data-a="optLuna" data-id="'+esc(l.id)+'">'+esc(lunaLabel(l.luna))+'</button>').join("")+'</div>';
   const ses = Array.isArray(L.sedinte) ? L.sedinte : [];
   const recs = D.optional_prezente.filter(p => p.lunaId === L.id).map(p => ({ p, k: kid(p.copilId), n: presSum(p) })).filter(r => r.k).sort((a,b)=>(a.k.ordine||0)-(b.k.ordine||0));
-  const pret = +L.pret || 0; const total = recs.reduce((a,r)=>a+r.n*pret,0); const paid = recs.filter(r=>r.p.platit).reduce((a,r)=>a+r.n*pret,0);
+  const pret = +L.pret || 0; const total = recs.reduce((a,r)=>a+r.n*pret,0); const paid = recs.filter(r => cap.admin ? r.p.platit : optOk(r.p)).reduce((a,r)=>a+r.n*pret,0);
+  const decl = recs.filter(r => optDecl(r.p) && r.n);
   h += '</section><section class="optmonth" id="opt-'+esc(L.id)+'"><div class="sec-head"><div><h2>'+esc(O.icon||"")+' '+esc(O.nume)+' · '+esc(lunaLabel(L.luna))+'</h2><div class="sub">'+ses.length+' ședințe: '+esc(ses.map(d=>parseD(d) ? parseD(d).getDate() : d).join(", "))+' '+esc(LUNI_S[(parseD(ses[0])||new Date()).getMonth()])+'. · '+esc(lei(pret))+' / ședință</div></div>'
     + '<div class="row">'+linkBtn("optionale/"+sel+"/"+L.luna)+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
   const mine = recs.find(r => r.p.copilId === ui.me);
-  if (mine) h += '<div class="mestat '+(mine.p.platit || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (mine.p.platit ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n ? payBtn("optional", L.id, !mine.p.platit) : '')+'</div>';
+  if (mine) h += '<div class="mestat '+(optOk(mine.p) || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (optOk(mine.p) ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n && !mine.p.platit ? payBtn("optional", L.id, !mine.p.platit_declarat) : '')+'</div>';
   h += sesNotes(L, ses, mine);
   h += '<div class="money opt-tiles" style="--n:2"><div class="tile big"><div class="lab">Total de plată</div><div class="val">'+lei(total)+'</div></div><div class="tile"><div class="lab">Plătit</div><div class="val in">'+lei(paid)+'</div></div><div class="tile"><div class="lab">Rămas</div><div class="val'+(total-paid>0?' out':'')+'">'+lei(total-paid)+'</div></div></div>';
+  if (cap.admin && decl.length) h += '<div class="amb-note">'+decl.length+' '+(decl.length===1?'părinte a bifat că a plătit':'părinți au bifat că au plătit')+' · <b>de confirmat</b>. Apasă pe butonul portocaliu după ce primești banii.</div>';
   h += '<div class="optlist">' + recs.map(r => {
     const pres = Array.isArray(r.p.prezente) ? r.p.prezente : [];
     const sum = r.n * pret;
     const paidEl = !sum ? '<span class="opaid none">—</span>' : cap.admin
-      ? '<button type="button" class="opaid'+(r.p.platit?' on':'')+'" data-a="optPaid" data-id="'+esc(r.p.id)+'" aria-pressed="'+!!r.p.platit+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</button>'
-      : r.p.copilId === ui.me
-        ? '<button type="button" class="opaid'+(r.p.platit?' on':' own')+'" data-a="payMark" data-t="optional" data-ref="'+esc(L.id)+'" data-on="'+(r.p.platit?0:1)+'" aria-pressed="'+!!r.p.platit+'">'+(r.p.platit?'✓ Plătit':'Am plătit?')+'</button>'
-        : '<span class="opaid'+(r.p.platit?' on':'')+'">'+(r.p.platit?'✓ Plătit':'De plată')+'</span>';
+      ? '<button type="button" class="opaid'+(r.p.platit?' on':optDecl(r.p)?' amb':'')+'" data-a="optPaid" data-id="'+esc(r.p.id)+'" aria-pressed="'+!!r.p.platit+'"'+(optDecl(r.p)?' title="Părintele a bifat că a plătit. Apasă ca să confirmi."':'')+'>'+(r.p.platit?'✓ Plătit':optDecl(r.p)?'Confirmă':'De plată')+'</button>'
+      : r.p.copilId === ui.me && !r.p.platit
+        ? '<button type="button" class="opaid'+(optOk(r.p)?' on':' own')+'" data-a="payMark" data-t="optional" data-ref="'+esc(L.id)+'" data-on="'+(optOk(r.p)?0:1)+'" aria-pressed="'+optOk(r.p)+'">'+(optOk(r.p)?'✓ Plătit':'Am plătit?')+'</button>'
+        : '<span class="opaid'+(optOk(r.p)?' on':'')+'">'+(optOk(r.p)?'✓ Plătit':'De plată')+'</span>';
     return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' – prezent':' – absent')+'">'+(parseD(d)?parseD(d).getDate():'')+'</i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
   }).join("") + '</div>';
   return h + '</section>';
@@ -1536,7 +1548,7 @@ document.addEventListener("click", async e => {
     case "optImport": IMP = null; importForm(); break;
     case "optEdit": optEditForm(id); break;
     case "optNotes": optNotesForm(id); break;
-    case "optPaid": { const p = D.optional_prezente.find(x=>x.id===id); if (!p) break; t.disabled = true; const body = Object.assign({}, p, { platit: !p.platit, dataPlata: !p.platit ? todayStr() : "" }); delete body.id; await write(db => db.doc("optional_prezente/"+id).set(body), body.platit ? "Marcat plătit: "+firstName(kidName(p.copilId)) : "Marcat de plată"); break; }
+    case "optPaid": { const p = D.optional_prezente.find(x=>x.id===id); if (!p) break; t.disabled = true; const body = Object.assign({}, p, { platit: !p.platit, dataPlata: !p.platit ? todayStr() : "" }); if (p.platit && "platit_declarat" in p) body.platit_declarat = false; delete body.id; await write(db => db.doc("optional_prezente/"+id).set(body), body.platit ? "Marcat plătit: "+firstName(kidName(p.copilId)) : "Marcat de plată"); break; }
     case "optDelLuna":
       if (ui.confirm !== "ol"+id) { ui.confirm = "ol"+id; t.textContent = "Sigur? Apasă iar"; break; }
       ui.confirm = null; await write(async db => { chk(await sb.from("optional_luni").delete().eq("id", id)); await refetch("optional_prezente"); await refetch("optional_luni"); }, "Luna a fost ștearsă"); break;
@@ -1580,8 +1592,13 @@ document.addEventListener("click", async e => {
         await write(db => db.collection("financiar").doc().set({ tip:"in", sursa:srcOf(c), destinatie:"", suma:+c.suma||0, descriere:"Contribuție "+kidName(k), data:todayStr(), itemId:"", copilId:k, colectaId:ref, creat:new Date().toISOString() }), "Marcat plătit: "+firstName(kidName(k))+" ✓");
         break;
       }
+      if (tip === "optional" && cap.admin && on) {
+        const p = D.optional_prezente.find(x => x.lunaId === ref && x.copilId === k); if (!p) break;
+        const body = Object.assign({}, p, { platit: true, dataPlata: todayStr() }); delete body.id;
+        await write(db => db.doc("optional_prezente/"+p.id).set(body), "Marcat plătit ✓"); break;
+      }
       await write(async () => { chk(await sb.rpc("marcheaza_platit", { p_tip: tip, p_ref: ref, p_copil: k, p_on: on })); await refetch(tip === "colecta" ? "plati_declarate" : "optional_prezente"); },
-        on ? (tip === "colecta" ? "Notat ✓ Se confirmă când ajung banii." : "Marcat plătit ✓") : "Anulat");
+        on ? "Mulțumim! Marcat plătit ✓" : "Anulat");
       break;
     }
     case "copyLink": {
