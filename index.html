@@ -232,6 +232,15 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .months-seg{margin-top:10px}
 .optinfo{margin-top:12px;background:var(--surface-2);border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:600}
 .optmonth{margin-top:-8px}
+.sesnotes{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.sn-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sn-head .eyebrow{margin:0}
+.sesnotes .hint{margin:6px 0 0}
+.sesnotes ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.sesnotes li{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;font-size:14.5px;line-height:1.45}
+.sn-d{font-weight:800;color:var(--wing-ink);white-space:nowrap}
+.sn-t{min-width:0;overflow-wrap:anywhere}
+.sn-ab{display:inline-block;font-size:12px;font-weight:800;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:1px 8px;margin-left:4px}
 .opt-tiles{margin-bottom:14px}
 .optlist{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
 .orow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px}
@@ -1235,6 +1244,7 @@ function viewOptionale(){
     + '<div class="row">'+linkBtn("optionale/"+sel+"/"+L.luna)+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
   const mine = recs.find(r => r.p.copilId === ui.me);
   if (mine) h += '<div class="mestat '+(mine.p.platit || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (mine.p.platit ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n ? payBtn("optional", L.id, !mine.p.platit) : '')+'</div>';
+  h += sesNotes(L, ses, mine);
   h += '<div class="money opt-tiles" style="--n:2"><div class="tile big"><div class="lab">Total de plată</div><div class="val">'+lei(total)+'</div></div><div class="tile"><div class="lab">Plătit</div><div class="val in">'+lei(paid)+'</div></div><div class="tile"><div class="lab">Rămas</div><div class="val'+(total-paid>0?' out':'')+'">'+lei(total-paid)+'</div></div></div>';
   h += '<div class="optlist">' + recs.map(r => {
     const pres = Array.isArray(r.p.prezente) ? r.p.prezente : [];
@@ -1247,6 +1257,24 @@ function viewOptionale(){
     return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' – prezent':' – absent')+'">'+(parseD(d)?parseD(d).getDate():'')+'</i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
   }).join("") + '</div>';
   return h + '</section>';
+}
+function sesNotes(L, ses, mine){
+  const note = (L.note && typeof L.note === "object") ? L.note : {};
+  const filled = ses.filter(d => String(note[d]||"").trim());
+  if (!filled.length && !cap.admin) return '';
+  const pres = mine && Array.isArray(mine.p.prezente) ? mine.p.prezente : null;
+  let h = '<div class="sesnotes"><div class="sn-head"><div class="eyebrow">📝 Ce au făcut la ședințe</div>'+(cap.admin ? '<button class="linkbtn" data-a="optNotes" data-id="'+esc(L.id)+'">'+(filled.length ? 'Editează' : 'Adaugă')+'</button>' : '')+'</div>';
+  if (!filled.length) return h + '<p class="hint">Opțional: scrie pe scurt ce au lucrat copiii la fiecare ședință. Apare la toți părinții.</p></div>';
+  h += '<ul>' + ses.map((d,i) => { const t = String(note[d]||"").trim(); if (!t) return ''; const ab = pres && !+pres[i];
+    return '<li><span class="sn-d">'+esc(fmtShort(d))+'</span><span class="sn-t">'+linkify(t)+(ab ? ' <span class="sn-ab">'+esc(firstName(kidName(ui.me)))+' a lipsit</span>' : '')+'</span></li>'; }).join("") + '</ul>';
+  return h + '</div>';
+}
+function optNotesForm(id){
+  const L = D.optional_luni.find(x=>x.id===id); if (!L) return; const O = D.optionale.find(x=>x.id===L.optionalId) || {};
+  const note = (L.note && typeof L.note === "object") ? L.note : {}; const ses = Array.isArray(L.sedinte) ? L.sedinte : [];
+  modal('<h3>'+esc(O.nume||"")+' · '+esc(lunaLabel(L.luna))+': ce au făcut</h3><form id="fOptNote" class="view" style="gap:12px"><p class="hint">Lasă gol la ședințele despre care nu știi nimic.</p>'
+    + ses.map((d,i) => '<label class="field" for="fon-'+i+'"><span>'+esc(fmtShort(d))+'</span><textarea class="ta" id="fon-'+i+'" name="n_'+i+'" maxlength="500" rows="2" placeholder="ex. Au învățat pașii de vals, au dansat cu eșarfe.">'+esc(note[d]||"")+'</textarea></label>').join("")
+    + '<div class="acts"><button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div><input type="hidden" name="id" value="'+esc(L.id)+'"></form>');
 }
 function optEditForm(id){
   const o = D.optionale.find(x=>x.id===id); if (!o) return;
@@ -1499,6 +1527,7 @@ document.addEventListener("click", async e => {
     case "goOpt": { const l = D.optional_luni.find(x=>x.id===id); if (l) { ui.opt = l.optionalId; ui.optLuna = l.id; } setTab("optionale"); break; }
     case "optImport": IMP = null; importForm(); break;
     case "optEdit": optEditForm(id); break;
+    case "optNotes": optNotesForm(id); break;
     case "optPaid": { const p = D.optional_prezente.find(x=>x.id===id); if (!p) break; t.disabled = true; const body = Object.assign({}, p, { platit: !p.platit, dataPlata: !p.platit ? todayStr() : "" }); delete body.id; await write(db => db.doc("optional_prezente/"+id).set(body), body.platit ? "Marcat plătit: "+firstName(kidName(p.copilId)) : "Marcat de plată"); break; }
     case "optDelLuna":
       if (ui.confirm !== "ol"+id) { ui.confirm = "ol"+id; t.textContent = "Sigur? Apasă iar"; break; }
@@ -1631,6 +1660,10 @@ document.addEventListener("submit", async e => {
     } else if (fid === "fOpt") {
       const o = D.optionale.find(x=>x.id===fd.id) || {}; const body = Object.assign({}, o, { nume:fd.nume.trim(), icon:(fd.icon||"").trim(), descriere:(fd.descriere||"").trim() }); delete body.id;
       if (await write(db => db.doc("optionale/"+fd.id).set(body), "Salvat")) closeModal();
+    } else if (fid === "fOptNote") {
+      const L = D.optional_luni.find(x=>x.id===fd.id); if (!L) return; const ses = Array.isArray(L.sedinte) ? L.sedinte : [];
+      const note = {}; ses.forEach((d,i) => { const t = String(fd["n_"+i]||"").trim(); if (t) note[d] = t; });
+      if (await write(async () => { chk(await sb.from("optional_luni").update({ note }).eq("id", L.id)); await refetch("optional_luni"); }, "Salvat")) closeModal();
     } else if (fid === "fImp") {
       if (!IMP) { toast("Alege întâi fișierul.", true); return; }
       const opt = fd.opt; const luna = fd.luna || IMP.luna; const pret = +fd.pret || 0; const lid = opt+"-"+luna;
