@@ -1300,6 +1300,12 @@ function parseDateCell(v){
   if (v == null || v === "") return null; const ys = schoolYearStart();
   if (v instanceof Date && !isNaN(v)) return isoOf(v);
   if (typeof v === "number" && v > 20000) return isoOf(new Date(Math.round((v - 25569) * 86400000)));
+  if (typeof v === "number" && v > 0 && v < 32 && !Number.isInteger(v)) {
+    // „7.10” scris ca număr devine 7.1: alegem luna (ianuarie sau octombrie) cea mai apropiată de azi
+    const [di, dec] = String(v).split("."); const day = +di;
+    if (dec === "1") { const opts = [1, 10].map(mon => { const y = mon >= 8 ? ys : ys + 1; return y+"-"+pad(mon)+"-"+pad(day); }); const now = Date.now(); return opts.sort((a,b) => Math.abs(parseD(a) - now) - Math.abs(parseD(b) - now))[0]; }
+    v = di + "." + dec;
+  }
   const m = /(\d{1,2})\s*[.\-\/ ]\s*([A-Za-zăâîșțĂÂÎȘȚ]+|\d{1,2})/.exec(String(v)); if (!m) return null;
   const day = +m[1]; const mw = normName(m[2]).toLowerCase(); const mon = /^\d+$/.test(m[2]) ? +m[2] : (LUNA_MAP[mw.slice(0,3)] || 0);
   if (!mon || day < 1 || day > 31) return null; const y = mon >= 8 ? ys : ys + 1;
@@ -1307,6 +1313,8 @@ function parseDateCell(v){
 }
 function parseAttendance(wb){
   const ws = wb.Sheets[wb.SheetNames[0]]; const rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:null });
+  let rowsW = []; try { rowsW = XLSX.utils.sheet_to_json(ws, { header:1, raw:false, defval:null }); } catch(e){}
+  const cellD = (r, c) => { const raw = (rows[r]||[])[c], w = (rowsW[r]||[])[c]; if (typeof raw === "number" && raw < 32 && typeof w === "string" && /^\s*\d{1,2}\s*[.\-\/]\s*\d{1,2}/.test(w)) return parseDateCell(w); return parseDateCell(raw); };
   const txt = c => String(c == null ? "" : c);
   const title = (rows.find(r => r && r.some(c => txt(c).trim())) || []).find(c => txt(c).trim()) || "";
   const hdr = rows.findIndex(r => r && r.some(c => /nume/i.test(txt(c)))); if (hdr < 0) throw new Error("Nu găsesc coloana cu numele copiilor.");
@@ -1314,7 +1322,7 @@ function parseAttendance(wb){
   let endCol = H.findIndex((c, i) => i > nameCol && /total|pret|preț|valoare/i.test(txt(c))); if (endCol < 0) endCol = Math.max(...rows.map(r => r ? r.length : 0));
   const priceCol = H.findIndex(c => /pret|preț/i.test(txt(c)));
   const dates = [];
-  for (let c = nameCol + 1; c < endCol; c++) { const d = parseDateCell((rows[hdr+1]||[])[c]) || parseDateCell(H[c]); if (d) dates.push({ c, d }); }
+  for (let c = nameCol + 1; c < endCol; c++) { const d = cellD(hdr+1, c) || cellD(hdr, c); if (d) dates.push({ c, d }); }
   if (!dates.length) throw new Error("Nu găsesc datele ședințelor în fișier.");
   const kids = []; const prices = {};
   for (let r = hdr + 1; r < rows.length; r++) {
@@ -1342,7 +1350,7 @@ let IMP = null;
 function renderImportPreview(){
   const el = document.getElementById("impPrev"); if (!el || !IMP) return;
   const used = {}; IMP.kids.forEach(k => { if (k.copilId) used[k.copilId] = (used[k.copilId]||0)+1; });
-  el.innerHTML = '<div class="impsum"><b>'+esc(IMP.title || "Fișier")+'</b> · '+IMP.dates.length+' ședințe ('+esc(IMP.dates.map(d=>parseD(d).getDate()).join(", "))+') · '+IMP.kids.length+' copii</div>'
+  el.innerHTML = '<div class="impsum"><b>'+esc(IMP.title || "Fișier")+'</b> · '+IMP.dates.length+' ședințe ('+esc(IMP.dates.map(d=>fmtShort(d)).join(", "))+') · '+IMP.kids.length+' copii</div>'
     + '<div class="grid2"><label class="field" for="fx-l"><span>Luna</span><input class="inp" id="fx-l" name="luna" type="month" value="'+esc(IMP.luna)+'" required></label>'
     + '<label class="field" for="fx-p"><span>Preț / ședință (lei)</span><input class="inp num" id="fx-p" name="pret" type="number" min="0" step="0.01" value="'+esc(IMP.pret||"")+'" required></label></div>'
     + '<div class="eyebrow">Verifică potrivirea numelor</div><div class="implist">'+IMP.kids.map((k,i) => '<div class="improw'+(!k.copilId || used[k.copilId] > 1 ? ' warn' : '')+'"><span class="xn">'+esc(k.nume)+'</span><span class="num xc">'+k.pres.reduce((a,b)=>a+b,0)+'/'+IMP.dates.length+'</span><select class="sel" data-imp="'+i+'" aria-label="Copilul pentru '+esc(k.nume)+'"><option value="">— nu salva —</option>'+sortedKids().map(c=>'<option value="'+esc(c.id)+'"'+(c.id===k.copilId?' selected':'')+'>'+esc(c.nume)+'</option>').join("")+'</select></div>').join("")+'</div>'
