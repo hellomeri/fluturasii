@@ -1715,7 +1715,7 @@ document.addEventListener("click", async e => {
     case "optNotes": optNotesForm(id); break;
     case "optAchit": optAchitForm(id); break;
     case "optAchitOff": await write(async () => { chk(await sb.from("optional_luni").update({ achitat_la: "", achitat_suma: null, achitat_nota: "" }).eq("id", id)); await refetch("optional_luni"); }, "Anulat") && closeModal(); break;
-    case "optPaid": { const p = D.optional_prezente.find(x=>x.id===id); if (!p) break; t.disabled = true; const body = Object.assign({}, p, { platit: !p.platit, dataPlata: !p.platit ? todayStr() : "" }); if (p.platit && "platit_declarat" in p) body.platit_declarat = false; delete body.id; await write(db => db.doc("optional_prezente/"+id).set(body), body.platit ? "Marcat plătit: "+firstName(kidName(p.copilId)) : "Marcat de plată"); break; }
+    case "optPaid": { const p = D.optional_prezente.find(x=>x.id===id); if (!p) break; t.disabled = true; const on = !p.platit; const upd = { platit: on, data_plata: on ? todayStr() : "" }; if (!on && "platit_declarat" in p) upd.platit_declarat = false; await write(async () => { chk(await sb.from("optional_prezente").update(upd).eq("id", id)); await refetch("optional_prezente"); }, on ? "Marcat plătit: "+firstName(kidName(p.copilId)) : "Marcat de plată"); break; }
     case "optDelLuna":
       if (ui.confirm !== "ol"+id) { ui.confirm = "ol"+id; t.textContent = "Sigur? Apasă iar"; break; }
       ui.confirm = null; await write(async db => { chk(await sb.from("optional_luni").delete().eq("id", id)); await refetch("optional_prezente"); await refetch("optional_luni"); }, "Luna a fost ștearsă"); break;
@@ -1761,8 +1761,7 @@ document.addEventListener("click", async e => {
       }
       if (tip === "optional" && cap.admin && on) {
         const p = D.optional_prezente.find(x => x.lunaId === ref && x.copilId === k); if (!p) break;
-        const body = Object.assign({}, p, { platit: true, dataPlata: todayStr() }); delete body.id;
-        await write(db => db.doc("optional_prezente/"+p.id).set(body), "Marcat plătit ✓"); break;
+        await write(async () => { chk(await sb.from("optional_prezente").update({ platit: true, data_plata: todayStr() }).eq("id", p.id)); await refetch("optional_prezente"); }, "Marcat plătit ✓"); break;
       }
       await write(async () => { chk(await sb.rpc("marcheaza_platit", { p_tip: tip, p_ref: ref, p_copil: k, p_on: on })); await refetch(tip === "colecta" ? "plati_declarate" : "optional_prezente"); },
         on ? "Mulțumim! Marcat plătit ✓" : "Anulat");
