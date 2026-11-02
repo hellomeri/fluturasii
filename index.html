@@ -129,6 +129,8 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .chip.lilac{background:var(--lilac-soft);color:var(--lilac)}
 .chip.berry{background:var(--berry-soft);color:var(--berry)}
 .chip.plain{background:var(--surface-2);color:var(--muted)}
+.chip.due{background:var(--wing-soft);color:var(--wing-ink)}
+.chip.due.hot{background:var(--amber-soft);color:var(--amber)}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:12px;font-weight:800;font-size:14px;min-height:38px}
 .btn:hover{border-color:var(--ink)}
@@ -1000,9 +1002,23 @@ function viewHome(){
   h += '</section></div>';
   return h;
 }
+function dayRel(d){ const x = parseD(d); if (!x) return ""; const t = parseD(todayStr()); const n = Math.round((x - t) / 86400000);
+  return n === 0 ? "azi" : n === 1 ? "mâine" : n === 2 ? "poimâine" : (n > 2 && n < 7 ? ZILE[x.getDay()] : "") ; }
+function termenInfo(it){
+  if (!it.termen || it.status === "done") return null;
+  const a = it.termen, b = it.termen_pana && it.termen_pana > a ? it.termen_pana : "";
+  const last = b || a, t = todayStr(); if (last < t) return null;
+  const ra = dayRel(a), rb = b ? dayRel(b) : "";
+  const dates = b ? (parseD(a).getMonth() === parseD(b).getMonth() ? parseD(a).getDate()+"–"+fmtShort(b) : fmtShort(a)+" – "+fmtShort(b)) : ZILE_S[parseD(a).getDay()]+". "+fmtShort(a);
+  const words = b ? (ra && rb ? ra+" sau "+rb : "") : ra;
+  const label = words ? words.charAt(0).toUpperCase()+words.slice(1)+" · "+dates : dates;
+  const hot = a <= t || dayRel(a) === "mâine" || (b && b <= t);
+  return { label, hot, short: words || dates };
+}
+const termenChip = it => { const ti = termenInfo(it); return ti ? '<span class="chip due'+(ti.hot?' hot':'')+'" title="Când trebuie gata">📅 '+esc(ti.label)+'</span>' : ''; };
 function qrow(it, sub, color){
   const s = sec(it.sectiune);
-  return '<div role="button" tabindex="0" class="qrow" data-a="goItem" data-id="'+esc(it.id)+'"><span class="dot" style="background:var(--'+(color||"wing")+')"></span><span class="t"><b>'+esc(it.titlu)+'</b><span class="qsub">'+secTag(s)+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></div>';
+  return '<div role="button" tabindex="0" class="qrow" data-a="goItem" data-id="'+esc(it.id)+'"><span class="dot" style="background:var(--'+(color||"wing")+')"></span><span class="t"><b>'+esc(it.titlu)+'</b><span class="qsub">'+termenChip(it)+secTag(s)+(sub ? '<small>'+esc(sub)+'</small>' : '')+'</span></span></div>';
 }
 function allItems(){ return D.itemi.map(itemFull).sort((a,b)=>{ const sa = sec(a.sectiune)||{}, sb = sec(b.sectiune)||{}; return String(sa.data||"9999").localeCompare(String(sb.data||"9999")) || (a.ordine||0)-(b.ordine||0); }); }
 function sectionUpcoming(it){ const s = sec(it.sectiune); return !s || !s.data || s.data >= todayStr(); }
@@ -1018,7 +1034,7 @@ function myPay(){
 }
 function myTodo(){
   const me = ui.me, out = [], mk = new Set(schoolMonths().slice(0,2).map(m=>m.key));
-  for (const it of allItems()) {
+  for (const it of allItems().sort((a,b) => { const ta = termenInfo(a) ? a.termen : "9", tb = termenInfo(b) ? b.termen : "9"; return ta < tb ? -1 : ta > tb ? 1 : 0; })) {
     if (it.tip === "info" || it.status === "done" || !sectionUpcoming(it)) continue;
     const s = sec(it.sectiune), where = s ? s.titlu + (s.data ? " · "+fmtShort(s.data) : "") : "";
     if (it.tip === "single" || it.tip === "multi") {
@@ -1158,7 +1174,7 @@ function replyForm(c, it){
 function itemCard(it){
   const w = cap.canWrite;
   const isInfo = it.tip === "info";
-  let meta = isInfo ? '' : '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>';
+  let meta = termenChip(it) + (isInfo ? '' : '<span class="chip plain">'+TIP[it.tip||"single"]+'</span>');
   if (it.cantitate) meta += '<span class="chip lilac">'+esc(it.cantitate)+'</span>';
   if (it.cost) meta += '<span class="chip wing">'+esc(it.cost)+'</span>';
   const statusSel = '<label class="sr" for="st-'+esc(it.id)+'">Status</label><select id="st-'+esc(it.id)+'" class="status '+esc(it.status)+'" data-a="status" data-id="'+esc(it.id)+'"'+(w && cap.admin?'':' disabled title="Statusul îl schimbă administratoarea"')+'>'
@@ -1596,6 +1612,8 @@ function itemForm(id, secId){
     + '<label class="field" for="fi-d"><span>Detalii</span><textarea class="ta" id="fi-d" name="detalii" maxlength="2000">'+esc(v.detalii||"")+'</textarea></label>'
     + '<div class="grid2"><label class="field" for="fi-c"><span>Cantitate</span><input class="inp" id="fi-c" name="cantitate" maxlength="60" placeholder="ex. 4 bucăți" value="'+esc(v.cantitate||"")+'"></label>'
     + '<label class="field" for="fi-cost"><span>Cost estimat</span><input class="inp" id="fi-cost" name="cost" maxlength="60" placeholder="ex. ~300 lei / an" value="'+esc(v.cost||"")+'"></label></div>'
+    + '<div class="grid2"><label class="field" for="fi-tm"><span>Termen (opțional)</span><input class="inp" id="fi-tm" name="termen" type="date" value="'+esc(v.termen||"")+'"></label>'
+    + '<label class="field" for="fi-tp"><span>…sau până pe (opțional)</span><input class="inp" id="fi-tp" name="termen_pana" type="date" value="'+esc(v.termen_pana||"")+'"></label></div>'
     + '<div class="grid2"><label class="field" for="fi-st"><span>Status</span><select class="sel" id="fi-st" name="status">'+Object.entries(STATUS).map(([k,l])=>'<option value="'+k+'"'+(k===st.status?' selected':'')+'>'+l+'</option>').join("")+'</select></label>'
     + '<label class="field" for="fi-b"><span>Text pe bifă (la „Fiecare copil”)</span><input class="inp" id="fi-b" name="bifa" maxlength="60" placeholder="ex. Am deja ie" value="'+esc(v.bifa||"")+'"></label></div>'
     + '<p class="hint">„Cine se ocupă”: unul sau mai mulți părinți preiau, fiecare spune câte bucăți. „Se înscrie oricine”: fiecare scrie ce aduce. „Fiecare copil”: toți bifează. „Pe rând, lunar”: câte un copil pe lună. „Doar de știut”: informație pentru părinți, fără bife.</p>'
@@ -1844,6 +1862,7 @@ document.addEventListener("submit", async e => {
       const prev = D.itemi.find(i=>i.id===id) || {};
       const maxO = Math.max(0, ...D.itemi.filter(i=>i.sectiune===fd.sectiune).map(i=>+i.ordine||0));
       const body = { sectiune:fd.sectiune, titlu:fd.titlu.trim(), detalii:fd.detalii.trim(), tip:fd.tip, cantitate:fd.cantitate.trim(), cost:fd.cost.trim(), bifa:(fd.bifa||"").trim(), ordine: prev.sectiune===fd.sectiune ? (prev.ordine||maxO+1) : maxO+1, creat: prev.creat || now };
+      if (D.itemi.some(i => "termen" in i)) { body.termen = fd.termen || ""; body.termen_pana = fd.termen && fd.termen_pana > fd.termen ? fd.termen_pana : ""; }
       const ok = await write(async db => { await db.doc("itemi/"+id).set(body); if (((D.stari[id]||{}).status||"todo") !== fd.status) { const cur = Object.assign({ status:"todo", responsabil:"" }, D.stari[id]||{}); delete cur.id; await db.doc("stari/"+id).set(Object.assign(cur, { status:fd.status, modificat:now })); } }, "Item salvat");
       if (ok) closeModal();
     } else if (fid === "fSec") {
