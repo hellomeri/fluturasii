@@ -265,6 +265,14 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .months-seg{margin-top:10px}
 .optinfo{margin-top:12px;background:var(--surface-2);border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:600}
 .optmonth{margin-top:-8px}
+.achit{display:flex;align-items:center;gap:12px;border:1px dashed var(--line);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-size:14px}
+.achit > div{flex:1;min-width:0}
+.achit-ic{font-size:20px;flex:none}
+.achit-sub{color:var(--muted);font-size:13px;font-weight:600;margin-top:2px;overflow-wrap:anywhere}
+.achit.ok{background:var(--meadow-soft);border:0;color:var(--meadow)}
+.achit.ok .achit-ic{width:28px;height:28px;border-radius:50%;background:var(--meadow);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800}
+.achit.ok .achit-sub{color:var(--meadow)}
+@media (max-width:520px){.achit{flex-wrap:wrap}.achit .btn{width:100%}}
 .sesnotes{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
 .sn-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sn-head .eyebrow{margin:0}
@@ -1287,6 +1295,7 @@ function viewOptionale(){
     + '<div class="row">'+linkBtn("optionale/"+sel+"/"+L.luna)+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
   const mine = recs.find(r => r.p.copilId === ui.me);
   if (mine) h += '<div class="mestat '+(optOk(mine.p) || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (optOk(mine.p) ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n && !mine.p.platit ? payBtn("optional", L.id, !mine.p.platit_declarat) : '')+'</div>';
+  h += achitBlock(L, total);
   h += sesNotes(L, ses, mine);
   h += '<div class="money opt-tiles" style="--n:2"><div class="tile big"><div class="lab">Total de plată</div><div class="val">'+lei(total)+'</div></div><div class="tile"><div class="lab">Plătit</div><div class="val in">'+lei(paid)+'</div></div><div class="tile"><div class="lab">Rămas</div><div class="val'+(total-paid>0?' out':'')+'">'+lei(total-paid)+'</div></div></div>';
   if (cap.admin && decl.length) h += '<div class="amb-note">'+decl.length+' '+(decl.length===1?'părinte a bifat că a plătit':'părinți au bifat că au plătit')+' · <b>de confirmat</b>. Apasă pe butonul portocaliu după ce primești banii.</div>';
@@ -1301,6 +1310,23 @@ function viewOptionale(){
     return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' – prezent':' – absent')+'">'+(parseD(d)?parseD(d).getDate():'')+'</i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
   }).join("") + '</div>';
   return h + '</section>';
+}
+function achitBlock(L, total){
+  if (L.achitat_la) return '<div class="achit ok"><span class="achit-ic" aria-hidden="true">✓</span><div><b>Luna e achitată integral</b>'
+    + '<div class="achit-sub">'+esc(lei(L.achitat_suma !== "" && L.achitat_suma != null ? +L.achitat_suma : total))+' plătiți pe '+esc(fmtShort(L.achitat_la))+(L.achitat_nota ? ' · '+linkify(L.achitat_nota) : '')+'</div></div>'
+    + (cap.admin ? '<button class="linkbtn" data-a="optAchit" data-id="'+esc(L.id)+'">Editează</button>' : '')+'</div>';
+  if (!cap.admin) return '';
+  return '<div class="achit"><span class="achit-ic" aria-hidden="true">💸</span><div><b>Ai achitat suma lunii?</b><div class="achit-sub">Când plătești tu tot ('+esc(lei(total))+'), bifează aici. Apare la toți părinții.</div></div><button class="btn small primary" data-a="optAchit" data-id="'+esc(L.id)+'">Am achitat tot</button></div>';
+}
+function optAchitForm(id){
+  const L = D.optional_luni.find(x=>x.id===id); if (!L) return; const O = D.optionale.find(x=>x.id===L.optionalId) || {};
+  const pret = +L.pret || 0; const total = D.optional_prezente.filter(p => p.lunaId === L.id).reduce((a,p)=>a+presSum(p)*pret, 0);
+  modal('<h3>'+esc(O.nume||"")+' · '+esc(lunaLabel(L.luna))+': achitat integral</h3><form id="fAchit" class="view" style="gap:12px">'
+    + '<div class="grid2"><label class="field" for="fa-d"><span>Data plății</span><input class="inp" id="fa-d" name="data" type="date" required value="'+esc(L.achitat_la || todayStr())+'"></label>'
+    + '<label class="field" for="fa-s"><span>Suma (lei)</span><input class="inp num" id="fa-s" name="suma" type="number" min="0" step="0.01" inputmode="decimal" required value="'+esc(L.achitat_la && L.achitat_suma !== "" && L.achitat_suma != null ? L.achitat_suma : total)+'"></label></div>'
+    + '<label class="field" for="fa-n"><span>Detalii (opțional, apar la părinți)</span><input class="inp" id="fa-n" name="nota" maxlength="140" placeholder="ex. transfer către profesoara de dans" value="'+esc(L.achitat_nota||"")+'"></label>'
+    + '<div class="acts">'+(L.achitat_la ? '<button type="button" class="btn danger left" data-a="optAchitOff" data-id="'+esc(L.id)+'">Nu mai e achitat</button>' : '')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
+    + '<input type="hidden" name="id" value="'+esc(L.id)+'"></form>');
 }
 function sesNotes(L, ses, mine){
   const note = (L.note && typeof L.note === "object") ? L.note : {};
@@ -1687,6 +1713,8 @@ document.addEventListener("click", async e => {
     case "optImport": IMP = null; importForm(); break;
     case "optEdit": optEditForm(id); break;
     case "optNotes": optNotesForm(id); break;
+    case "optAchit": optAchitForm(id); break;
+    case "optAchitOff": await write(async () => { chk(await sb.from("optional_luni").update({ achitat_la: "", achitat_suma: null, achitat_nota: "" }).eq("id", id)); await refetch("optional_luni"); }, "Anulat") && closeModal(); break;
     case "optPaid": { const p = D.optional_prezente.find(x=>x.id===id); if (!p) break; t.disabled = true; const body = Object.assign({}, p, { platit: !p.platit, dataPlata: !p.platit ? todayStr() : "" }); if (p.platit && "platit_declarat" in p) body.platit_declarat = false; delete body.id; await write(db => db.doc("optional_prezente/"+id).set(body), body.platit ? "Marcat plătit: "+firstName(kidName(p.copilId)) : "Marcat de plată"); break; }
     case "optDelLuna":
       if (ui.confirm !== "ol"+id) { ui.confirm = "ol"+id; t.textContent = "Sigur? Apasă iar"; break; }
@@ -1834,6 +1862,8 @@ document.addEventListener("submit", async e => {
     } else if (fid === "fOpt") {
       const o = D.optionale.find(x=>x.id===fd.id) || {}; const body = Object.assign({}, o, { nume:fd.nume.trim(), icon:(fd.icon||"").trim(), descriere:(fd.descriere||"").trim() }); delete body.id;
       if (await write(db => db.doc("optionale/"+fd.id).set(body), "Salvat")) closeModal();
+    } else if (fid === "fAchit") {
+      if (await write(async () => { chk(await sb.from("optional_luni").update({ achitat_la: fd.data, achitat_suma: +fd.suma || 0, achitat_nota: (fd.nota||"").trim() }).eq("id", fd.id)); await refetch("optional_luni"); }, "Marcat achitat ✓")) closeModal();
     } else if (fid === "fOptNote") {
       const L = D.optional_luni.find(x=>x.id===fd.id); if (!L) return; const ses = Array.isArray(L.sedinte) ? L.sedinte : [];
       const note = {}; ses.forEach((d,i) => { const t = String(fd["n_"+i]||"").trim(); if (t) note[d] = t; });
