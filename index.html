@@ -122,6 +122,7 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .sec-head h2{font-size:24px;font-weight:800}
 .sec-head .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.sdesc{white-space:pre-line;overflow-wrap:anywhere}
 .eyebrow{font-size:12px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:var(--muted)}
 .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:800;white-space:nowrap}
 .chip.wing{background:var(--wing-soft);color:var(--wing-ink)}
@@ -1181,7 +1182,7 @@ function viewEvents(){
 function secBlock(s){
   const its = itemsOf(s.id); const open = its.filter(i=>i.tip==="info" || i.status!=="done"); const done = its.filter(i=>i.tip!=="info" && i.status==="done");
   let h = '<section class="secblock" id="sec-'+esc(s.id)+'"><div class="sec-head"><div class="sec-title">'+(s.data ? calTile(s) : (s.icon ? '<div class="icotile" aria-hidden="true">'+esc(s.icon)+'</div>' : ''))+'<div style="min-width:0"><h2>'+(s.data && s.icon ? '<span class="h-ico" aria-hidden="true">'+esc(s.icon)+'</span> ' : '')+esc(s.titlu)+'</h2>'
-    + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? linkify(s.descriere) : '')+'</div></div></div>'
+    + '<div class="sub">'+(s.data ? whenLine(s) : '')+(s.data && s.descriere ? '<br>' : '')+(s.descriere ? '<span class="sdesc">'+linkify(s.descriere)+'</span>' : '')+'</div></div></div>'
     + '<div class="row">'+linkBtn(secPath(s))+(cap.admin ? '<button class="btn small" data-a="itemEdit" data-sec="'+esc(s.id)+'">'+ICON.plus+'Item</button><button class="btn small ghost" data-a="secEdit" data-id="'+esc(s.id)+'">'+ICON.pen+'Editează</button>' : '')+'</div>'
     + '</div>';
   if (!its.length) h += '<div class="empty">Nu sunt itemi aici încă.</div>';
