@@ -389,6 +389,7 @@ button.opaid.own{background:var(--surface);border:1.5px solid var(--meadow);colo
   .evrow .dt{grid-column:2;color:var(--muted);font-size:12.5px;font-weight:700}
   .evrow:hover{background:var(--surface)}
   .evrow.past{opacity:.6}
+  .evside-past{margin-top:18px}
   .evbar-m{display:none}
 }
 .evchip{display:inline-flex;align-items:center;gap:7px;flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px 7px 10px;font-weight:800;font-size:14px;white-space:nowrap}
@@ -870,6 +871,7 @@ async function boot(){
   ui.mode = "live";
   await Promise.all(COLS.map(refetch));
   loadAct();
+  try { const r = await sb.rpc("asigura_abonament"); if (r && r.data && !D.comenzi.some(c => c.id === r.data)) { await refetch("comenzi"); } } catch(e){}
   if (!ui.loaded.has("itemi")) { ui.mode = "nodb"; render(); return; }
   const timers = {};
   sb.channel("fluturasi").on("postgres_changes", { event:"*", schema:"public" }, p => { const t = p.table; if (t === "activitate" || t === "admin_stare") { clearTimeout(timers.act); timers.act = setTimeout(loadAct, 300); return; } if (!COLS.includes(t)) return; clearTimeout(timers[t]); timers[t] = setTimeout(() => refetch(t), 250); }).subscribe();
@@ -1062,7 +1064,10 @@ const optOk = p => !!(p.platit || p.platit_declarat), optDecl = p => !p.platit &
 const declared = (cid, k) => D.plati_declarate.some(x => x.colectaId === cid && x.copilId === k);
 const payBtn = (tip, ref, on, kidId) => '<button type="button" class="paybtn'+(on?'':' undo')+'" data-a="payMark" data-t="'+tip+'" data-ref="'+esc(ref)+'" data-on="'+(on?1:0)+'"'+(kidId?' data-kid="'+esc(kidId)+'"':'')+'>'+(on ? '✓ Am plătit' : 'Anulează')+'</button>';
 /* ---------- comenzi (ex. caiete) ---------- */
-const cmdRec = (cid, k) => D.comenzi_copii.find(x => x.comanda_id === cid && x.copilId === k);
+const cmdRec = (cid, k) => { const r = D.comenzi_copii.find(x => x.comanda_id === cid && x.copilId === k); if (r) return r;
+  const C = D.comenzi.find(c => c.id === cid); if (C && C.obligatoriu && kid(k)) return { id: cid+"_"+k, comanda_id: cid, copilId: k, produse: cmdProds(C).map(p => p.id), raspuns: true, platit: false, platit_declarat: false, virtual: true };
+  return undefined; };
+const cmdSave = (r, patch) => r.virtual ? sb.from("comenzi_copii").upsert(Object.assign({ id: r.id, comanda_id: r.comanda_id, copil_id: r.copilId, produse: r.produse, raspuns: true }, patch)) : sb.from("comenzi_copii").update(patch).eq("id", r.id);
 const cmdProds = C => Array.isArray(C.produse) ? C.produse : [];
 const cmdSum = (C, r) => r ? cmdProds(C).filter(p => (Array.isArray(r.produse) ? r.produse : []).includes(p.id)).reduce((a,p)=>a+(+p.pret||0),0) : 0;
 const cmdOk = r => !!(r && (r.platit || r.platit_declarat)), cmdDecl = r => !!(r && !r.platit && r.platit_declarat);
@@ -1080,6 +1085,17 @@ function viewComanda(C){
   const editable = k => !C.inchisa && !arh(C) && (cap.admin || k === ui.me);
   let h = '</section><section class="optmonth" id="cmd-'+esc(C.id)+'"><div class="sec-head"><div><h2>'+esc(C.icon||"📚")+' '+esc(C.titlu)+'</h2><div class="sub">'+linkify(C.descriere||"")+'</div></div><div class="row">'+linkBtn("optionale/"+C.id)+(cap.admin && hasArhCol("comenzi") ? '<button class="btn small ghost" data-a="arh" data-t="comenzi" data-id="'+esc(C.id)+'" data-on="'+(arh(C)?0:1)+'">'+(arh(C) ? 'Scoate din arhivă' : '🗂️ Arhivează')+'</button>' : '')+'</div></div>'
     + (arh(C) ? '<div class="arh-note">🗂️ Arhivat'+(C.arhivat_la ? ' pe '+esc(fmtShort(C.arhivat_la)) : '')+' · nu se mai pot face alegeri</div>' : '');
+  if (C.obligatoriu) {
+    const mine = isChild(ui.me) ? recs.find(x => x.k.id === ui.me) : null; const pret = prods.reduce((a,p)=>a+(+p.pret||0),0);
+    if (mine) h += '<div class="cmd-mine"><div class="cmd-tot" style="margin:0"><span>'+esc(firstName(kidName(ui.me)))+': <b>'+esc(lei(pret))+'</b>'+(cmdOk(mine.r)?' · plătit ✓':' de plată')+'</span>'+(!(mine.r && mine.r.platit) ? payBtn("cmd", C.id, !cmdOk(mine.r)) : '')+'</div></div>';
+    const nPaid = recs.filter(x => cap.admin ? x.r && x.r.platit : cmdOk(x.r)).length;
+    h += '<div class="money opt-tiles" style="--n:2"><div class="tile big"><div class="lab">Total lună</div><div class="val">'+lei(total)+'</div></div><div class="tile"><div class="lab">Plătit</div><div class="val in">'+lei(paid)+'</div></div><div class="tile"><div class="lab">Au plătit</div><div class="val">'+nPaid+' / '+kids.length+'</div></div></div>';
+    if (C.extra_buget !== "" && C.extra_buget != null && +C.extra_buget > 0) h += '<div class="optinfo" style="margin:0 0 12px">'+(C.buget_inregistrat ? '✓ Au plătit toți: restul de '+esc(lei(C.extra_buget))+' a intrat în buget.' : '💡 Când au plătit toți, restul de '+esc(lei(C.extra_buget))+' intră automat în buget.')+'</div>';
+    const decl = recs.filter(x => cmdDecl(x.r));
+    if (cap.admin && decl.length) h += '<div class="amb-note">'+decl.length+' '+(decl.length===1?'părinte a bifat că a plătit':'părinți au bifat că au plătit')+' · <b>de confirmat</b>.</div>';
+    h += '<div class="optlist">'+recs.map(({k, r}) => '<div class="orow'+(k.id===ui.me?' mine':'')+'">'+avHtml(k.id)+'<div class="on"><b>'+esc(k.nume)+'</b></div><div class="oright"><span class="osum num">'+lei(cmdSum(C, r))+'</span>'+(r ? cmdPayBtn(C, r, k.id) : '')+'</div></div>').join("")+'</div>';
+    return h + '</section>';
+  }
   h += '<div class="cmd-prods">'+prods.map(p => '<div class="cmd-prod"><b>'+esc(p.nume)+'</b><span class="num">'+esc(lei(p.pret))+'</span>'+(p.link ? linkify(p.link) : '')+'<small>'+(n => n+(n===1?' comandat':' comandate'))(recs.filter(x => x.r && (x.r.produse||[]).includes(p.id)).length)+'</small></div>').join("")+'</div>';
   if (C.cadou) h += '<div class="optinfo" style="margin:0 0 12px">🎁 '+linkify(C.cadou)+'</div>';
   const mine = isChild(ui.me) ? recs.find(x => x.k.id === ui.me) : null;
@@ -1124,7 +1140,7 @@ function myTodo(){
     else if (it.tip === "fiecare" && isChild(me) && !signups(it.id).some(x=>x.copilId===me)) out.push(qrow(it, "Nebifat încă", "wing"));
     else if (it.tip === "rotatie") { const slot = signups(it.id).find(x => x.copilId===me && mk.has(x.cheie)); if (slot) { const [y,m] = slot.cheie.split("-"); out.push(qrow(it, "Luna ta: "+LUNI[+m-1]+" "+y, "lilac")); } }
   }
-  if (isChild(me)) for (const C of openCmds()) { const r = cmdRec(C.id, me); if (!r || !r.raspuns) out.unshift('<div role="button" tabindex="0" class="qrow" data-a="goCmd" data-id="'+esc(C.id)+'"><span class="dot" style="background:var(--lilac)"></span><span class="t"><b>'+esc((C.icon||"📚")+" "+C.titlu)+'</b><span class="qsub"><span class="tag">Opțional</span><small>Alege ce iei (sau „Nu luăm”)</small></span></span></div>'); }
+  if (isChild(me)) for (const C of openCmds().filter(c => !c.obligatoriu)) { const r = cmdRec(C.id, me); if (!r || !r.raspuns) out.unshift('<div role="button" tabindex="0" class="qrow" data-a="goCmd" data-id="'+esc(C.id)+'"><span class="dot" style="background:var(--lilac)"></span><span class="t"><b>'+esc((C.icon||"📚")+" "+C.titlu)+'</b><span class="qsub"><span class="tag">Opțional</span><small>Alege ce iei (sau „Nu luăm”)</small></span></span></div>'); }
   return out;
 }
 function myDone(){
@@ -1180,7 +1196,7 @@ const EVNAV = (window.__EVNAV || "side");
 function evLabel(s){ return (s.icon ? '<span class="ico" aria-hidden="true">'+esc(s.icon)+'</span>' : '')+'<span class="nm">'+esc(s.titlu)+'</span><span class="dt">'+(s.data ? esc(fmtShort(s.data)) : 'tot anul')+'</span>'; }
 function evSelect(all){
   return '<label class="evsel" for="evsel"><span class="sr">Sari la eveniment</span><select class="sel" id="evsel" data-a="jumpSec"><option value="">Sari la eveniment…</option>'
-    + all.map(s => '<option value="'+esc(s.id)+'">'+esc((s.icon ? s.icon+'  ' : '')+s.titlu+' · '+(s.data ? fmtShort(s.data) : 'tot anul'))+'</option>').join("")+'</select></label>';
+    + (() => { const o = s => '<option value="'+esc(s.id)+'">'+esc((s.icon ? s.icon+'  ' : '')+s.titlu+' · '+(s.data ? fmtShort(s.data) : 'tot anul'))+'</option>'; const isOld = s => (s.data && s.data < todayStr()) || arh(s); const a = all.filter(s => !isOld(s)), b = all.filter(isOld); return a.map(o).join("") + (b.length ? '<optgroup label="Evenimente trecute">'+b.map(o).join("")+'</optgroup>' : ''); })()+'</select></label>';
 }
 function viewEvents(){
   const { up, nodate, recent, past } = eventLists();
@@ -1193,8 +1209,11 @@ function viewEvents(){
   if (EVNAV === "wrap") return '<nav class="evnav wrap" aria-label="Alege evenimentul">'+all.map(s => '<button type="button" class="evchip'+(isPast(s)?' past':'')+'" data-a="goSec" data-id="'+esc(s.id)+'">'+evLabel(s)+'</button>').join("")+'</nav>' + body;
   if (EVNAV === "select") return '<div class="evbar">'+evSelect(all)+'</div>' + body;
   // side: listă verticală fixă pe desktop, meniu derulant pe telefon
+  const evBtn = s => '<button type="button" class="evrow'+(isPast(s)?' past':'')+'" data-a="goSec" data-id="'+esc(s.id)+'">'+evLabel(s)+'</button>';
+  const old = recent.concat(past);
   return '<div class="evlayout"><aside class="evside" aria-label="Evenimente"><div class="eyebrow">Evenimente</div>'
-    + all.map(s => '<button type="button" class="evrow'+(isPast(s)?' past':'')+'" data-a="goSec" data-id="'+esc(s.id)+'">'+evLabel(s)+'</button>').join("")
+    + up.concat(nodate).map(evBtn).join("")
+    + (old.length ? '<div class="eyebrow evside-past">🗂️ Evenimente trecute</div>'+old.map(evBtn).join("") : '')
     + '</aside><div class="evmain"><div class="evbar evbar-m">'+evSelect(all)+'</div><div class="view">'+body+'</div></div></div>';
 }
 function secBlock(s){
@@ -1890,7 +1909,7 @@ document.addEventListener("click", async e => {
       const tip = t.dataset.t, ref = t.dataset.ref, on = t.dataset.on === "1", k = t.dataset.kid || ui.me;
       t.disabled = true;
       if (tip === "cmd") {
-        if (cap.admin && on) { const r = cmdRec(ref, k); if (r) await write(async () => { chk(await sb.from("comenzi_copii").update({ platit: true, data_plata: todayStr() }).eq("id", r.id)); await refetch("comenzi_copii"); }, "Marcat plătit ✓"); break; }
+        if (cap.admin && on) { const r = cmdRec(ref, k); if (r) await write(async () => { chk(await cmdSave(r, { platit: true, data_plata: todayStr() })); await refetch("comenzi_copii"); }, "Marcat plătit ✓"); break; }
         await write(async () => { chk(await sb.rpc("comanda_platit", { p_comanda: ref, p_copil: k, p_on: on })); await refetch("comenzi_copii"); }, on ? "Mulțumim! Marcat plătit ✓" : "Anulat"); break;
       }
       if (tip === "colecta" && cap.admin && on) {
@@ -1928,7 +1947,7 @@ document.addEventListener("click", async e => {
       break;
     }
     case "cmdPaid": { const k = t.dataset.kid; const r = cmdRec(id, k); if (!r) break; t.disabled = true; const on = !r.platit;
-      await write(async () => { chk(await sb.from("comenzi_copii").update({ platit: on, data_plata: on ? todayStr() : "", platit_declarat: on ? r.platit_declarat : false }).eq("id", r.id)); await refetch("comenzi_copii"); }, on ? "Marcat plătit: "+firstName(kidName(k)) : "Marcat de plată"); break; }
+      await write(async () => { chk(await cmdSave(r, { platit: on, data_plata: on ? todayStr() : "", platit_declarat: on ? !!r.platit_declarat : false })); await refetch("comenzi_copii"); }, on ? "Marcat plătit: "+firstName(kidName(k)) : "Marcat de plată"); break; }
     case "pushOn": t.disabled = true; await pushOn(); break;
     case "pushOff": t.disabled = true; await pushOff(); break;
     case "actGo": {
