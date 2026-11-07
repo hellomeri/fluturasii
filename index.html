@@ -696,7 +696,7 @@ const ui = {
 };
 const cap = { db:null, admin:false, canWrite:true };
 /* ---------- linkuri directe: #optionale/dans/2026-10, #evenimente/<id>, #buget/<strangere>, #ghid/<capitol> ---------- */
-const HASH_TAB = { acasa:"acasa", necesar:"necesar", evenimente:"evenimente", optionale:"optionale", buget:"bani", bani:"bani", ghid:"ghid" };
+const HASH_TAB = { acasa:"acasa", necesar:"necesar", evenimente:"evenimente", optionale:"optionale", "de-plata":"optionale", buget:"bani", bani:"bani", ghid:"ghid" };
 const TAB_HASH = { bani:"buget" };
 let routeTarget = "";
 function parseRoute(){
@@ -909,7 +909,7 @@ function toast(msg, err){
 }
 
 /* ---------- randare ---------- */
-const TABS = [["acasa","Acasă","home"],["necesar","Necesar","list"],["evenimente","Evenimente","cal"],["optionale","Opționale","star"],["bani","Buget","wallet"]];
+const TABS = [["acasa","Acasă","home"],["necesar","Necesar","list"],["evenimente","Evenimente","cal"],["optionale","De plată","star"],["bani","Bugetul grupei","wallet"]];
 function render(){
   pending = false;
   const me = kid(ui.me);
@@ -990,11 +990,11 @@ function viewGuide(){
       step(1,"Scrie un comentariu","<p>Sub fiecare card apasă "+B("💬 Comentează")+", scrie și apasă "+B("Trimite","dark")+". E locul bun pentru linkuri, oferte sau întrebări.</p>")
     + step(2,"Răspunde și votează","<p>Sub orice comentariu poți apăsa "+B("↩ Răspunde")+" sau poți vota cu "+B("👍")+" / "+B("👎")+" (de exemplu, la două oferte de Moș).</p>"));
   h += sec("bani","💰","Bugetul grupei",
-      step("•","Vezi tot, la vedere","<p>În tabul "+B("Buget")+" vezi câți bani sunt în contul clasei și cash la educatoare, plus fiecare încasare și cheltuială.</p>")
+      step("•","Vezi tot, la vedere","<p>În tabul "+B("Bugetul grupei")+" vezi câți bani sunt în contul clasei și cash la educatoare, plus fiecare încasare și cheltuială.</p>")
     + step("•","Strângeri de bani","<p>La fiecare strângere vezi suma pe copil și dacă a ajuns contribuția copilului tău. Bifele le pune doar administratoarea, după ce vede banii în cont.</p>")
     + step("•","Cum trimiți banii","<p>Detaliile de plată sunt în anunțul de pe Acasă sau în grupul părinților. Scrie la plată numele copilului.</p>"));
-  h += sec("optionale","⭐","Opționale (dans, engleză, dezvoltare personală)",
-      step("•","Prezența și suma","<p>În tabul "+B("Opționale")+" alegi opționalul și luna. Fiecare bulină verde e o ședință la care a fost copilul. Suma = ședințe × prețul pe ședință.</p>")
+  h += sec("optionale","⭐","De plată: opționale (dans, engleză, dezvoltare personală), caiete",
+      step("•","Prezența și suma","<p>În tabul "+B("De plată")+" alegi opționalul și luna. Fiecare bulină verde e o ședință la care a fost copilul. Suma = ședințe × prețul pe ședință.</p>")
     + step("•","Cât ai de plată","<p>Sus apare direct pentru copilul tău, de ex. „Vlad: 2 din 6 ședințe · 20 lei de plată”. Apare și pe Acasă, la „Ce ai tu de făcut”. După ce plătești, administratoarea marchează „Plătit” și trece la „Gata”.</p>"));
   h += sec("telefon","📱","Pune portalul pe ecranul telefonului",
       step("iPhone","Safari","<p>Deschide portalul în Safari → apasă "+B("Distribuie ⬆︎")+" → "+B("Adaugă pe ecranul principal")+".</p>")
@@ -1071,7 +1071,8 @@ const cmdSave = (r, patch) => r.virtual ? sb.from("comenzi_copii").upsert(Object
 const cmdProds = C => Array.isArray(C.produse) ? C.produse : [];
 const cmdSum = (C, r) => r ? cmdProds(C).filter(p => (Array.isArray(r.produse) ? r.produse : []).includes(p.id)).reduce((a,p)=>a+(+p.pret||0),0) : 0;
 const cmdOk = r => !!(r && (r.platit || r.platit_declarat)), cmdDecl = r => !!(r && !r.platit && r.platit_declarat);
-const openCmds = () => D.comenzi.filter(c => !c.inchisa && !arh(c)).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
+const cmdVis = c => cap.admin || !c.obligatoriu;
+const openCmds = () => D.comenzi.filter(c => cmdVis(c) && !c.inchisa && !arh(c)).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
 function cmdPayBtn(C, r, k){
   const sum = cmdSum(C, r); if (!sum) return '<span class="opaid none">—</span>';
   if (cap.admin) return '<button type="button" class="opaid'+(r.platit?' on':cmdDecl(r)?' amb':'')+'" data-a="cmdPaid" data-id="'+esc(C.id)+'" data-kid="'+esc(k)+'"'+(cmdDecl(r)?' title="Părintele a bifat că a plătit. Apasă ca să confirmi."':'')+'>'+(r.platit?'✓ Plătit':cmdDecl(r)?'Confirmă':'De plată')+'</button>';
@@ -1124,7 +1125,7 @@ function myPay(){
   if (!isChild(me)) return { rows: out, total };
   for (const c of D.colecte) if (!collStats(c).ids.has(me) && !declared(c.id, me)) { total += +c.suma||0; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>Contribuție</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(c.suma))+'</span>'+payBtn("colecta", c.id, true)+'</span></div>'); }
   for (const o of optDues(me).filter(x => !optOk(x.p))) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+(o.n===1?'ședință':'ședințe')+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(o.sum))+'</span>'+payBtn("optional", o.l.id, true)+'</span></div>'); }
-  for (const C of D.comenzi) { const r = cmdRec(C.id, me), sum = cmdSum(C, r); if (sum && !cmdOk(r)) { total += sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCmd" data-id="'+esc(C.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((C.icon||"📚")+" "+C.titlu)+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+esc(cmdProds(C).filter(p => (r.produse||[]).includes(p.id)).map(p=>p.nume).join(" + "))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(sum))+'</span>'+payBtn("cmd", C.id, true)+'</span></div>'); } }
+  for (const C of D.comenzi.filter(cmdVis)) { const r = cmdRec(C.id, me), sum = cmdSum(C, r); if (sum && !cmdOk(r)) { total += sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCmd" data-id="'+esc(C.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((C.icon||"📚")+" "+C.titlu)+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+esc(cmdProds(C).filter(p => (r.produse||[]).includes(p.id)).map(p=>p.nume).join(" + "))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(sum))+'</span>'+payBtn("cmd", C.id, true)+'</span></div>'); } }
   return { rows: out, total };
 }
 function myTodo(){
@@ -1387,7 +1388,7 @@ function collForm(id){
     + '<label class="field" for="fc-src"><span>Banii intră în</span><select class="sel" id="fc-src" name="sursa">'+srcOptions(srcOf(v))+'</select></label></div>'
     + '<div class="grid2"><label class="field" for="fc-d"><span>Data anunțului</span><input class="inp" id="fc-d" name="data" type="date" required value="'+esc(v.data||"")+'"></label>'
     + '<label class="field" for="fc-ds"><span>Detalii (opțional)</span><input class="inp" id="fc-ds" name="descriere" maxlength="300" placeholder="ex. până pe 15 noiembrie" value="'+esc(v.descriere||"")+'"></label></div>'
-    + ('loc' in v || D.colecte.some(x => 'loc' in x) ? '<label class="row" for="fc-loc" style="gap:8px;font-weight:700;font-size:14px"><input type="checkbox" id="fc-loc" name="loc"'+(v.loc==="optionale"?' checked':'')+'> Apare și la Opționale</label>' : '')
+    + ('loc' in v || D.colecte.some(x => 'loc' in x) ? '<label class="row" for="fc-loc" style="gap:8px;font-weight:700;font-size:14px"><input type="checkbox" id="fc-loc" name="loc"'+(v.loc==="optionale"?' checked':'')+'> Apare și la „De plată”</label>' : '')
     + (n ? '<p class="hint">Au trimis deja '+n+' copii. Dacă schimbi suma, contribuțiile deja notate rămân cu suma veche.</p>' : '')
     + '<div class="acts">'+(c?'<button type="button" class="btn danger left" data-a="delColl" data-id="'+esc(c.id)+'">'+(ui.confirm==="coll"+c.id?(n?'Șterge și cele '+n+' contribuții?':'Sigur? Apasă iar'):'Șterge')+'</button>':'')+'<button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div>'
     + '<input type="hidden" name="id" value="'+esc(c?c.id:"")+'"></form>');
@@ -1407,10 +1408,10 @@ function optDues(me){
 }
 function viewOptionale(){
   const opts = D.optionale.slice().sort((a,b)=>(a.ordine||0)-(b.ordine||0));
-  let h = '<section><div class="sec-head"><div><h2>Opționale</h2><div class="sub">Prezența de fiecare lună și cât e de plată, după fișa de la grădiniță.</div></div>'
+  let h = '<section><div class="sec-head"><div><h2>De plată</h2><div class="sub">Prezența de fiecare lună și cât e de plată, după fișa de la grădiniță.</div></div>'
     + (cap.admin ? '<div class="row"><button class="btn small primary" data-a="optImport">'+ICON.plus+'Încarcă prezența (Excel)</button></div>' : '') + '</div>';
   const oc = D.colecte.filter(c => c.loc === "optionale" && !c.inchisa).sort((a,b)=>String(a.data).localeCompare(String(b.data)));
-  const cm = D.comenzi.slice().sort((a,b)=>(arh(a)-arh(b)) || (a.ordine||0)-(b.ordine||0));
+  const cm = D.comenzi.filter(cmdVis).sort((a,b)=>(arh(a)-arh(b)) || (a.ordine||0)-(b.ordine||0));
   if (!opts.length && !oc.length && !cm.length) return h + '<div class="empty">Nu sunt opționale încă.</div></section>';
   const sel = opts.concat(oc, cm).some(o=>o.id===ui.opt) ? ui.opt : (opts[0] || cm[0] || oc[0]).id; const O = opts.find(o=>o.id===sel);
   const cmdTab = c => '<button type="button" role="tab" class="segb'+(c.id===sel?' on':'')+(arh(c)?' arh-tab':'')+'" aria-selected="'+(c.id===sel)+'" data-a="optSel" data-id="'+esc(c.id)+'"><span aria-hidden="true">'+esc(c.icon||"📚")+'</span> '+esc(c.titlu)+'</button>';
