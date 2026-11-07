@@ -277,7 +277,7 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .segb.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .segb.small{padding:5px 12px;font-size:13px}
 .months-seg{margin-top:10px}
-.optinfo{margin-top:12px;background:var(--surface-2);border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:600}
+.optinfo{white-space:pre-line;overflow-wrap:anywhere;margin-top:12px;background:var(--surface-2);border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:600}
 .optmonth{margin-top:-8px}
 .achit{display:flex;align-items:center;gap:12px;border:1px dashed var(--line);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-size:14px}
 .achit > div{flex:1;min-width:0}
@@ -309,6 +309,7 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 button.cmd-chip{cursor:pointer}
 .cmd-chip.on{border:1px solid var(--meadow);background:var(--meadow-soft);color:var(--meadow)}
 .cmd-wait{font-size:12px;font-weight:700;color:var(--muted);align-self:center}
+.zile{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
 .sesnotes{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
 .sn-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .sn-head .eyebrow{margin:0}
@@ -1124,7 +1125,7 @@ function myPay(){
   const me = ui.me, out = []; let total = 0;
   if (!isChild(me)) return { rows: out, total };
   for (const c of D.colecte) if (!collStats(c).ids.has(me) && !declared(c.id, me)) { total += +c.suma||0; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCollTab" data-id="'+esc(c.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc(c.titlu)+'</b><span class="qsub"><span class="tag">Strângere de bani</span><small>Contribuție</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(c.suma))+'</span>'+payBtn("colecta", c.id, true)+'</span></div>'); }
-  for (const o of optDues(me).filter(x => !optOk(x.p))) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+(o.n===1?'ședință':'ședințe')+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(o.sum))+'</span>'+payBtn("optional", o.l.id, true)+'</span></div>'); }
+  for (const o of optDues(me).filter(x => !optOk(x.p))) { total += o.sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goOpt" data-id="'+esc(o.l.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((o.o.icon?o.o.icon+" ":"")+o.o.nume)+' · '+esc(lunaLabel(o.l.luna))+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+o.n+' '+((o.l.sedinte||[]).length ? (o.n===1?'ședință':'ședințe') : (o.n===1?'zi':'zile'))+' × '+esc(lei(o.l.pret))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(o.sum))+'</span>'+payBtn("optional", o.l.id, true)+'</span></div>'); }
   for (const C of D.comenzi.filter(cmdVis)) { const r = cmdRec(C.id, me), sum = cmdSum(C, r); if (sum && !cmdOk(r)) { total += sum; out.push('<div role="button" tabindex="0" class="qrow pay" data-a="goCmd" data-id="'+esc(C.id)+'"><span class="dot" style="background:var(--berry)"></span><span class="t"><b>'+esc((C.icon||"📚")+" "+C.titlu)+'</b><span class="qsub"><span class="tag">Opțional</span><small>'+esc(cmdProds(C).filter(p => (r.produse||[]).includes(p.id)).map(p=>p.nume).join(" + "))+'</small></span></span><span class="pright"><span class="pamt num">'+esc(lei(sum))+'</span>'+payBtn("cmd", C.id, true)+'</span></div>'); } }
   return { rows: out, total };
 }
@@ -1435,9 +1436,8 @@ function viewOptionale(){
   h += '</section><section class="optmonth" id="opt-'+esc(L.id)+'"><div class="sec-head"><div><h2>'+esc(O.icon||"")+' '+esc(O.nume)+' · '+esc(lunaLabel(L.luna))+'</h2><div class="sub">'+ses.length+' ședințe: '+esc(ses.map(d=>parseD(d) ? parseD(d).getDate() : d).join(", "))+' '+esc(LUNI_S[(parseD(ses[0])||new Date()).getMonth()])+'. · '+esc(lei(pret))+' / ședință</div></div>'
     + '<div class="row">'+linkBtn("optionale/"+sel+"/"+L.luna)+(cap.admin && hasArhCol("optional_luni") ? '<button class="btn small ghost" data-a="arhLuna" data-id="'+esc(L.id)+'">'+(arh(L) ? 'Scoate din arhivă' : (ui.confirm === "al"+L.id ? 'Sunt neplătiți · apasă iar' : '🗂️ Arhivează luna'))+'</button>' : '')+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
   const mine = recs.find(r => r.p.copilId === ui.me);
-  if (mine) h += '<div class="mestat '+(optOk(mine.p) || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+mine.n+' din '+ses.length+' ședințe · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (optOk(mine.p) ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n && !mine.p.platit ? payBtn("optional", L.id, !mine.p.platit_declarat) : '')+'</div>';
-  h += achitBlock(L, total);
-  h += sesNotes(L, ses, mine);
+  if (mine) h += '<div class="mestat '+(optOk(mine.p) || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+(ses.length ? mine.n+' din '+ses.length+' ședințe' : mine.n+' '+(mine.n===1?'zi':'zile')+' × '+esc(lei(pret)))+' · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (optOk(mine.p) ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n && !mine.p.platit ? payBtn("optional", L.id, !mine.p.platit_declarat) : '')+'</div>';
+  if (ses.length) { h += achitBlock(L, total); h += sesNotes(L, ses, mine); }
   h += '<div class="money opt-tiles" style="--n:2"><div class="tile big"><div class="lab">Total de plată</div><div class="val">'+lei(total)+'</div></div><div class="tile"><div class="lab">Plătit</div><div class="val in">'+lei(paid)+'</div></div><div class="tile"><div class="lab">Rămas</div><div class="val'+(total-paid>0?' out':'')+'">'+lei(total-paid)+'</div></div></div>';
   if (cap.admin && decl.length) h += '<div class="amb-note">'+decl.length+' '+(decl.length===1?'părinte a bifat că a plătit':'părinți au bifat că au plătit')+' · <b>de confirmat</b>. Apasă pe butonul portocaliu după ce primești banii.</div>';
   h += '<div class="optlist">' + recs.map(r => {
@@ -1448,7 +1448,7 @@ function viewOptionale(){
       : r.p.copilId === ui.me && !r.p.platit
         ? '<button type="button" class="opaid'+(optOk(r.p)?' on':' own')+'" data-a="payMark" data-t="optional" data-ref="'+esc(L.id)+'" data-on="'+(optOk(r.p)?0:1)+'" aria-pressed="'+optOk(r.p)+'">'+(optOk(r.p)?'✓ Plătit':'Am plătit?')+'</button>'
         : '<span class="opaid'+(optOk(r.p)?' on':'')+'">'+(optOk(r.p)?'✓ Plătit':'De plată')+'</span>';
-    return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b><div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' – prezent':' – absent')+'">'+(parseD(d)?parseD(d).getDate():'')+'</i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
+    return '<div class="orow'+(r.p.copilId===ui.me?' mine':'')+'">'+avHtml(r.p.copilId)+'<div class="on"><b>'+esc(r.k.nume)+'</b>'+(ses.length ? '' : '<div class="zile">'+r.n+' '+(r.n===1?'zi':'zile')+' × '+esc(lei(pret))+'</div>')+'<div class="dots" aria-label="'+r.n+' prezențe din '+ses.length+'">'+ses.map((d,i)=>'<i class="'+(+pres[i]?'p':'a')+'" title="'+esc(fmtShort(d))+(+pres[i]?' – prezent':' – absent')+'">'+(parseD(d)?parseD(d).getDate():'')+'</i>').join("")+'<span class="num">'+r.n+'/'+ses.length+'</span></div></div><div class="oright"><span class="osum num">'+lei(sum)+'</span>'+paidEl+'</div></div>';
   }).join("") + '</div>';
   return h + '</section>';
 }
@@ -1492,7 +1492,7 @@ function optEditForm(id){
   modal('<h3>Editează opționalul</h3><form id="fOpt" class="view" style="gap:12px">'
     + '<div class="grid2"><label class="field" for="fo-n"><span>Nume</span><input class="inp" id="fo-n" name="nume" required maxlength="60" value="'+esc(o.nume)+'"></label>'
     + '<label class="field" for="fo-i"><span>Iconiță</span><input class="inp" id="fo-i" name="icon" maxlength="8" value="'+esc(o.icon||"")+'"></label></div>'
-    + '<label class="field" for="fo-d"><span>Cum se plătește (apare la părinți)</span><textarea class="ta" id="fo-d" name="descriere" maxlength="400" placeholder="ex. Plata se face cash la doamna Raluca, până pe 5 ale lunii.">'+esc(o.descriere||"")+'</textarea></label>'
+    + '<label class="field" for="fo-d"><span>Cum se plătește (apare la părinți)</span><textarea class="ta" id="fo-d" name="descriere" maxlength="1200" placeholder="ex. Plata se face cash la doamna Raluca, până pe 5 ale lunii.">'+esc(o.descriere||"")+'</textarea></label>'
     + '<div class="acts"><button type="button" class="btn" data-a="close">Renunță</button><button class="btn primary" type="submit">Salvează</button></div><input type="hidden" name="id" value="'+esc(o.id)+'"></form>');
 }
 /* import Excel */
