@@ -696,9 +696,9 @@ const ui = {
   loaded: new Set(), mode: "loading", replyTo: "", authorHash: "", adminEmail: ""
 };
 const cap = { db:null, admin:false, canWrite:true };
-/* ---------- linkuri directe: #optionale/dans/2026-10, #evenimente/<id>, #buget/<strangere>, #ghid/<capitol> ---------- */
-const HASH_TAB = { acasa:"acasa", necesar:"necesar", evenimente:"evenimente", optionale:"optionale", "de-plata":"optionale", buget:"bani", bani:"bani", ghid:"ghid" };
-const TAB_HASH = { bani:"buget" };
+/* ---------- linkuri directe: #deplata/dans/2026-10, #evenimente/<id>, #buget/<strangere>, #ghid/<capitol> ---------- */
+const HASH_TAB = { acasa:"acasa", necesar:"necesar", evenimente:"evenimente", optionale:"optionale", "de-plata":"optionale", deplata:"optionale", buget:"bani", bani:"bani", ghid:"ghid" };
+const TAB_HASH = { bani:"buget", optionale:"deplata" };
 let routeTarget = "";
 function parseRoute(){
   let parts = []; try { parts = decodeURIComponent(location.hash.slice(1)).split("/").filter(Boolean); } catch(e){}
@@ -1085,7 +1085,7 @@ function viewComanda(C){
   const answered = recs.filter(x => x.r && x.r.raspuns).length;
   const total = recs.reduce((a,x)=>a+cmdSum(C,x.r),0), paid = recs.filter(x => cap.admin ? x.r && x.r.platit : cmdOk(x.r)).reduce((a,x)=>a+cmdSum(C,x.r),0);
   const editable = k => !C.inchisa && !arh(C) && (cap.admin || k === ui.me);
-  let h = '</section><section class="optmonth" id="cmd-'+esc(C.id)+'"><div class="sec-head"><div><h2>'+esc(C.icon||"📚")+' '+esc(C.titlu)+'</h2><div class="sub">'+linkify(C.descriere||"")+'</div></div><div class="row">'+linkBtn("optionale/"+C.id)+(cap.admin && hasArhCol("comenzi") ? '<button class="btn small ghost" data-a="arh" data-t="comenzi" data-id="'+esc(C.id)+'" data-on="'+(arh(C)?0:1)+'">'+(arh(C) ? 'Scoate din arhivă' : '🗂️ Arhivează')+'</button>' : '')+'</div></div>'
+  let h = '</section><section class="optmonth" id="cmd-'+esc(C.id)+'"><div class="sec-head"><div><h2>'+esc(C.icon||"📚")+' '+esc(C.titlu)+'</h2><div class="sub">'+linkify(C.descriere||"")+'</div></div><div class="row">'+linkBtn("deplata/"+C.id)+(cap.admin && hasArhCol("comenzi") ? '<button class="btn small ghost" data-a="arh" data-t="comenzi" data-id="'+esc(C.id)+'" data-on="'+(arh(C)?0:1)+'">'+(arh(C) ? 'Scoate din arhivă' : '🗂️ Arhivează')+'</button>' : '')+'</div></div>'
     + (arh(C) ? '<div class="arh-note">🗂️ Arhivat'+(C.arhivat_la ? ' pe '+esc(fmtShort(C.arhivat_la)) : '')+' · nu se mai pot face alegeri</div>' : '');
   if (C.obligatoriu) {
     const mine = isChild(ui.me) ? recs.find(x => x.k.id === ui.me) : null; const pret = prods.reduce((a,p)=>a+(+p.pret||0),0);
@@ -1418,14 +1418,14 @@ function viewOptionale(){
   const cmdTab = c => '<button type="button" role="tab" class="segb'+(c.id===sel?' on':'')+(arh(c)?' arh-tab':'')+'" aria-selected="'+(c.id===sel)+'" data-a="optSel" data-id="'+esc(c.id)+'"><span aria-hidden="true">'+esc(c.icon||"📚")+'</span> '+esc(c.titlu)+'</button>';
   const collTab = c => '<button type="button" role="tab" class="segb'+(c.id===sel?' on':'')+'" aria-selected="'+(c.id===sel)+'" data-a="optSel" data-id="'+esc(c.id)+'"><span aria-hidden="true">📚</span> '+esc(String(c.titlu).split(" (")[0])+'</button>';
   h += '<div class="seg" role="tablist">'+opts.map(o => { const n = D.optional_luni.filter(l=>l.optionalId===o.id).length; return '<button type="button" role="tab" class="segb'+(o.id===sel?' on':'')+'" aria-selected="'+(o.id===sel)+'" data-a="optSel" data-id="'+esc(o.id)+'"><span aria-hidden="true">'+esc(o.icon||"")+'</span> '+esc(o.nume)+(n?'':' <small>(fără date)</small>')+'</button>'; }).join("")+cm.map(cmdTab).join("")+oc.map(collTab).join("")+'</div>';
-  const CM = cm.find(c => c.id === sel); if (CM) { if (ui.tab === "optionale" && location.hash.indexOf("#optionale") === 0) syncHash("optionale/"+sel); return h + viewComanda(CM); }
-  if (!O) { const C = oc.find(c => c.id === sel); if (ui.tab === "optionale" && location.hash.indexOf("#optionale") === 0) syncHash("optionale/"+sel); return h + '</section><section class="optmonth"><div class="coll">'+collCard(C)+'</div></section>'; }
+  const CM = cm.find(c => c.id === sel); if (CM) { if (ui.tab === "optionale" && /^#(optionale|deplata|de-plata)/.test(location.hash)) syncHash("deplata/"+sel); return h + viewComanda(CM); }
+  if (!O) { const C = oc.find(c => c.id === sel); if (ui.tab === "optionale" && /^#(optionale|deplata|de-plata)/.test(location.hash)) syncHash("deplata/"+sel); return h + '</section><section class="optmonth"><div class="coll">'+collCard(C)+'</div></section>'; }
   if (O.descriere || cap.admin) h += '<div class="optinfo">'+(O.descriere ? linkify(O.descriere) : '<span class="hint">Adaugă cum se plătește (cui, până când).</span>')+(cap.admin ? ' <button class="linkbtn" data-a="optEdit" data-id="'+esc(O.id)+'">Editează</button>' : '')+'</div>';
   const luni = D.optional_luni.filter(l=>l.optionalId===sel).sort((a,b)=>String(b.luna).localeCompare(a.luna));
   if (!luni.length) return h + '<div class="empty" style="margin-top:12px">Încă nu e încărcată prezența la '+esc(O.nume.toLowerCase())+'.'+(cap.admin?' Apasă „Încarcă prezența (Excel)”.':'')+'</div></section>';
   const lAct = luni.filter(l => !arh(l)), lOld = luni.filter(arh);
   const L = luni.find(l=>l.id===ui.optLuna) || lAct[0] || luni[0];
-  if (ui.tab === "optionale" && location.hash.indexOf("#optionale") === 0) syncHash("optionale/"+sel+"/"+L.luna);
+  if (ui.tab === "optionale" && /^#(optionale|deplata|de-plata)/.test(location.hash)) syncHash("deplata/"+sel+"/"+L.luna);
   const mBtn = l => '<button type="button" class="segb small'+(l.id===L.id?' on':'')+'" data-a="optLuna" data-id="'+esc(l.id)+'">'+esc(lunaLabel(l.luna))+'</button>';
   if (lAct.length > 1 || (lAct.length && !lAct.some(l => l.id === L.id))) h += '<div class="seg months-seg">'+lAct.map(mBtn).join("")+'</div>';
   if (lOld.length) h += '<div class="seg months-seg arh-months"><span class="arh-lab">🗂️ Luni anterioare:</span>'+lOld.map(mBtn).join("")+'</div>';
@@ -1434,7 +1434,7 @@ function viewOptionale(){
   const pret = +L.pret || 0; const total = recs.reduce((a,r)=>a+r.n*pret,0); const paid = recs.filter(r => cap.admin ? r.p.platit : optOk(r.p)).reduce((a,r)=>a+r.n*pret,0);
   const decl = recs.filter(r => optDecl(r.p) && r.n);
   h += '</section><section class="optmonth" id="opt-'+esc(L.id)+'"><div class="sec-head"><div><h2>'+esc(O.icon||"")+' '+esc(O.nume)+' · '+esc(lunaLabel(L.luna))+'</h2><div class="sub">'+(ses.length ? ses.length+' ședințe: '+esc(ses.map(d=>parseD(d) ? parseD(d).getDate() : d).join(", "))+' '+esc(LUNI_S[(parseD(ses[0])||new Date()).getMonth()])+'. · '+esc(lei(pret))+' / ședință' : esc(lei(pret))+' / zi · după fișa de la grădiniță')+'</div></div>'
-    + '<div class="row">'+linkBtn("optionale/"+sel+"/"+L.luna)+(cap.admin && hasArhCol("optional_luni") ? '<button class="btn small ghost" data-a="arhLuna" data-id="'+esc(L.id)+'">'+(arh(L) ? 'Scoate din arhivă' : (ui.confirm === "al"+L.id ? 'Sunt neplătiți · apasă iar' : '🗂️ Arhivează luna'))+'</button>' : '')+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
+    + '<div class="row">'+linkBtn("deplata/"+sel+"/"+L.luna)+(cap.admin && hasArhCol("optional_luni") ? '<button class="btn small ghost" data-a="arhLuna" data-id="'+esc(L.id)+'">'+(arh(L) ? 'Scoate din arhivă' : (ui.confirm === "al"+L.id ? 'Sunt neplătiți · apasă iar' : '🗂️ Arhivează luna'))+'</button>' : '')+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
   const mine = recs.find(r => r.p.copilId === ui.me);
   if (mine) h += '<div class="mestat '+(optOk(mine.p) || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+(ses.length ? mine.n+' din '+ses.length+' ședințe' : mine.n+' '+(mine.n===1?'zi':'zile')+' × '+esc(lei(pret)))+' · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (optOk(mine.p) ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n && !mine.p.platit ? payBtn("optional", L.id, !mine.p.platit_declarat) : '')+'</div>';
   if (ses.length) { h += achitBlock(L, total); h += sesNotes(L, ses, mine); }
