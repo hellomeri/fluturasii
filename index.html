@@ -1072,7 +1072,7 @@ const cmdSave = (r, patch) => r.virtual ? sb.from("comenzi_copii").upsert(Object
 const cmdProds = C => Array.isArray(C.produse) ? C.produse : [];
 const cmdSum = (C, r) => r ? cmdProds(C).filter(p => (Array.isArray(r.produse) ? r.produse : []).includes(p.id)).reduce((a,p)=>a+(+p.pret||0),0) : 0;
 const cmdOk = r => !!(r && (r.platit || r.platit_declarat)), cmdDecl = r => !!(r && !r.platit && r.platit_declarat);
-const cmdVis = c => cap.admin || !c.obligatoriu;
+const cmdVis = c => !c.obligatoriu; // ChatGPT ascuns pentru toți până la reactivare
 const openCmds = () => D.comenzi.filter(c => cmdVis(c) && !c.inchisa && !arh(c)).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
 function cmdPayBtn(C, r, k){
   const sum = cmdSum(C, r); if (!sum) return '<span class="opaid none">—</span>';
@@ -1433,7 +1433,7 @@ function viewOptionale(){
   const recs = D.optional_prezente.filter(p => p.lunaId === L.id).map(p => ({ p, k: kid(p.copilId), n: presSum(p) })).filter(r => r.k).sort((a,b)=>(a.k.ordine||0)-(b.k.ordine||0));
   const pret = +L.pret || 0; const total = recs.reduce((a,r)=>a+r.n*pret,0); const paid = recs.filter(r => cap.admin ? r.p.platit : optOk(r.p)).reduce((a,r)=>a+r.n*pret,0);
   const decl = recs.filter(r => optDecl(r.p) && r.n);
-  h += '</section><section class="optmonth" id="opt-'+esc(L.id)+'"><div class="sec-head"><div><h2>'+esc(O.icon||"")+' '+esc(O.nume)+' · '+esc(lunaLabel(L.luna))+'</h2><div class="sub">'+ses.length+' ședințe: '+esc(ses.map(d=>parseD(d) ? parseD(d).getDate() : d).join(", "))+' '+esc(LUNI_S[(parseD(ses[0])||new Date()).getMonth()])+'. · '+esc(lei(pret))+' / ședință</div></div>'
+  h += '</section><section class="optmonth" id="opt-'+esc(L.id)+'"><div class="sec-head"><div><h2>'+esc(O.icon||"")+' '+esc(O.nume)+' · '+esc(lunaLabel(L.luna))+'</h2><div class="sub">'+(ses.length ? ses.length+' ședințe: '+esc(ses.map(d=>parseD(d) ? parseD(d).getDate() : d).join(", "))+' '+esc(LUNI_S[(parseD(ses[0])||new Date()).getMonth()])+'. · '+esc(lei(pret))+' / ședință' : esc(lei(pret))+' / zi · după fișa de la grădiniță')+'</div></div>'
     + '<div class="row">'+linkBtn("optionale/"+sel+"/"+L.luna)+(cap.admin && hasArhCol("optional_luni") ? '<button class="btn small ghost" data-a="arhLuna" data-id="'+esc(L.id)+'">'+(arh(L) ? 'Scoate din arhivă' : (ui.confirm === "al"+L.id ? 'Sunt neplătiți · apasă iar' : '🗂️ Arhivează luna'))+'</button>' : '')+(cap.admin ? '<button class="btn small ghost danger" data-a="optDelLuna" data-id="'+esc(L.id)+'">'+(ui.confirm==="ol"+L.id?'Sigur? Apasă iar':'Șterge luna')+'</button>' : '') + '</div></div>';
   const mine = recs.find(r => r.p.copilId === ui.me);
   if (mine) h += '<div class="mestat '+(optOk(mine.p) || !mine.n ?'ok':'')+'" style="margin-bottom:14px"><span>'+esc(firstName(kidName(ui.me)))+': '+(ses.length ? mine.n+' din '+ses.length+' ședințe' : mine.n+' '+(mine.n===1?'zi':'zile')+' × '+esc(lei(pret)))+' · <b>'+esc(lei(mine.n*pret))+'</b>'+(mine.n ? (optOk(mine.p) ? ' · plătit ✓' : ' de plată') : ' · nimic de plată')+'</span>'+(mine.n && !mine.p.platit ? payBtn("optional", L.id, !mine.p.platit_declarat) : '')+'</div>';
