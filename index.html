@@ -1145,6 +1145,7 @@ function viewComanda(C){
   if (C.o_singura) h += '<div class="cmd-count"><b>Comandate:</b> '+prods.map(p => esc(p.scurt||p.nume)+' <span class="num">'+recs.filter(x => x.r && (x.r.produse||[]).includes(p.id)).length+'</span>').join(' · ')+' · Niciun pachet <span class="num">'+recs.filter(x => x.r && x.r.raspuns && !(x.r.produse||[]).length).length+'</span></div>';
   else h += '<div class="cmd-prods">'+prods.map(p => '<div class="cmd-prod"><b>'+esc(p.nume)+'</b><span class="num">'+esc(lei(p.pret))+'</span>'+(p.info ? '<span class="cmd-info">'+esc(p.info)+'</span>' : '')+(p.link ? linkify(p.link) : '')+'<small>'+(n => n+(n===1?' comandat':' comandate'))(recs.filter(x => x.r && (x.r.produse||[]).includes(p.id)).length)+'</small></div>').join("")+'</div>';
   if (C.cadou) h += '<div class="optinfo" style="margin:0 0 12px">🎁 '+linkify(C.cadou)+'</div>';
+  if (C.plata) { const ib = (C.plata.match(/RO\d{2}[A-Z]{4}[A-Z0-9]{16}/)||[])[0]; h += '<div class="optinfo pinfo" style="margin:0 0 12px">💳 '+linkify(C.plata)+(ib ? '<div style="margin-top:8px"><button type="button" class="btn small" data-a="copyTxt" data-t="'+esc(ib)+'">📋 Copiază IBAN</button></div>' : '')+'</div>'; }
   const mine = isChild(ui.me) ? recs.find(x => x.k.id === ui.me) : null;
   if (mine) {
     const r = mine.r, sel = r ? (r.produse || []) : [], sum = cmdSum(C, r), locked = r && r.platit;
@@ -2008,6 +2009,11 @@ document.addEventListener("click", async e => {
       else if (k === "cmd") { ui.opt = id; setTab("optionale"); }
       else if (k === "opt") { const l = D.optional_luni.find(x=>x.id===id); if (l) { ui.opt = l.optionalId; ui.optLuna = l.id; } setTab("optionale"); }
       break;
+    }
+    case "copyTxt": {
+      const v = t.dataset.t || ""; let ok = false; try { await navigator.clipboard.writeText(v); ok = true; } catch(e){}
+      if (!ok) { try { const ta = document.createElement("textarea"); ta.value = v; ta.setAttribute("readonly",""); ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove(); } catch(e){} }
+      toast(ok ? "IBAN copiat ✓" : v); break;
     }
     case "copyLink": {
       const url = location.origin + location.pathname + "#" + t.dataset.h;
