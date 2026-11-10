@@ -324,6 +324,7 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .cmd-chip{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:800;font-family:inherit;min-height:24px}
 button.cmd-chip{cursor:pointer}
 .cmd-chip.on{border:1px solid var(--meadow);background:var(--meadow-soft);color:var(--meadow)}
+.cmd-chip.nil.on{border:1px solid var(--muted);background:var(--line);color:var(--ink)}
 .cmd-wait{font-size:12px;font-weight:700;color:var(--muted);align-self:center}
 .zile{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
 .sesnotes{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
@@ -1141,7 +1142,7 @@ function viewComanda(C){
     return h + '</section>';
   }
   if (C.imagine) h += '<a class="cmd-img" href="'+esc(C.imagine)+'" target="_blank" rel="noopener"><img src="'+esc(C.imagine)+'" alt="'+esc(C.titlu)+'" loading="lazy"><span>Vezi oferta mare</span></a>';
-  if (C.o_singura) h += '<div class="cmd-count"><b>Comandate:</b> '+prods.map(p => esc(p.scurt||p.nume)+' <span class="num">'+recs.filter(x => x.r && (x.r.produse||[]).includes(p.id)).length+'</span>').join(' · ')+'</div>';
+  if (C.o_singura) h += '<div class="cmd-count"><b>Comandate:</b> '+prods.map(p => esc(p.scurt||p.nume)+' <span class="num">'+recs.filter(x => x.r && (x.r.produse||[]).includes(p.id)).length+'</span>').join(' · ')+' · Niciun pachet <span class="num">'+recs.filter(x => x.r && x.r.raspuns && !(x.r.produse||[]).length).length+'</span></div>';
   else h += '<div class="cmd-prods">'+prods.map(p => '<div class="cmd-prod"><b>'+esc(p.nume)+'</b><span class="num">'+esc(lei(p.pret))+'</span>'+(p.info ? '<span class="cmd-info">'+esc(p.info)+'</span>' : '')+(p.link ? linkify(p.link) : '')+'<small>'+(n => n+(n===1?' comandat':' comandate'))(recs.filter(x => x.r && (x.r.produse||[]).includes(p.id)).length)+'</small></div>').join("")+'</div>';
   if (C.cadou) h += '<div class="optinfo" style="margin:0 0 12px">🎁 '+linkify(C.cadou)+'</div>';
   const mine = isChild(ui.me) ? recs.find(x => x.k.id === ui.me) : null;
@@ -1160,7 +1161,11 @@ function viewComanda(C){
     const chips = prods.map(p => ed && cap.admin
       ? '<button type="button" class="cmd-chip'+(sel.includes(p.id)?' on':'')+'" data-a="cmdPick" data-id="'+esc(C.id)+'" data-p="'+esc(p.id)+'" data-kid="'+esc(k.id)+'">'+esc(p.scurt || p.nume)+'</button>'
       : (sel.includes(p.id) ? '<span class="cmd-chip on">'+esc(p.scurt || p.nume)+'</span>' : '')).join("");
-    const status = !r || !r.raspuns ? '<span class="cmd-wait">nu a răspuns</span>' : (!sel.length ? '<span class="cmd-wait">nu ia</span>' : '');
+    const noneOn = !!(r && r.raspuns && !sel.length), noneLab = C.o_singura ? 'Niciun pachet' : 'Nimic';
+    const noneChip = ed && cap.admin
+      ? '<button type="button" class="cmd-chip nil'+(noneOn?' on':'')+'" data-a="cmdNone" data-id="'+esc(C.id)+'" data-kid="'+esc(k.id)+'">'+noneLab+'</button>'
+      : (noneOn ? '<span class="cmd-chip nil on">'+noneLab+'</span>' : '');
+    const status = noneChip + (!r || !r.raspuns ? '<span class="cmd-wait">nu a răspuns</span>' : '');
     return '<div class="orow'+(k.id===ui.me?' mine':'')+'">'+avHtml(k.id)+'<div class="on"><b>'+esc(k.nume)+'</b><div class="cmd-chips">'+chips+status+'</div></div><div class="oright"><span class="osum num">'+lei(cmdSum(C, r))+'</span>'+(r ? cmdPayBtn(C, r, k.id) : '<span class="opaid none">—</span>')+'</div></div>';
   }).join("")+'</div>';
   return h + '</section>';
