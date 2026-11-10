@@ -327,7 +327,7 @@ p,h1,h2,h3,h4,b,small,span{overflow-wrap:break-word}
 .cmd-chip{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:800;font-family:inherit;min-height:24px}
 button.cmd-chip{cursor:pointer}
 .cmd-chip.on{border:1px solid var(--meadow);background:var(--meadow-soft);color:var(--meadow)}
-.cmd-chip.nil.on{border:1px solid var(--muted);background:var(--line);color:var(--ink)}
+.cmd-chip.nil.on{border:1px solid var(--meadow);background:var(--meadow-soft);color:var(--meadow)}
 .cmd-wait{font-size:12px;font-weight:700;color:var(--muted);align-self:center}
 .zile{font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px}
 .sesnotes{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px}
@@ -1166,11 +1166,11 @@ function viewComanda(C){
     const sel = r ? (r.produse||[]) : []; const ed = editable(k.id) && !(r && r.platit);
     const chips = prods.map(p => ed && cap.admin
       ? '<button type="button" class="cmd-chip'+(sel.includes(p.id)?' on':'')+'" data-a="cmdPick" data-id="'+esc(C.id)+'" data-p="'+esc(p.id)+'" data-kid="'+esc(k.id)+'">'+esc(p.scurt || p.nume)+'</button>'
-      : (sel.includes(p.id) ? '<span class="cmd-chip on">'+esc(p.scurt || p.nume)+'</span>' : '')).join("");
+      : (r && r.raspuns ? '<span class="cmd-chip'+(sel.includes(p.id)?' on':'')+'">'+esc(p.scurt || p.nume)+'</span>' : '')).join("");
     const noneOn = !!(r && r.raspuns && !sel.length), noneLab = C.o_singura ? 'Niciun pachet' : 'Nimic';
     const noneChip = ed && cap.admin
       ? '<button type="button" class="cmd-chip nil'+(noneOn?' on':'')+'" data-a="cmdNone" data-id="'+esc(C.id)+'" data-kid="'+esc(k.id)+'">'+noneLab+'</button>'
-      : (noneOn ? '<span class="cmd-chip nil on">'+noneLab+'</span>' : '');
+      : (r && r.raspuns ? '<span class="cmd-chip nil'+(noneOn?' on':'')+'">'+noneLab+'</span>' : '');
     const status = noneChip + (!r || !r.raspuns ? '<span class="cmd-wait">nu a răspuns</span>' : '');
     return '<div class="orow'+(k.id===ui.me?' mine':'')+'">'+avHtml(k.id)+'<div class="on"><b>'+esc(k.nume)+'</b><div class="cmd-chips">'+chips+status+'</div></div><div class="oright"><span class="osum num">'+lei(cmdSum(C, r))+'</span>'+(r ? cmdPayBtn(C, r, k.id) : '<span class="opaid none">—</span>')+'</div></div>';
   }).join("")+'</div>';
