@@ -810,8 +810,7 @@ function calendarCard(){
   const inCurs = iso => { const wd = parseD(iso).getDay(); return wd !== 0 && wd !== 6 && P.some(p => p.tip === "curs" && iso >= p.s && iso <= p.e); };
   const nextFree = AN_SCOLAR.libere.find(l => l.d >= t && inCurs(l.d));
   const rows = P.map(p => { const st = p.e < t ? "past" : (t >= p.s ? "now" : ""); return '<li class="calrow '+p.tip+' '+st+'"><span class="cdot"></span><span class="cn">'+esc(p.n)+'</span><span class="cd num">'+esc(fmtRange(p.s, p.e))+'</span></li>'; }).join("");
-  const free = AN_SCOLAR.libere.map(l => { const wd = parseD(l.d).getDay(), note = inCurs(l.d) ? 'grădinița e închisă' : (wd === 0 || wd === 6 ? 'pică în weekend' : 'în vacanță');
-    return '<li class="calrow free'+(l.d < t ? ' past' : '')+(inCurs(l.d) ? ' hit' : '')+'"><span class="cdot"></span><span class="cn">'+esc(l.n)+(l.L ? '' : ' · zi liberă în învățământ')+' <small>· '+note+'</small></span><span class="cd num">'+esc(fmtLong(l.d)+' '+l.d.slice(0,4))+'</span></li>'; }).join("");
+  const free = AN_SCOLAR.libere.filter(l => inCurs(l.d)).map(l => '<li class="calrow free'+(l.d < t ? ' past' : '')+'"><span class="cdot"></span><span class="cn">'+esc(l.n)+'</span><span class="cd num">'+esc(fmtLong(l.d)+' '+l.d.slice(0,4))+'</span></li>').join("");
   return '<section><div class="sec-head"><div><h2>Anul școlar '+AN_SCOLAR.titlu+'</h2><div class="sub">Vacanțele și zilele libere ale grădiniței.</div></div></div>'
     + status + (() => {
       const up = P.filter(p => p.tip === "vac" && p.e >= t).map(p => ({ d: p.s, t: p.n, when: fmtRange(p.s, p.e), cls: "vac" }))
@@ -819,7 +818,7 @@ function calendarCard(){
         .sort((a,b) => a.d.localeCompare(b.d)).slice(0, 4);
       if (!up.length) return '';
       return '<div class="eyebrow" style="margin:12px 0 6px">Următoarele zile libere</div><ul class="cal-list cal-next">'+up.map(x => '<li class="calrow '+x.cls+(x.d <= t ? ' now' : '')+'"><span class="cdot"></span><span class="cn">'+esc(x.t)+' <small>· '+esc(x.d <= t ? 'acum' : countdown(daysUntil(x.d)).toLowerCase())+'</small></span><span class="cd num">'+esc(x.when)+'</span></li>').join("")+'</ul>';
-    })() + '<details class="all calall"><summary>Tot calendarul</summary><ul class="cal-list">'+rows+'</ul><div class="eyebrow" style="margin:14px 0 6px">Zile libere legale</div><ul class="cal-list">'+free+'</ul></details>'
+    })() + '<details class="all calall"><summary>Tot calendarul</summary><ul class="cal-list">'+rows+'</ul><div class="eyebrow" style="margin:14px 0 6px">Zile libere în timpul săptămânii (nu ducem copiii)</div><ul class="cal-list">'+free+'</ul></details>'
     + (nextFree && !(cur && cur.tip === "vac") && daysUntil(nextFree.d) <= 14 ? '<div class="hint" style="margin-top:8px">Atenție: '+esc(fmtLong(nextFree.d))+' e liber ('+esc(nextFree.n)+').</div>' : '')
     + '</section>';
 }
