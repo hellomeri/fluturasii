@@ -838,7 +838,7 @@ function linkify(raw){
   return out + ibanify(esc(raw.slice(last)));
 }
 function ibanOk(ib){ const r = (ib.slice(4)+ib.slice(0,4)).replace(/[A-Z]/g, c => c.charCodeAt(0)-55); let m = 0; for (const d of r) m = (m*10 + +d) % 97; return m === 1; }
-function ibanify(h){ return h.replace(/\bRO\d{2}[A-Z]{4}[A-Z0-9]{16}\b/g, ib => ibanOk(ib) ? '<span class="iban">'+ib+'</span> <span role="button" tabindex="0" class="ibcopy" data-a="copyTxt" data-t="'+ib+'">📋 Copiază IBAN</span>' : ib); }
+function ibanify(h){ return h.replace(/\bRO\d{2}[A-Z]{4}[A-Z0-9]{16}\b/g, ib => (ibanOk(ib) || /X{2,}$/.test(ib)) ? '<span class="iban">'+ib+'</span> <span role="button" tabindex="0" class="ibcopy" data-a="copyTxt" data-t="'+ib+'">📋 Copiază IBAN</span>' : ib); }
 function personRow(kidId, sub, action){ return '<div class="person">'+avHtml(kidId)+'<span class="t"><b>'+esc(kidName(kidId))+'</b>'+(sub?' <span>· '+esc(sub)+'</span>':'')+'</span>'+action+'</div>'; }
 function progressOf(it){
   if (it.status === "done") return 1;
