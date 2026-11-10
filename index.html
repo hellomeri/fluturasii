@@ -806,14 +806,20 @@ function calendarCard(){
   const cur = P.find(p => t >= p.s && t <= p.e); const nextVac = P.find(p => p.tip === "vac" && p.s > t);
   let status = "";
   if (cur && cur.tip === "vac") { const back = P.find(p => p.tip === "curs" && p.s > t); status = '<div class="calnow vac"><b>Acum e '+esc(cur.n.toLowerCase())+'.</b> '+(back ? 'Copiii revin la grădiniță '+esc(fmtLong(back.s))+', '+countdown(daysUntil(back.s)).toLowerCase()+'.' : '')+'</div>'; }
-  else if (nextVac) status = '<div class="calnow"><b>Următoarea vacanță:</b> '+esc(nextVac.n.toLowerCase())+', '+esc(fmtRange(nextVac.s, nextVac.e))+' · '+countdown(daysUntil(nextVac.s)).toLowerCase()+'.</div>';
+
   const inCurs = iso => { const wd = parseD(iso).getDay(); return wd !== 0 && wd !== 6 && P.some(p => p.tip === "curs" && iso >= p.s && iso <= p.e); };
   const nextFree = AN_SCOLAR.libere.find(l => l.d >= t && inCurs(l.d));
   const rows = P.map(p => { const st = p.e < t ? "past" : (t >= p.s ? "now" : ""); return '<li class="calrow '+p.tip+' '+st+'"><span class="cdot"></span><span class="cn">'+esc(p.n)+'</span><span class="cd num">'+esc(fmtRange(p.s, p.e))+'</span></li>'; }).join("");
   const free = AN_SCOLAR.libere.map(l => { const wd = parseD(l.d).getDay(), note = inCurs(l.d) ? 'grădinița e închisă' : (wd === 0 || wd === 6 ? 'pică în weekend' : 'în vacanță');
     return '<li class="calrow free'+(l.d < t ? ' past' : '')+(inCurs(l.d) ? ' hit' : '')+'"><span class="cdot"></span><span class="cn">'+esc(l.n)+(l.L ? '' : ' · zi liberă în învățământ')+' <small>· '+note+'</small></span><span class="cd num">'+esc(fmtLong(l.d)+' '+l.d.slice(0,4))+'</span></li>'; }).join("");
   return '<section><div class="sec-head"><div><h2>Anul școlar '+AN_SCOLAR.titlu+'</h2><div class="sub">Vacanțele și zilele libere ale grădiniței.</div></div></div>'
-    + status + '<details class="all calall"><summary>Tot calendarul</summary><ul class="cal-list">'+rows+'</ul><div class="eyebrow" style="margin:14px 0 6px">Zile libere legale</div><ul class="cal-list">'+free+'</ul></details>'
+    + status + (() => {
+      const up = P.filter(p => p.tip === "vac" && p.e >= t).map(p => ({ d: p.s, t: p.n, when: fmtRange(p.s, p.e), cls: "vac" }))
+        .concat(AN_SCOLAR.libere.filter(l => l.d >= t && inCurs(l.d)).map(l => ({ d: l.d, t: l.n, when: fmtLong(l.d), cls: "free" })))
+        .sort((a,b) => a.d.localeCompare(b.d)).slice(0, 4);
+      if (!up.length) return '';
+      return '<div class="eyebrow" style="margin:12px 0 6px">Următoarele zile libere</div><ul class="cal-list cal-next">'+up.map(x => '<li class="calrow '+x.cls+(x.d <= t ? ' now' : '')+'"><span class="cdot"></span><span class="cn">'+esc(x.t)+' <small>· '+esc(x.d <= t ? 'acum' : countdown(daysUntil(x.d)).toLowerCase())+'</small></span><span class="cd num">'+esc(x.when)+'</span></li>').join("")+'</ul>';
+    })() + '<details class="all calall"><summary>Tot calendarul</summary><ul class="cal-list">'+rows+'</ul><div class="eyebrow" style="margin:14px 0 6px">Zile libere legale</div><ul class="cal-list">'+free+'</ul></details>'
     + (nextFree && !(cur && cur.tip === "vac") && daysUntil(nextFree.d) <= 14 ? '<div class="hint" style="margin-top:8px">Atenție: '+esc(fmtLong(nextFree.d))+' e liber ('+esc(nextFree.n)+').</div>' : '')
     + '</section>';
 }
