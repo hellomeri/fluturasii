@@ -17,6 +17,15 @@ Toate datele sunt în Supabase (citite direct din index.html cu supabase-js). Ch
 ## Cum se publică
 Vercel publică automat din branch-ul main. Hellomeri.go.ro nu e implicat (pagina /gradinita vine din repo-ul separat proiecteade/gradinita).
 
+## Unde sunt cheile (fără valori)
+- Cheile Supabase și cheile pentru notificări (web-push / VAPID): în Vercel → proiectul fluturasii → Settings → Environment Variables; unele sunt și în tabelul `secrete` din Supabase (exclus intenționat din backup).
+- Parola bazei de date Supabase: în Supabase → proiectul fluturasii → Settings → Database.
+- Tokenul serverului (Hermes, read-only pe proiecteade, expiră 27 oct 2027): pe server, `~/.config/proiecteade/token`.
+- Recomandare: toate cheile de mai sus și parolele conturilor (GitHub, Vercel, Supabase) într-un manager de parole.
+
+## Backup
+- Baza de date Supabase: săptămânal, în repo-ul privat `proiecteade/backup` (`supabase/fluturasii/`).
+
 ## Cum lucrăm
 - Proiectul Claude: **🦋 Fluturașii** — chatul 🛠 Features pentru cod/design, chatul 📝 Conținut doar pentru date.
 - Claude face tot git-ul (commit, push) și verifică pagina live după publicare. Adelina nu urcă nimic manual.
@@ -25,3 +34,4 @@ Vercel publică automat din branch-ul main. Hellomeri.go.ro nu e implicat (pagin
 ## Jurnal
 - 2026-11-12: repo mutat în organizația proiecteade; creat CONTEXT.md și HERMES.md.
 - 2026-11-12: decis — fără copie pe hellomeri.go.ro/fluturasii (doar Vercel).
+- 2026-11-12: adăugat „Unde sunt cheile” și „Backup”.
