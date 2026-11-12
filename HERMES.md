@@ -12,7 +12,8 @@ Hermes este agentul AI care administrează serverul **hellomeri.go.ro**. Claude 
 
 ## Specific pentru `fluturasii`
 - Adresă: https://fluturasii.vercel.app
-- Hermes nu are rol aici: aplicația e pe Vercel + Supabase, nu pe hellomeri.go.ro. Repo-ul e în proiecteade, deci serverul l-ar putea clona automat — nu e nevoie să fie publicat și pe hellomeri.go.ro.
+- Hermes nu are rol aici: aplicația e pe Vercel + Supabase, nu pe hellomeri.go.ro.
+- **NU publica acest repo pe hellomeri.go.ro** (fără /fluturasii). Adelina nu vrea o copie a portalului acolo. Dacă a fost deja clonat/publicat automat, scoate-l de pe site și exclude-l de la auto-publicare.
 
 ## Jurnal Hermes
 - (gol)

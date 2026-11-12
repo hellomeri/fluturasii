@@ -24,3 +24,4 @@ Vercel publică automat din branch-ul main. Hellomeri.go.ro nu e implicat (pagin
 
 ## Jurnal
 - 2026-11-12: repo mutat în organizația proiecteade; creat CONTEXT.md și HERMES.md.
+- 2026-11-12: decis — fără copie pe hellomeri.go.ro/fluturasii (doar Vercel).
