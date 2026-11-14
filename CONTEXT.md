@@ -35,3 +35,4 @@ Vercel publică automat din branch-ul main. Hellomeri.go.ro nu e implicat (pagin
 - 2026-11-12: repo mutat în organizația proiecteade; creat CONTEXT.md și HERMES.md.
 - 2026-11-12: decis — fără copie pe hellomeri.go.ro/fluturasii (doar Vercel).
 - 2026-11-12: adăugat „Unde sunt cheile” și „Backup”.
+- 2026-11-14: Poze Atelierul Moșului — adăugat în descriere termenul de alegere a pachetului (25 noiembrie, inclusiv). Doar date în Supabase.
